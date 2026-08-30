@@ -1,0 +1,27 @@
+device: cuda, precision: bf16 autocast
+model params: 10.77M, vocab_size=65
+max_iters=5000 batch_size=64 block_size=256 lr=0.001->0.0001 warmup=100 grad_clip=1.0
+iter 0: train loss 4.2890, val loss 4.2803, lr 1.00e-05 [0.1 min] *best
+iter 250: train loss 1.9900, val loss 2.0869, lr 9.98e-04 [0.9 min] *best
+iter 500: train loss 1.5476, val loss 1.7306, lr 9.85e-04 [1.6 min] *best
+iter 750: train loss 1.3758, val loss 1.6070, lr 9.61e-04 [2.4 min] *best
+iter 1000: train loss 1.2801, val loss 1.5250, lr 9.27e-04 [3.1 min] *best
+iter 1250: train loss 1.2134, val loss 1.4927, lr 8.83e-04 [3.9 min] *best
+iter 1500: train loss 1.1612, val loss 1.4681, lr 8.31e-04 [4.6 min] *best
+iter 1750: train loss 1.1114, val loss 1.4652, lr 7.71e-04 [5.4 min] *best
+iter 2000: train loss 1.0601, val loss 1.4658, lr 7.05e-04 [6.1 min]
+iter 2250: train loss 1.0194, val loss 1.4778, lr 6.36e-04 [6.9 min]
+iter 2500: train loss 0.9762, val loss 1.4822, lr 5.64e-04 [7.6 min]
+iter 2750: train loss 0.9299, val loss 1.5095, lr 4.92e-04 [8.3 min]
+iter 3000: train loss 0.8806, val loss 1.5276, lr 4.22e-04 [9.1 min]
+iter 3250: train loss 0.8373, val loss 1.5345, lr 3.55e-04 [9.8 min]
+iter 3500: train loss 0.7979, val loss 1.5705, lr 2.93e-04 [10.6 min]
+iter 3750: train loss 0.7570, val loss 1.5848, lr 2.37e-04 [11.3 min]
+iter 4000: train loss 0.7306, val loss 1.6075, lr 1.89e-04 [12.1 min]
+iter 4250: train loss 0.6983, val loss 1.6272, lr 1.51e-04 [12.8 min]
+iter 4500: train loss 0.6699, val loss 1.6362, lr 1.23e-04 [13.5 min]
+iter 4750: train loss 0.6534, val loss 1.6566, lr 1.06e-04 [14.3 min]
+iter 4999: train loss 0.6411, val loss 1.6703, lr 1.00e-04 [15.0 min]
+best val loss 1.4652 at iter 1750 (checkpoint kept)
+done in 15.0 min
+saved checkpoint and loss curve to C:\Users\Priyam\Documents\MS\agentic-rl\transformer_scratch\checkpoints / C:\Users\Priyam\Documents\MS\agentic-rl\transformer_scratch\artifacts
