@@ -10,3 +10,6 @@ checkpoints/
 wandb/
 .pytest_cache/
 .claude/
+
+# corpora fetched at runtime by data loaders, not source
+transformer_scratch/data/*.txt
