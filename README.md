@@ -138,3 +138,126 @@ The corpus downloads automatically on first run. Tests cover attention/MLP/
 block output shapes, an actual causal-masking correctness check (perturbing a
 future token must not change earlier positions' outputs), and an
 overfit-one-batch sanity check.
+
+## Module 2: the verifiable-reward task suite
+
+`task_suite/` — the tasks the agent is trained and evaluated on, and the
+`verify()` functions that score them. This is the reward signal for the whole
+project, so it is built before any agent, tool or training code exists: if the
+verifiers are wrong, every reward curve and pass-rate reported later is wrong
+with them, and no amount of care in the training loop fixes that.
+
+| split | math | code | qa | total |
+| --- | --- | --- | --- | --- |
+| train | 150 | 24 | 85 | 259 |
+| held out | 60 | 12 | 33 | 105 |
+
+The suite is pinned to `task_suite/data/suite.json` and committed. Everything
+that produces it is deterministic, so it could be rebuilt on demand — it is
+stored anyway, because an eval number only means something if the tasks behind
+it are exactly the tasks that were run, and a file anyone can diff is a
+stronger guarantee than "it regenerates the same". A test asserts the
+checked-in file still matches a fresh build, so a stale pin surfaces as a
+failing test rather than as a quietly wrong number.
+
+### The reward contract
+
+The policy reasons and calls tools however it likes, but has to commit to a
+final answer inside `<answer></answer>` for that answer to be scored. Only the
+last such block counts, and a response with no parseable commitment scores
+0.0 rather than being generously re-parsed. That strictness is deliberate:
+format compliance is part of what RL has to learn, and looser parsing — grab
+the last number, accept a prefix match — hands out reward for text that never
+actually answered the question.
+
+`verify(task, response) -> float` in `[0, 1]` is the single entry point, so
+the baseline agent, the GRPO loop and the eval harness cannot drift apart in
+how they score.
+
+### How each category is made verifiable
+
+**Math (`tasks_math.py`)** — 10 parameterized templates. The prompt and the
+answer are rendered from the same drawn parameters, so a task's answer cannot
+disagree with its question; that is the failure mode which quietly corrupts a
+hand-written math set. Numbers are drawn to be awkward on purpose — prices to
+the cent, non-round rates, multi-step chains — with fewer than 10% of answers
+landing on a whole number. If the arithmetic were easy, an improvement in
+reward would say nothing about whether the policy learned to use the
+calculator. Scoring is a numeric match within a per-task tolerance, which the
+template sets (0 for integer answers, half a cent for money).
+
+Their tests assert *properties* rather than recomputing the formula, which
+would only prove the code equals itself: compounding grows the principal, two
+machines together beat either alone, a weighted average lies between its
+inputs, an equal rise and fall ends below the start.
+
+**Code (`tasks_code.py`)** — 36 hand-authored problems, 160 test cases.
+Generated instances make no sense here: a coding problem's difficulty lives in
+its specification, not its numbers, so thirty instances of one template would
+measure one skill thirty times. Held-out coding tasks are therefore different
+*problems*, not different instances — the only way a held-out coding score
+means anything.
+
+Hand-written expected values are exactly where typos hide, so the test file
+holds an independently written reference solution for every one of the 36
+problems, written from the prompt text rather than from the expectations, and
+asserts each scores 1.0 through the real verifier. Two independent derivations
+agreeing is what makes the expectations trustworthy. Score is the fraction of
+test cases passed, not all-or-nothing — coding is the category where a small
+policy most often gets the shape right and one edge case wrong, and a dense
+signal there is worth more to GRPO than a cliff.
+
+`verify_code.py` never executes anything itself: it builds a self-checking
+program and hands it to an injected runner, which module 3 supplies as a real
+sandbox. That inversion keeps the verifier pure and unit-testable with a fake
+runner, and leaves exactly one place in the repo where untrusted generated
+code actually runs — so exactly one place to harden.
+
+**Multi-hop QA (`qa_world.py`)** — a 68-document corpus about an invented
+research institute, and 118 questions over it. The corpus is fictional on
+purpose. A question about the real world can be answered from the base model's
+weights without ever calling the search tool, so the reward would be measuring
+memorization with no way to tell the two apart. Every entity here is invented,
+so retrieval is the only route to a correct answer.
+
+Questions are generated from the entity graph rather than written by hand,
+which guarantees every answer is actually supported by the corpus — a
+hand-written multi-hop question whose second hop is in no document is an
+unanswerable task that silently caps the reward the category can earn, and it
+is easy to write one by accident. Each fact lives in exactly one document and
+the chains run one way: an expedition's document names its leader but not the
+instrument that leader designed, and the researcher's document names the
+instrument but not the expedition. A test asserts, for all 118 questions
+against the rendered prose, that no single document contains both the entity
+the question names and the answer it wants — one careless filler sentence
+would turn a two-hop question into a lookup while the question text stayed
+identical. Questions run at 2 and 3 hops across 8 templates.
+
+Scoring is exact match on a normalized string against authored alias forms,
+not token F1. Overlap credit would reward an answer for merely containing a
+right-looking word, and a small policy trained against that learns to stuff
+answers with plausible entities.
+
+### The held-out split
+
+Held-out means something different in each category, and each is enforced by a
+test: math draws independent problem parameters from a separate seed, code
+holds back entirely different problems, and QA partitions the question
+*subjects* so a held-out question asks about an entity no training question
+ever mentions. The QA corpus itself is necessarily shared — it is the world
+both splits search. `build_suite()` refuses to return a suite in which any
+prompt appears in both splits.
+
+Math is the largest category, because it is the only generated one. That is a
+real imbalance, and it is why every eval number this project reports is broken
+down per category rather than pooled into a single headline pass-rate.
+
+### Reproducing
+
+```bash
+python -m task_suite.registry      # rebuild and pin the suite, print the summary
+pytest task_suite/tests -q         # 131 tests
+```
+
+No reward numbers appear here yet — nothing has been run against these tasks.
+The first real numbers arrive with the prompted baseline agent (module 4).
