@@ -1,0 +1,345 @@
+{
+  "documents": [
+    {
+      "doc_id": "ins-00",
+      "text": "The Kestrel Array is a field instrument that measures sub-surface brine salinity. It has a dry mass of 37.9 kg and entered routine service in 2029. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Kestrel Array"
+    },
+    {
+      "doc_id": "ins-01",
+      "text": "The Vantablade Sounder is a field instrument that measures crustal magnetic declination. It has a dry mass of 162.5 kg and entered routine service in 2030. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Vantablade Sounder"
+    },
+    {
+      "doc_id": "ins-02",
+      "text": "The Orrery Magnetometer is a field instrument that measures aerosol backscatter. It has a dry mass of 83.2 kg and entered routine service in 2027. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Orrery Magnetometer"
+    },
+    {
+      "doc_id": "ins-03",
+      "text": "The Lambent Spectrograph is a field instrument that measures ice-shelf basal melt rate. It has a dry mass of 80.8 kg and entered routine service in 2038. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Lambent Spectrograph"
+    },
+    {
+      "doc_id": "ins-04",
+      "text": "The Talon Interferometer is a field instrument that measures atmospheric methane flux. It has a dry mass of 142.3 kg and entered routine service in 2036. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Talon Interferometer"
+    },
+    {
+      "doc_id": "ins-05",
+      "text": "The Cinder Profiler is a field instrument that measures seafloor heat flow. It has a dry mass of 164.1 kg and entered routine service in 2037. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Cinder Profiler"
+    },
+    {
+      "doc_id": "ins-06",
+      "text": "The Marlow Anemograph is a field instrument that measures auroral electron precipitation. It has a dry mass of 74.9 kg and entered routine service in 2038. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Marlow Anemograph"
+    },
+    {
+      "doc_id": "ins-07",
+      "text": "The Quillon Radiometer is a field instrument that measures snowpack liquid water content. It has a dry mass of 115.1 kg and entered routine service in 2038. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Quillon Radiometer"
+    },
+    {
+      "doc_id": "ins-08",
+      "text": "The Vesper Tiltmeter is a field instrument that measures volcanic sulfur dioxide plumes. It has a dry mass of 67.6 kg and entered routine service in 2038. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Vesper Tiltmeter"
+    },
+    {
+      "doc_id": "ins-09",
+      "text": "The Halcyon Photometer is a field instrument that measures geomagnetic micropulsations. It has a dry mass of 131.8 kg and entered routine service in 2036. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Halcyon Photometer"
+    },
+    {
+      "doc_id": "ins-10",
+      "text": "The Bastion Seismograph is a field instrument that measures sea-ice thickness. It has a dry mass of 139.5 kg and entered routine service in 2034. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Bastion Seismograph"
+    },
+    {
+      "doc_id": "ins-11",
+      "text": "The Ferrule Bolometer is a field instrument that measures permafrost active-layer depth. It has a dry mass of 43.0 kg and entered routine service in 2032. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Ferrule Bolometer"
+    },
+    {
+      "doc_id": "ins-12",
+      "text": "The Nimbus Hygrometer is a field instrument that measures stratospheric ozone column. It has a dry mass of 49.1 kg and entered routine service in 2036. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Nimbus Hygrometer"
+    },
+    {
+      "doc_id": "ins-13",
+      "text": "The Kelter Densitometer is a field instrument that measures tidal current shear. It has a dry mass of 93.9 kg and entered routine service in 2030. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Kelter Densitometer"
+    },
+    {
+      "doc_id": "ins-14",
+      "text": "The Ardent Fluxgate is a field instrument that measures cosmic ray muon flux. It has a dry mass of 133.8 kg and entered routine service in 2032. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Ardent Fluxgate"
+    },
+    {
+      "doc_id": "ins-15",
+      "text": "The Solent Coronagraph is a field instrument that measures soil radon emanation. It has a dry mass of 11.2 kg and entered routine service in 2027. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Solent Coronagraph"
+    },
+    {
+      "doc_id": "ins-16",
+      "text": "The Palisade Scintillometer is a field instrument that measures cloud droplet radius. It has a dry mass of 147.5 kg and entered routine service in 2029. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Palisade Scintillometer"
+    },
+    {
+      "doc_id": "ins-17",
+      "text": "The Mordant Nephelometer is a field instrument that measures sediment turbidity. It has a dry mass of 141.2 kg and entered routine service in 2026. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Mordant Nephelometer"
+    },
+    {
+      "doc_id": "res-00",
+      "text": "Mira Halden is a researcher working in atmospheric optics. Halden joined the institute in 2034 and designed the Kestrel Array, which is still in use. Halden supervises graduate students and reviews field proposals each season.",
+      "title": "Mira Halden"
+    },
+    {
+      "doc_id": "res-01",
+      "text": "Tomas Vance is a researcher working in magnetospheric physics. Vance joined the institute in 2038 and designed the Vantablade Sounder, which is still in use. Vance supervises graduate students and reviews field proposals each season.",
+      "title": "Tomas Vance"
+    },
+    {
+      "doc_id": "res-02",
+      "text": "Ines Oyelaran is a researcher working in benthic ecology. Oyelaran joined the institute in 2027 and designed the Orrery Magnetometer, which is still in use. Oyelaran supervises graduate students and reviews field proposals each season.",
+      "title": "Ines Oyelaran"
+    },
+    {
+      "doc_id": "res-03",
+      "text": "Rafe Brekke is a researcher working in seismology. Brekke joined the institute in 2036 and designed the Lambent Spectrograph, which is still in use. Brekke supervises graduate students and reviews field proposals each season.",
+      "title": "Rafe Brekke"
+    },
+    {
+      "doc_id": "res-04",
+      "text": "Dalia Cardew is a researcher working in volcanology. Cardew joined the institute in 2034 and designed the Talon Interferometer, which is still in use. Cardew supervises graduate students and reviews field proposals each season.",
+      "title": "Dalia Cardew"
+    },
+    {
+      "doc_id": "res-05",
+      "text": "Owen Fenn is a researcher working in cryospheric remote sensing. Fenn joined the institute in 2030 and designed the Cinder Profiler, which is still in use. Fenn supervises graduate students and reviews field proposals each season.",
+      "title": "Owen Fenn"
+    },
+    {
+      "doc_id": "res-06",
+      "text": "Petra Aldritt is a researcher working in cryospheric remote sensing. Aldritt joined the institute in 2037 and designed the Marlow Anemograph, which is still in use. Aldritt supervises graduate students and reviews field proposals each season.",
+      "title": "Petra Aldritt"
+    },
+    {
+      "doc_id": "res-07",
+      "text": "Silas Sorenson is a researcher working in geodesy. Sorenson joined the institute in 2034 and designed the Quillon Radiometer, which is still in use. Sorenson supervises graduate students and reviews field proposals each season.",
+      "title": "Silas Sorenson"
+    },
+    {
+      "doc_id": "res-08",
+      "text": "Noor Quinlan is a researcher working in geodesy. Quinlan joined the institute in 2034 and designed the Vesper Tiltmeter, which is still in use. Quinlan supervises graduate students and reviews field proposals each season.",
+      "title": "Noor Quinlan"
+    },
+    {
+      "doc_id": "res-09",
+      "text": "Anders Okonjo is a researcher working in atmospheric optics. Okonjo joined the institute in 2038 and designed the Halcyon Photometer, which is still in use. Okonjo supervises graduate students and reviews field proposals each season.",
+      "title": "Anders Okonjo"
+    },
+    {
+      "doc_id": "res-10",
+      "text": "Yuki Verhoeven is a researcher working in seismology. Verhoeven joined the institute in 2026 and designed the Bastion Seismograph, which is still in use. Verhoeven supervises graduate students and reviews field proposals each season.",
+      "title": "Yuki Verhoeven"
+    },
+    {
+      "doc_id": "res-11",
+      "text": "Cato Lindqvist is a researcher working in aeronomy. Lindqvist joined the institute in 2028 and designed the Ferrule Bolometer, which is still in use. Lindqvist supervises graduate students and reviews field proposals each season.",
+      "title": "Cato Lindqvist"
+    },
+    {
+      "doc_id": "res-12",
+      "text": "Elin Abenov is a researcher working in seismology. Abenov joined the institute in 2035 and designed the Nimbus Hygrometer, which is still in use. Abenov supervises graduate students and reviews field proposals each season.",
+      "title": "Elin Abenov"
+    },
+    {
+      "doc_id": "res-13",
+      "text": "Bram Rourke is a researcher working in palaeoclimatology. Rourke joined the institute in 2026 and designed the Kelter Densitometer, which is still in use. Rourke supervises graduate students and reviews field proposals each season.",
+      "title": "Bram Rourke"
+    },
+    {
+      "doc_id": "res-14",
+      "text": "Solveig Delacroix is a researcher working in glaciology. Delacroix joined the institute in 2034 and designed the Ardent Fluxgate, which is still in use. Delacroix supervises graduate students and reviews field proposals each season.",
+      "title": "Solveig Delacroix"
+    },
+    {
+      "doc_id": "res-15",
+      "text": "Nadia Nayar is a researcher working in benthic ecology. Nayar joined the institute in 2028 and designed the Solent Coronagraph, which is still in use. Nayar supervises graduate students and reviews field proposals each season.",
+      "title": "Nadia Nayar"
+    },
+    {
+      "doc_id": "res-16",
+      "text": "Emeka Stroud is a researcher working in volcanology. Stroud joined the institute in 2027 and designed the Palisade Scintillometer, which is still in use. Stroud supervises graduate students and reviews field proposals each season.",
+      "title": "Emeka Stroud"
+    },
+    {
+      "doc_id": "res-17",
+      "text": "Ivo Ferreira is a researcher working in aeronomy. Ferreira joined the institute in 2031 and designed the Mordant Nephelometer, which is still in use. Ferreira supervises graduate students and reviews field proposals each season.",
+      "title": "Ivo Ferreira"
+    },
+    {
+      "doc_id": "sta-00",
+      "text": "Anvil Point Station stands on the Sable Reach and was founded in 2021. The station is directed by Owen Fenn and has 70 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Anvil Point Station"
+    },
+    {
+      "doc_id": "sta-01",
+      "text": "Corvid Bay Station stands on the Verrin Basin and was founded in 2002. The station is directed by Solveig Delacroix and has 54 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Corvid Bay Station"
+    },
+    {
+      "doc_id": "sta-02",
+      "text": "Drossel Ridge Station stands on the Ostrand Shelf and was founded in 2005. The station is directed by Tomas Vance and has 66 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Drossel Ridge Station"
+    },
+    {
+      "doc_id": "sta-03",
+      "text": "Ember Sound Station stands on the Kalder Straits and was founded in 2032. The station is directed by Anders Okonjo and has 13 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Ember Sound Station"
+    },
+    {
+      "doc_id": "sta-04",
+      "text": "Fenwold Station stands on the Myrren Plateau and was founded in 2008. The station is directed by Dalia Cardew and has 24 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Fenwold Station"
+    },
+    {
+      "doc_id": "sta-05",
+      "text": "Grimsby Shoal Station stands on the Tessine Barrens and was founded in 2031. The station is directed by Noor Quinlan and has 89 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Grimsby Shoal Station"
+    },
+    {
+      "doc_id": "sta-06",
+      "text": "Hollow Cape Station stands on the Draymoor Coast and was founded in 1999. The station is directed by Petra Aldritt and has 62 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Hollow Cape Station"
+    },
+    {
+      "doc_id": "sta-07",
+      "text": "Ilsen Fjord Station stands on the Wenlock Trench and was founded in 1999. The station is directed by Ines Oyelaran and has 19 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Ilsen Fjord Station"
+    },
+    {
+      "doc_id": "ves-00",
+      "text": "RV Lodestar is a 53-metre research vessel home-ported at Hallam Harbour. She is captained by Greta Ashwell and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Lodestar"
+    },
+    {
+      "doc_id": "ves-01",
+      "text": "RV Petrel is a 66-metre research vessel home-ported at Cove End. She is captained by Milo Prentice and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Petrel"
+    },
+    {
+      "doc_id": "ves-02",
+      "text": "RV Windrose is a 107-metre research vessel home-ported at Brackwater. She is captained by Hanne Vikstrom and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Windrose"
+    },
+    {
+      "doc_id": "ves-03",
+      "text": "RV Auger is a 99-metre research vessel home-ported at Ardmore Quay. She is captained by Osric Bell and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Auger"
+    },
+    {
+      "doc_id": "ves-04",
+      "text": "RV Marlin Fen is a 91-metre research vessel home-ported at Sonnet Bay. She is captained by Ada Marchetti and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Marlin Fen"
+    },
+    {
+      "doc_id": "ves-05",
+      "text": "RV Tessellate is a 98-metre research vessel home-ported at Tarn Harbour. She is captained by Rune Halvorsen and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Tessellate"
+    },
+    {
+      "doc_id": "ves-06",
+      "text": "RV Gannet is a 71-metre research vessel home-ported at Wexford Landing. She is captained by Isla Trant and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Gannet"
+    },
+    {
+      "doc_id": "ves-07",
+      "text": "RV Northlight is a 43-metre research vessel home-ported at Old Kiln Wharf. She is captained by Kofi Danso and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Northlight"
+    },
+    {
+      "doc_id": "ves-08",
+      "text": "RV Kittiwake is a 115-metre research vessel home-ported at Sperrin Docks. She is captained by Lorenz Kubik and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Kittiwake"
+    },
+    {
+      "doc_id": "ves-09",
+      "text": "RV Sable Crane is a 103-metre research vessel home-ported at Merrow Point. She is captained by Sabine Wren-Fisher and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Sable Crane"
+    },
+    {
+      "doc_id": "exp-00",
+      "text": "The Marrow Ridge Traverse took place in 2044 and ran for 10 weeks. It was led by Yuki Verhoeven. The party was based at Corvid Bay Station and travelled aboard RV Northlight. Field notes and raw logs from the Marrow Ridge Traverse are held in the institute archive.",
+      "title": "The Marrow Ridge Traverse"
+    },
+    {
+      "doc_id": "exp-01",
+      "text": "The Blackwater Shelf Survey took place in 2039 and ran for 12 weeks. It was led by Rafe Brekke. The party was based at Ilsen Fjord Station and travelled aboard RV Sable Crane. Field notes and raw logs from the Blackwater Shelf Survey are held in the institute archive.",
+      "title": "The Blackwater Shelf Survey"
+    },
+    {
+      "doc_id": "exp-02",
+      "text": "The Nine Fathom Expedition took place in 2036 and ran for 5 weeks. It was led by Ines Oyelaran. The party was based at Ember Sound Station and travelled aboard RV Lodestar. Field notes and raw logs from the Nine Fathom Expedition are held in the institute archive.",
+      "title": "The Nine Fathom Expedition"
+    },
+    {
+      "doc_id": "exp-03",
+      "text": "The Cold Harbour Traverse took place in 2034 and ran for 21 weeks. It was led by Yuki Verhoeven. The party was based at Drossel Ridge Station and travelled aboard RV Petrel. Field notes and raw logs from the Cold Harbour Traverse are held in the institute archive.",
+      "title": "The Cold Harbour Traverse"
+    },
+    {
+      "doc_id": "exp-04",
+      "text": "The Thistledown Survey took place in 2036 and ran for 12 weeks. It was led by Nadia Nayar. The party was based at Hollow Cape Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Thistledown Survey are held in the institute archive.",
+      "title": "The Thistledown Survey"
+    },
+    {
+      "doc_id": "exp-05",
+      "text": "The Iron Gate Expedition took place in 2038 and ran for 24 weeks. It was led by Emeka Stroud. The party was based at Ilsen Fjord Station and travelled aboard RV Northlight. Field notes and raw logs from the Iron Gate Expedition are held in the institute archive.",
+      "title": "The Iron Gate Expedition"
+    },
+    {
+      "doc_id": "exp-06",
+      "text": "The Palewind Traverse took place in 2035 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Hollow Cape Station and travelled aboard RV Auger. Field notes and raw logs from the Palewind Traverse are held in the institute archive.",
+      "title": "The Palewind Traverse"
+    },
+    {
+      "doc_id": "exp-07",
+      "text": "The Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.",
+      "title": "The Saltmarsh Survey"
+    },
+    {
+      "doc_id": "exp-08",
+      "text": "The Longshore Expedition took place in 2038 and ran for 12 weeks. It was led by Elin Abenov. The party was based at Corvid Bay Station and travelled aboard RV Lodestar. Field notes and raw logs from the Longshore Expedition are held in the institute archive.",
+      "title": "The Longshore Expedition"
+    },
+    {
+      "doc_id": "exp-09",
+      "text": "The Beacon Head Traverse took place in 2032 and ran for 22 weeks. It was led by Mira Halden. The party was based at Ilsen Fjord Station and travelled aboard RV Northlight. Field notes and raw logs from the Beacon Head Traverse are held in the institute archive.",
+      "title": "The Beacon Head Traverse"
+    },
+    {
+      "doc_id": "exp-10",
+      "text": "The Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.",
+      "title": "The Ashen Bay Survey"
+    },
+    {
+      "doc_id": "exp-11",
+      "text": "The Winterlight Expedition took place in 2039 and ran for 23 weeks. It was led by Anders Okonjo. The party was based at Drossel Ridge Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Winterlight Expedition are held in the institute archive.",
+      "title": "The Winterlight Expedition"
+    },
+    {
+      "doc_id": "exp-12",
+      "text": "The Redgrave Traverse took place in 2040 and ran for 4 weeks. It was led by Mira Halden. The party was based at Corvid Bay Station and travelled aboard RV Petrel. Field notes and raw logs from the Redgrave Traverse are held in the institute archive.",
+      "title": "The Redgrave Traverse"
+    },
+    {
+      "doc_id": "exp-13",
+      "text": "The Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+      "title": "The Hollowmere Survey"
+    }
+  ],
+  "world_seed": 20260831
+}
