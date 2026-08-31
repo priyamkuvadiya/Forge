@@ -331,6 +331,106 @@ def remove_nth_from_end(items, n):
         del out[len(out) - n]
     return out
 """,
+    "title_case_words": """
+def title_case_words(text):
+    return " ".join(word[0].upper() + word[1:].lower() for word in text.split())
+""",
+    "count_substring": """
+def count_substring(text, needle):
+    if not needle:
+        return 0
+    return text.count(needle)
+""",
+    "sum_of_digits_in_string": """
+def sum_of_digits_in_string(text):
+    return sum(int(ch) for ch in text if ch.isdigit())
+""",
+    "remove_duplicates_preserving_order": """
+def remove_duplicates_preserving_order(items):
+    seen, out = set(), []
+    for item in items:
+        if item not in seen:
+            seen.add(item)
+            out.append(item)
+    return out
+""",
+    "is_perfect_square": """
+def is_perfect_square(n):
+    if n < 0:
+        return False
+    root = int(n ** 0.5)
+    return any((root + offset) ** 2 == n for offset in (-1, 0, 1))
+""",
+    "nth_fibonacci": """
+def nth_fibonacci(n):
+    a, b = 0, 1
+    for _ in range(n):
+        a, b = b, a + b
+    return a
+""",
+    "longest_word": """
+def longest_word(text):
+    words = text.split()
+    return max(words, key=len) if words else ""
+""",
+    "rotate_list": """
+def rotate_list(items, k):
+    if not items:
+        return []
+    k %= len(items)
+    if k == 0:
+        return list(items)
+    return list(items[-k:]) + list(items[:-k])
+""",
+    "sum_nested": """
+def sum_nested(nested):
+    total = 0
+    for item in nested:
+        total += sum_nested(item) if isinstance(item, list) else item
+    return total
+""",
+    "max_nesting_depth": """
+def max_nesting_depth(text):
+    depth = best = 0
+    for ch in text:
+        if ch == "(":
+            depth += 1
+            best = max(best, depth)
+        elif ch == ")":
+            depth -= 1
+    return best
+""",
+    "pascals_triangle_row": """
+def pascals_triangle_row(n):
+    row = [1]
+    for _ in range(n):
+        row = [1] + [row[i] + row[i + 1] for i in range(len(row) - 1)] + [1]
+    return row
+""",
+    "invert_dict": """
+def invert_dict(mapping):
+    return {value: key for key, value in mapping.items()}
+""",
+    "merge_intervals": """
+def merge_intervals(intervals):
+    merged = []
+    for start, end in sorted(intervals):
+        if merged and start <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], end)
+        else:
+            merged.append([start, end])
+    return merged
+""",
+    "first_non_repeating_char": """
+def first_non_repeating_char(text):
+    counts = {}
+    for ch in text:
+        counts[ch] = counts.get(ch, 0) + 1
+    for ch in text:
+        if counts[ch] == 1:
+            return ch
+    return ""
+""",
 }
 
 

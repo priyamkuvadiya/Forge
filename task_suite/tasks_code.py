@@ -450,6 +450,109 @@ PROBLEMS: tuple[CodeProblem, ...] = (
             {"args": [[1]], "expected": 1},
         ],
     ),
+    CodeProblem(
+        name="title_case_words",
+        split="train",
+        entry_point="title_case_words",
+        prompt=(
+            "Write a Python function `title_case_words(text)` that capitalises the "
+            "first letter of every whitespace-separated word and lower-cases the "
+            "rest, joining the words with a single space and no leading or trailing "
+            "space."
+        ),
+        tests=[
+            {"args": ["hello world"], "expected": "Hello World"},
+            {"args": ["HELLO wORLD"], "expected": "Hello World"},
+            {"args": [""], "expected": ""},
+            {"args": ["  a  b "], "expected": "A B"},
+            {"args": ["python3 rocks"], "expected": "Python3 Rocks"},
+        ],
+    ),
+    CodeProblem(
+        name="count_substring",
+        split="train",
+        entry_point="count_substring",
+        prompt=(
+            "Write a Python function `count_substring(text, needle)` that counts how "
+            "many times `needle` occurs in `text` without overlapping, scanning left "
+            "to right. An empty needle returns 0."
+        ),
+        tests=[
+            {"args": ["banana", "an"], "expected": 2},
+            {"args": ["aaaa", "aa"], "expected": 2},
+            {"args": ["abc", "d"], "expected": 0},
+            {"args": ["abc", ""], "expected": 0},
+            {"args": ["aaa", "a"], "expected": 3},
+        ],
+    ),
+    CodeProblem(
+        name="sum_of_digits_in_string",
+        split="train",
+        entry_point="sum_of_digits_in_string",
+        prompt=(
+            "Write a Python function `sum_of_digits_in_string(text)` that adds up "
+            "every digit character in the string and returns the total, ignoring "
+            "every other character. A string with no digits returns 0."
+        ),
+        tests=[
+            {"args": ["a1b2c3"], "expected": 6},
+            {"args": [""], "expected": 0},
+            {"args": ["no digits"], "expected": 0},
+            {"args": ["2024"], "expected": 8},
+            {"args": ["-5"], "expected": 5},
+        ],
+    ),
+    CodeProblem(
+        name="remove_duplicates_preserving_order",
+        split="train",
+        entry_point="remove_duplicates_preserving_order",
+        prompt=(
+            "Write a Python function `remove_duplicates_preserving_order(items)` that "
+            "returns a list keeping only the first occurrence of each integer, in the "
+            "order those first occurrences appeared."
+        ),
+        tests=[
+            {"args": [[1, 2, 1, 3, 2]], "expected": [1, 2, 3]},
+            {"args": [[]], "expected": []},
+            {"args": [[1, 1, 1]], "expected": [1]},
+            {"args": [[3, 2, 1]], "expected": [3, 2, 1]},
+        ],
+    ),
+    CodeProblem(
+        name="is_perfect_square",
+        split="train",
+        entry_point="is_perfect_square",
+        prompt=(
+            "Write a Python function `is_perfect_square(n)` that returns True if the "
+            "non-negative integer n is the square of an integer. 0 is a perfect "
+            "square."
+        ),
+        tests=[
+            {"args": [0], "expected": True},
+            {"args": [1], "expected": True},
+            {"args": [2], "expected": False},
+            {"args": [15], "expected": False},
+            {"args": [16], "expected": True},
+            {"args": [10000], "expected": True},
+        ],
+    ),
+    CodeProblem(
+        name="nth_fibonacci",
+        split="train",
+        entry_point="nth_fibonacci",
+        prompt=(
+            "Write a Python function `nth_fibonacci(n)` that returns the nth "
+            "Fibonacci number, counting from 0, where the sequence starts 0, 1, 1, "
+            "2, 3, 5."
+        ),
+        tests=[
+            {"args": [0], "expected": 0},
+            {"args": [1], "expected": 1},
+            {"args": [2], "expected": 1},
+            {"args": [10], "expected": 55},
+            {"args": [30], "expected": 832040},
+        ],
+    ),
     # -------------------------------------------------------------- heldout
     CodeProblem(
         name="roman_to_int",
@@ -659,6 +762,140 @@ PROBLEMS: tuple[CodeProblem, ...] = (
             {"args": [[1], 1], "expected": []},
             {"args": [[1, 2, 3], 5], "expected": [1, 2, 3]},
             {"args": [[1, 2, 3], 0], "expected": [1, 2, 3]},
+        ],
+    ),
+    CodeProblem(
+        name="longest_word",
+        split="heldout",
+        entry_point="longest_word",
+        prompt=(
+            "Write a Python function `longest_word(text)` that returns the longest "
+            "whitespace-separated word in the string. If several words tie for "
+            "longest, return the one that appears first. An empty string returns an "
+            "empty string."
+        ),
+        tests=[
+            {"args": ["the quick brown fox"], "expected": "quick"},
+            {"args": [""], "expected": ""},
+            {"args": ["a bb ccc"], "expected": "ccc"},
+            {"args": ["aa bb"], "expected": "aa"},
+        ],
+    ),
+    CodeProblem(
+        name="rotate_list",
+        split="heldout",
+        entry_point="rotate_list",
+        prompt=(
+            "Write a Python function `rotate_list(items, k)` that returns a new list "
+            "rotated k places to the right, so the last k elements move to the front. "
+            "k may be larger than the list or negative, where a negative k rotates "
+            "left. An empty list returns an empty list."
+        ),
+        tests=[
+            {"args": [[1, 2, 3, 4, 5], 2], "expected": [4, 5, 1, 2, 3]},
+            {"args": [[1, 2, 3], 0], "expected": [1, 2, 3]},
+            {"args": [[], 3], "expected": []},
+            {"args": [[1, 2, 3], 4], "expected": [3, 1, 2]},
+            {"args": [[1, 2, 3], -1], "expected": [2, 3, 1]},
+        ],
+    ),
+    CodeProblem(
+        name="sum_nested",
+        split="heldout",
+        entry_point="sum_nested",
+        prompt=(
+            "Write a Python function `sum_nested(nested)` that returns the sum of "
+            "every integer inside a list that may contain further lists, nested to "
+            "any depth. A list containing no integers sums to 0."
+        ),
+        tests=[
+            {"args": [[1, [2, 3], [[4]]]], "expected": 10},
+            {"args": [[]], "expected": 0},
+            {"args": [[[[]]]], "expected": 0},
+            {"args": [[1, 2, 3]], "expected": 6},
+        ],
+    ),
+    CodeProblem(
+        name="max_nesting_depth",
+        split="heldout",
+        entry_point="max_nesting_depth",
+        prompt=(
+            "Write a Python function `max_nesting_depth(text)` that returns how "
+            "deeply the round brackets in the string are nested at their deepest "
+            "point. The brackets are guaranteed to be balanced; a string with none "
+            "returns 0."
+        ),
+        tests=[
+            {"args": [""], "expected": 0},
+            {"args": ["()"], "expected": 1},
+            {"args": ["(())"], "expected": 2},
+            {"args": ["()()"], "expected": 1},
+            {"args": ["(()(()))"], "expected": 3},
+        ],
+    ),
+    CodeProblem(
+        name="pascals_triangle_row",
+        split="heldout",
+        entry_point="pascals_triangle_row",
+        prompt=(
+            "Write a Python function `pascals_triangle_row(n)` that returns row n of "
+            "Pascal's triangle as a list, counting from 0, so row 0 is [1] and row 1 "
+            "is [1, 1]."
+        ),
+        tests=[
+            {"args": [0], "expected": [1]},
+            {"args": [1], "expected": [1, 1]},
+            {"args": [2], "expected": [1, 2, 1]},
+            {"args": [4], "expected": [1, 4, 6, 4, 1]},
+        ],
+    ),
+    CodeProblem(
+        name="invert_dict",
+        split="heldout",
+        entry_point="invert_dict",
+        prompt=(
+            "Write a Python function `invert_dict(mapping)` that returns a new "
+            "dictionary with the keys and values of a dictionary of strings swapped. "
+            "The values are guaranteed to be unique. An empty dictionary returns an "
+            "empty dictionary."
+        ),
+        tests=[
+            {"args": [{"a": "1", "b": "2"}], "expected": {"1": "a", "2": "b"}},
+            {"args": [{}], "expected": {}},
+            {"args": [{"x": "y"}], "expected": {"y": "x"}},
+        ],
+    ),
+    CodeProblem(
+        name="merge_intervals",
+        split="heldout",
+        entry_point="merge_intervals",
+        prompt=(
+            "Write a Python function `merge_intervals(intervals)` that merges "
+            "overlapping intervals, each given as a [start, end] pair, and returns "
+            "the merged list sorted by start. Intervals that merely touch at an "
+            "endpoint count as overlapping."
+        ),
+        tests=[
+            {"args": [[[1, 3], [2, 6], [8, 10]]], "expected": [[1, 6], [8, 10]]},
+            {"args": [[]], "expected": []},
+            {"args": [[[1, 4], [4, 5]]], "expected": [[1, 5]]},
+            {"args": [[[5, 6], [1, 2]]], "expected": [[1, 2], [5, 6]]},
+        ],
+    ),
+    CodeProblem(
+        name="first_non_repeating_char",
+        split="heldout",
+        entry_point="first_non_repeating_char",
+        prompt=(
+            "Write a Python function `first_non_repeating_char(text)` that returns "
+            "the first character occurring exactly once in the string. If every "
+            "character repeats, or the string is empty, return an empty string."
+        ),
+        tests=[
+            {"args": ["swiss"], "expected": "w"},
+            {"args": ["aabb"], "expected": ""},
+            {"args": [""], "expected": ""},
+            {"args": ["abcabd"], "expected": "c"},
         ],
     ),
 )
