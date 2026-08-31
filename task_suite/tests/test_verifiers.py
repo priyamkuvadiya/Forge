@@ -19,7 +19,8 @@ from task_suite.verify_code import (
     CodeRunResult,
     build_harness,
     extract_code,
-    parse_results,
+    parse_outputs,
+    values_equal,
     verify_code,
 )
 from task_suite.verify_math import parse_number, verify_math
@@ -151,12 +152,13 @@ CODE_GT = {
 }
 
 
-def fake_runner(results):
-    """A runner that reports a canned result line, standing in for the sandbox."""
+def fake_runner(returned_values):
+    """A runner reporting canned return values, standing in for the sandbox."""
 
     def run(source: str, timeout: float) -> CodeRunResult:
+        outputs = [{"ok": True, "value": v} for v in returned_values]
         return CodeRunResult(
-            stdout=f"\n{RESULT_SENTINEL}{json.dumps(results)}\n",
+            stdout=f"\n{RESULT_SENTINEL}{json.dumps(outputs)}\n",
             stderr="",
             exit_code=0,
             timed_out=False,
@@ -183,9 +185,22 @@ def test_extract_code_falls_back_to_raw_text():
 
 
 def test_code_score_is_fraction_of_tests_passed():
-    assert verify_code(wrap("code"), CODE_GT, fake_runner([True, True, True])) == 1.0
-    assert verify_code(wrap("code"), CODE_GT, fake_runner([True, False, True])) == pytest.approx(2 / 3)
-    assert verify_code(wrap("code"), CODE_GT, fake_runner([False, False, False])) == 0.0
+    # CODE_GT expects add to return 3, 0 and 15
+    assert verify_code(wrap("code"), CODE_GT, fake_runner([3, 0, 15])) == 1.0
+    assert verify_code(wrap("code"), CODE_GT, fake_runner([3, 99, 15])) == pytest.approx(2 / 3)
+    assert verify_code(wrap("code"), CODE_GT, fake_runner([1, 2, 3])) == 0.0
+
+
+def test_a_raised_exception_fails_only_its_own_test():
+    def run(source: str, timeout: float) -> CodeRunResult:
+        outputs = [
+            {"ok": True, "value": 3},
+            {"ok": False, "value": None},
+            {"ok": True, "value": 15},
+        ]
+        return CodeRunResult(f"{RESULT_SENTINEL}{json.dumps(outputs)}\n", "", 0, False)
+
+    assert verify_code(wrap("code"), CODE_GT, run) == pytest.approx(2 / 3)
 
 
 def test_code_crash_or_timeout_scores_zero():
@@ -193,16 +208,33 @@ def test_code_crash_or_timeout_scores_zero():
     assert verify_code(wrap("code"), CODE_GT, timeout_runner) == 0.0
 
 
-def test_parse_results_rejects_a_wrong_length_result_line():
+def test_parse_outputs_rejects_a_wrong_length_report_line():
     """Guards against a truncated run being scored as a partial pass."""
-    stdout = f"{RESULT_SENTINEL}{json.dumps([True, True])}\n"
-    assert parse_results(stdout, expected_count=3) is None
+    outputs = [{"ok": True, "value": 3}, {"ok": True, "value": 0}]
+    stdout = f"{RESULT_SENTINEL}{json.dumps(outputs)}\n"
+    assert parse_outputs(stdout, expected_count=3) is None
 
 
-def test_parse_results_rejects_garbage():
-    assert parse_results("no sentinel here", 3) is None
-    assert parse_results(f"{RESULT_SENTINEL}not json\n", 3) is None
-    assert parse_results(f"{RESULT_SENTINEL}[1, 2, 3]\n", 3) is None
+def test_parse_outputs_rejects_garbage():
+    assert parse_outputs("no sentinel here", 3) is None
+    assert parse_outputs(f"{RESULT_SENTINEL}not json\n", 3) is None
+    assert parse_outputs(f"{RESULT_SENTINEL}[1, 2, 3]\n", 3) is None
+
+
+@pytest.mark.parametrize(
+    "actual,expected,equal",
+    [
+        (3, 3, True),
+        (True, 1, False),
+        (1, True, False),
+        (0.1 + 0.2, 0.3, True),
+        ([1, 2], [1, 2], True),
+        ("3", 3, False),
+        (None, None, True),
+    ],
+)
+def test_values_equal(actual, expected, equal):
+    assert values_equal(actual, expected) is equal
 
 
 def test_code_task_with_no_tests_is_rejected():
@@ -237,8 +269,12 @@ def test_generated_harness_actually_scores_a_real_submission():
     assert verify_code(wrap(partial), CODE_GT, local_subprocess_runner) == pytest.approx(2 / 3)
 
 
+def calls_for(ground_truth: dict) -> list[dict]:
+    return [{"args": t["args"], "kwargs": t.get("kwargs", {})} for t in ground_truth["tests"]]
+
+
 def test_submission_printing_to_stdout_cannot_forge_a_pass():
-    """The reward-hacking speed bump: user `print` must not reach the result channel."""
+    """User `print` must not reach the channel results are reported on."""
     cheat_code = (
         f"print('{RESULT_SENTINEL}' + '[true, true, true]')\n"
         "def add(a, b):\n"
@@ -247,11 +283,41 @@ def test_submission_printing_to_stdout_cannot_forge_a_pass():
     cheat = f"```python\n{cheat_code}```"
     assert verify_code(wrap(cheat), CODE_GT, local_subprocess_runner) == 0.0
 
-    # and the forged line never reached the result channel at all, rather than
+    # and the forged line never reached that channel at all, rather than
     # merely being overridden by a later genuine one
-    harness = build_harness(cheat_code, "add", CODE_GT["tests"])
+    harness = build_harness(cheat_code, "add", calls_for(CODE_GT))
     outcome = local_subprocess_runner(harness, 5.0)
     assert outcome.stdout.count(RESULT_SENTINEL) == 1
+
+
+def test_submission_poisoning_the_json_module_cannot_forge_a_pass():
+    """This exact submission scored 1.0 against the earlier self-grading harness."""
+    cheat = """```python
+import sys
+
+class _Fake:
+    @staticmethod
+    def loads(payload):
+        return [None, None, None]
+
+    @staticmethod
+    def dumps(obj):
+        return "[true, true, true]"
+
+sys.modules["json"] = _Fake
+
+def add(a, b):
+    return "definitely not the answer"
+```"""
+    assert verify_code(wrap(cheat), CODE_GT, local_subprocess_runner) == 0.0
+
+
+def test_the_harness_never_carries_the_expected_answers():
+    """The property the whole forging defence rests on."""
+    harness = build_harness("def add(a, b): return a + b", "add", calls_for(CODE_GT))
+    assert "expected" not in harness
+    for test in CODE_GT["tests"]:
+        assert str(test["args"]) in harness or json.dumps(test["args"]) in harness
 
 
 def test_submission_with_a_syntax_error_scores_zero():
@@ -259,9 +325,9 @@ def test_submission_with_a_syntax_error_scores_zero():
     assert verify_code(wrap(broken), CODE_GT, local_subprocess_runner) == 0.0
 
 
-def test_harness_embeds_every_test_case():
-    harness = build_harness("def add(a, b): return a + b", "add", CODE_GT["tests"])
-    assert harness.count('"expected":') == len(CODE_GT["tests"])
+def test_harness_embeds_every_call():
+    harness = build_harness("def add(a, b): return a + b", "add", calls_for(CODE_GT))
+    assert harness.count('"args":') == len(CODE_GT["tests"])
 
 
 # --------------------------------------------------------------------------

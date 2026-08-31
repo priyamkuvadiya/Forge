@@ -1,20 +1,34 @@
-"""Reward for coding tasks: run the generated function against its tests.
+"""Reward for coding tasks: run the generated function and grade it here.
 
 Ground truth shape:
     {"entry_point": str, "tests": [{"args": [...], "kwargs": {...},
                                     "expected": <json value>}, ...]}
 
 Test arguments and expected values are restricted to JSON-native types
-(int, float, str, bool, list, dict, None) because they are serialized into
-the harness as JSON rather than as `repr`, and a tuple round-tripping into a
-list would silently change what the test asserts.
+(int, float, str, bool, list, dict, None) because they cross the process
+boundary as JSON.
 
-This module never executes anything itself. It builds a self-checking
-program and hands it to an injected `runner`, which module 3 supplies as a
-real sandbox (subprocess with resource and time limits). That inversion is
-deliberate: the verifier stays pure and unit-testable with a fake runner,
-and there is exactly one place in the repo where untrusted generated code
-actually runs, so exactly one place to harden and test for safety.
+**The expected values never leave this process.** The harness sent to the
+sandbox carries only the call arguments; it invokes the function, serializes
+whatever came back, and the comparison against `expected` happens here, in
+trusted code. This is the design decision that matters, and it was made after
+the earlier one failed: a first version had the harness grade itself and
+report booleans, which a submission could forge outright — poisoning
+`sys.modules["json"]` so `dumps` returned "[true, true, true]" scored 1.0 on
+a function that returned the string "definitely not the answer". Since this
+is a reward function an RL policy optimizes against, that is not a
+hypothetical. Withholding the answers collapses the attack: a submission that
+wants a passing line has to print the correct return values, and it has no
+way to learn what they are — printing the correct values *is* solving the
+task. Everything the sandbox can still lie about, it gains nothing by lying
+about.
+
+This module never executes anything itself. It builds the harness and hands
+it to an injected `runner`, which module 3 supplies as a real sandbox
+(subprocess with resource and time limits). That inversion is deliberate: the
+verifier stays pure and unit-testable with a fake runner, and there is
+exactly one place in the repo where untrusted generated code actually runs,
+so exactly one place to harden and test for safety.
 
 Scoring is the fraction of tests passed, not all-or-nothing. Coding is the
 category where a small policy most often gets the shape right and one edge
@@ -24,7 +38,7 @@ case wrong, and a dense signal there is worth more to GRPO than a cliff.
 import json
 import re
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Any, Protocol
 
 from .protocol import extract_answer
 
@@ -62,21 +76,27 @@ def extract_code(answer: str) -> str:
     return answer
 
 
-def build_harness(code: str, entry_point: str, tests: list[dict]) -> str:
-    """Wrap submitted code in a program that reports per-test pass/fail.
+def build_harness(code: str, entry_point: str, calls: list[dict]) -> str:
+    """Wrap submitted code in a program that reports what the function returned.
 
-    The prologue moves the real stdout to a private file descriptor and
-    points fd 1 at the null device *before* the submitted code runs. Two
-    reasons, one of them the important one: submissions print debugging
-    noise that would otherwise have to be parsed around, and — since this is
-    a reward function an RL policy is optimizing against — a submission
-    cannot reach the channel the results are reported on just by calling
-    `print`. This is a speed bump, not a security boundary; the sandbox is
-    the security boundary.
+    `calls` carries arguments only — never the expected values; see the module
+    docstring. The prologue does two things before the submitted code runs:
+    it imports what the epilogue needs, so a submission cannot swap those
+    modules out from under it, and it moves the real stdout to a private file
+    descriptor with fd 1 pointed at the null device, so a submission's own
+    `print` output neither has to be parsed around nor reaches the channel
+    results are reported on.
+
+    A submission sharing this module's global namespace can still shadow the
+    `_forge_*` names, and nothing here stops it. That is deliberate: with the
+    answers withheld, a submission that hijacks the report line still has to
+    put the correct values on it. Closing the namespace hole properly needs
+    the submission to run as its own module, which is module 3's call to make
+    inside the sandbox.
     """
-    payload = json.dumps(tests)
+    payload = json.dumps(calls)
     return f'''\
-import os as _forge_os, sys as _forge_sys
+import os as _forge_os, sys as _forge_sys, json as _forge_json
 
 _forge_out = _forge_os.dup(1)
 _forge_os.dup2(_forge_os.open(_forge_os.devnull, _forge_os.O_WRONLY), 1)
@@ -85,10 +105,50 @@ _forge_os.dup2(_forge_os.open(_forge_os.devnull, _forge_os.O_WRONLY), 1)
 {code}
 # ---- end submitted code ----
 
-import json as _forge_json
+_forge_calls = _forge_json.loads({payload!r})
+_forge_outputs = []
+for _forge_case in _forge_calls:
+    try:
+        _forge_value = {entry_point}(*_forge_case["args"], **_forge_case.get("kwargs", {{}}))
+        _forge_json.dumps(_forge_value)  # a value we cannot report faithfully is a failure
+        _forge_outputs.append({{"ok": True, "value": _forge_value}})
+    except Exception:
+        _forge_outputs.append({{"ok": False, "value": None}})
+
+_forge_os.write(
+    _forge_out,
+    ("\\n{RESULT_SENTINEL}" + _forge_json.dumps(_forge_outputs) + "\\n").encode(),
+)
+'''
 
 
-def _forge_eq(actual, expected):
+def parse_outputs(stdout: str, expected_count: int) -> list[dict] | None:
+    """Read the harness's report line, or None if it never got there."""
+    marker_at = stdout.rfind(RESULT_SENTINEL)
+    if marker_at == -1:
+        return None
+
+    line = stdout[marker_at + len(RESULT_SENTINEL):].split("\n", 1)[0].strip()
+    try:
+        outputs = json.loads(line)
+    except json.JSONDecodeError:
+        return None
+
+    if not isinstance(outputs, list) or len(outputs) != expected_count:
+        return None
+    if not all(isinstance(o, dict) and isinstance(o.get("ok"), bool) for o in outputs):
+        return None
+    return outputs
+
+
+def values_equal(actual: Any, expected: Any) -> bool:
+    """Compare a returned value to its expected value, here in trusted code.
+
+    Tuples do not survive JSON and arrive as lists, so a function returning
+    `(1, 2)` where `[1, 2]` is expected scores as correct. That leniency is
+    the price of grading outside the sandbox, and it is a fair trade: the
+    problems ask for a value, not for a particular sequence type.
+    """
     if isinstance(actual, bool) != isinstance(expected, bool):
         return False
     if isinstance(actual, float) or isinstance(expected, float):
@@ -97,41 +157,6 @@ def _forge_eq(actual, expected):
         except (TypeError, ValueError):
             return False
     return actual == expected
-
-
-_forge_tests = _forge_json.loads({payload!r})
-_forge_results = []
-for _forge_case in _forge_tests:
-    try:
-        _forge_value = {entry_point}(*_forge_case["args"], **_forge_case.get("kwargs", {{}}))
-        _forge_results.append(bool(_forge_eq(_forge_value, _forge_case["expected"])))
-    except Exception:
-        _forge_results.append(False)
-
-_forge_os.write(
-    _forge_out,
-    ("\\n{RESULT_SENTINEL}" + _forge_json.dumps(_forge_results) + "\\n").encode(),
-)
-'''
-
-
-def parse_results(stdout: str, expected_count: int) -> list[bool] | None:
-    """Read the harness's result line, or None if it never got there."""
-    marker_at = stdout.rfind(RESULT_SENTINEL)
-    if marker_at == -1:
-        return None
-
-    line = stdout[marker_at + len(RESULT_SENTINEL):].split("\n", 1)[0].strip()
-    try:
-        results = json.loads(line)
-    except json.JSONDecodeError:
-        return None
-
-    if not isinstance(results, list) or len(results) != expected_count:
-        return None
-    if not all(isinstance(r, bool) for r in results):
-        return None
-    return results
 
 
 def verify_code(
@@ -152,12 +177,17 @@ def verify_code(
     if not tests:
         raise ValueError("code task has no test cases; it is not verifiable")
 
-    harness = build_harness(code, ground_truth["entry_point"], tests)
-    outcome = runner(harness, timeout)
+    calls = [{"args": t["args"], "kwargs": t.get("kwargs", {})} for t in tests]
+    outcome = runner(build_harness(code, ground_truth["entry_point"], calls), timeout)
 
-    # A timeout or a crash before the result line means nothing was proven.
-    results = parse_results(outcome.stdout, len(tests))
-    if results is None:
+    # A timeout or a crash before the report line means nothing was proven.
+    outputs = parse_outputs(outcome.stdout, len(tests))
+    if outputs is None:
         return 0.0
 
-    return sum(results) / len(results)
+    passed = sum(
+        1
+        for output, test in zip(outputs, tests)
+        if output["ok"] and values_equal(output.get("value"), test["expected"])
+    )
+    return passed / len(tests)
