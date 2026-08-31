@@ -15,9 +15,10 @@ import json
 from pathlib import Path
 
 from .qa_world import WORLD_SEED, build_world, generate_qa_tasks
-from .schema import Task
+from .schema import CATEGORIES, Task
 from .tasks_code import generate_code_tasks
 from .tasks_math import generate_math_tasks
+from .tasks_multi_tool import generate_multi_tool_tasks
 
 DATA_DIR = Path(__file__).parent / "data"
 SUITE_PATH = DATA_DIR / "suite.json"
@@ -48,11 +49,13 @@ def build_suite(
             generate_math_tasks(math_train, "train", MATH_TRAIN_SEED)
             + generate_code_tasks("train")
             + generate_qa_tasks("train", world)
+            + generate_multi_tool_tasks("train", world)
         ),
         "heldout": (
             generate_math_tasks(math_heldout, "heldout", MATH_HELDOUT_SEED)
             + generate_code_tasks("heldout")
             + generate_qa_tasks("heldout", world)
+            + generate_multi_tool_tasks("heldout", world)
         ),
     }
 
@@ -111,11 +114,11 @@ def load_corpus(path: Path = CORPUS_PATH) -> list[dict]:
 
 
 def summarize(splits: dict[str, list[Task]]) -> str:
-    categories = ("math", "code", "qa")
-    lines = [f"{'split':<10}{'math':>8}{'code':>8}{'qa':>8}{'total':>8}"]
+    header = f"{'split':<10}" + "".join(f"{c:>12}" for c in CATEGORIES) + f"{'total':>8}"
+    lines = [header]
     for name, tasks in splits.items():
-        counts = [sum(1 for t in tasks if t.category == c) for c in categories]
-        lines.append(f"{name:<10}" + "".join(f"{c:>8}" for c in counts) + f"{len(tasks):>8}")
+        counts = [sum(1 for t in tasks if t.category == c) for c in CATEGORIES]
+        lines.append(f"{name:<10}" + "".join(f"{c:>12}" for c in counts) + f"{len(tasks):>8}")
     return "\n".join(lines)
 
 

@@ -20,7 +20,10 @@ def verify(
     timeout: float = DEFAULT_TIMEOUT_SECONDS,
 ) -> float:
     """Score one response against one task. Deterministic, given the same inputs."""
-    if task.category == "math":
+    # multi_tool tasks are arithmetic over retrieved facts, so the answer is a
+    # number and is scored exactly as any other number is. The category exists
+    # to change what the agent has to *do*, not how the result is graded.
+    if task.category in ("math", "multi_tool"):
         return verify_math(response, task.ground_truth)
 
     if task.category == "qa":

@@ -351,11 +351,71 @@ class Question:
     hops: int
 
 
+# Three surface forms per template, rotated by the subject's index so every
+# form gets used and the choice stays deterministic. With one phrasing per
+# template the whole category would be eight sentence moulds, and a policy
+# could learn which slot of which mould holds the answer instead of learning
+# to retrieve it — the questions would still look multi-hop while measuring
+# something much shallower.
+PHRASINGS: dict[str, tuple[str, ...]] = {
+    "leader_instrument": (
+        "Which instrument was designed by the researcher who led the {name}?",
+        "The {name} had a leader. Which instrument did that researcher design?",
+        "Name the instrument designed by whoever was in charge of the {name}.",
+    ),
+    "leader_specialty": (
+        "What field does the researcher who led the {name} work in?",
+        "The {name} was led by one researcher. What is that person's field?",
+        "Which field of research does the leader of the {name} specialise in?",
+    ),
+    "station_region": (
+        "In which region is the station that the {name} was based at?",
+        "The {name} worked out of a station. Which region is that station in?",
+        "Which region holds the base station used by the {name}?",
+    ),
+    "vessel_port": (
+        "Where is the home port of the vessel that carried the {name}?",
+        "The {name} travelled aboard a vessel. Which port is that vessel home to?",
+        "Which port does the ship used by the {name} sail out of?",
+    ),
+    "vessel_captain": (
+        "Who captains the vessel that carried the {name}?",
+        "The {name} travelled aboard a vessel. Who is its captain?",
+        "Name the captain of the ship used by the {name}.",
+    ),
+    "leader_instrument_measures": (
+        "What does the instrument designed by the researcher who led the {name} measure?",
+        "The {name} had a leader, who designed an instrument. What does that instrument measure?",
+        "Which quantity is measured by the instrument built by the leader of the {name}?",
+    ),
+    "researcher_instrument_measures": (
+        "What does the instrument designed by {name} measure?",
+        "{name} designed an instrument. What does it measure?",
+        "Which quantity does the instrument credited to {name} measure?",
+    ),
+    "director_instrument": (
+        "Which instrument was designed by the director of {name}?",
+        "{name} has a director. Which instrument did that person design?",
+        "Name the instrument designed by whoever directs {name}.",
+    ),
+    "director_specialty": (
+        "What field does the director of {name} work in?",
+        "{name} has a director. What is that person's field of research?",
+        "Which field does the person in charge of {name} specialise in?",
+    ),
+}
+
+
+def phrase(template: str, variant: int, name: str) -> str:
+    forms = PHRASINGS[template]
+    return forms[variant % len(forms)].format(name=name)
+
+
 def _person_aliases(full_name: str) -> tuple[str, ...]:
     return (full_name, full_name.split()[-1])
 
 
-def _expedition_questions(world: World, exp: Expedition) -> list[Question]:
+def _expedition_questions(world: World, exp: Expedition, variant: int) -> list[Question]:
     leader = world.researcher(exp.leader)
     station = world.station(exp.station)
     vessel = world.vessel(exp.vessel)
@@ -365,7 +425,7 @@ def _expedition_questions(world: World, exp: Expedition) -> list[Question]:
         Question(
             template="leader_instrument",
             subject=exp.name,
-            text=f"Which instrument was designed by the researcher who led the {exp.name}?",
+            text=phrase("leader_instrument", variant, exp.name),
             answers=(instrument.name,),
             supporting_docs=(exp.doc_id, leader.doc_id),
             hops=2,
@@ -373,7 +433,7 @@ def _expedition_questions(world: World, exp: Expedition) -> list[Question]:
         Question(
             template="leader_specialty",
             subject=exp.name,
-            text=f"What field does the researcher who led the {exp.name} work in?",
+            text=phrase("leader_specialty", variant + 1, exp.name),
             answers=(leader.specialty,),
             supporting_docs=(exp.doc_id, leader.doc_id),
             hops=2,
@@ -381,7 +441,7 @@ def _expedition_questions(world: World, exp: Expedition) -> list[Question]:
         Question(
             template="station_region",
             subject=exp.name,
-            text=f"In which region is the station that the {exp.name} was based at?",
+            text=phrase("station_region", variant + 2, exp.name),
             answers=(station.region, station.region.removeprefix("the ")),
             supporting_docs=(exp.doc_id, station.doc_id),
             hops=2,
@@ -389,7 +449,7 @@ def _expedition_questions(world: World, exp: Expedition) -> list[Question]:
         Question(
             template="vessel_port",
             subject=exp.name,
-            text=f"Where is the home port of the vessel that carried the {exp.name}?",
+            text=phrase("vessel_port", variant, exp.name),
             answers=(vessel.port,),
             supporting_docs=(exp.doc_id, vessel.doc_id),
             hops=2,
@@ -397,7 +457,7 @@ def _expedition_questions(world: World, exp: Expedition) -> list[Question]:
         Question(
             template="vessel_captain",
             subject=exp.name,
-            text=f"Who captains the vessel that carried the {exp.name}?",
+            text=phrase("vessel_captain", variant + 1, exp.name),
             answers=_person_aliases(vessel.captain),
             supporting_docs=(exp.doc_id, vessel.doc_id),
             hops=2,
@@ -405,10 +465,7 @@ def _expedition_questions(world: World, exp: Expedition) -> list[Question]:
         Question(
             template="leader_instrument_measures",
             subject=exp.name,
-            text=(
-                f"What does the instrument designed by the researcher who led the "
-                f"{exp.name} measure?"
-            ),
+            text=phrase("leader_instrument_measures", variant + 2, exp.name),
             answers=(instrument.measures,),
             supporting_docs=(exp.doc_id, leader.doc_id, instrument.doc_id),
             hops=3,
@@ -416,13 +473,13 @@ def _expedition_questions(world: World, exp: Expedition) -> list[Question]:
     ]
 
 
-def _researcher_questions(world: World, res: Researcher) -> list[Question]:
+def _researcher_questions(world: World, res: Researcher, variant: int) -> list[Question]:
     instrument = world.instrument(res.instrument)
     return [
         Question(
             template="researcher_instrument_measures",
             subject=res.name,
-            text=f"What does the instrument designed by {res.name} measure?",
+            text=phrase("researcher_instrument_measures", variant, res.name),
             answers=(instrument.measures,),
             supporting_docs=(res.doc_id, instrument.doc_id),
             hops=2,
@@ -430,13 +487,13 @@ def _researcher_questions(world: World, res: Researcher) -> list[Question]:
     ]
 
 
-def _station_questions(world: World, sta: Station) -> list[Question]:
+def _station_questions(world: World, sta: Station, variant: int) -> list[Question]:
     director = world.researcher(sta.director)
     return [
         Question(
             template="director_instrument",
             subject=sta.name,
-            text=f"Which instrument was designed by the director of {sta.name}?",
+            text=phrase("director_instrument", variant, sta.name),
             answers=(director.instrument,),
             supporting_docs=(sta.doc_id, director.doc_id),
             hops=2,
@@ -444,7 +501,7 @@ def _station_questions(world: World, sta: Station) -> list[Question]:
         Question(
             template="director_specialty",
             subject=sta.name,
-            text=f"What field does the director of {sta.name} work in?",
+            text=phrase("director_specialty", variant + 1, sta.name),
             answers=(director.specialty,),
             supporting_docs=(sta.doc_id, director.doc_id),
             hops=2,
@@ -452,24 +509,32 @@ def _station_questions(world: World, sta: Station) -> list[Question]:
     ]
 
 
+def split_subjects(world: World, split: str) -> tuple[tuple, tuple, tuple]:
+    """The expeditions, researchers and stations questions may ask about."""
+    if split == "train":
+        return (
+            world.expeditions[:-HELDOUT_EXPEDITIONS],
+            world.researchers[:-HELDOUT_RESEARCHERS],
+            world.stations[:-HELDOUT_STATIONS],
+        )
+    return (
+        world.expeditions[-HELDOUT_EXPEDITIONS:],
+        world.researchers[-HELDOUT_RESEARCHERS:],
+        world.stations[-HELDOUT_STATIONS:],
+    )
+
+
 def build_questions(world: World, split: str) -> list[Question]:
     """Every question for `split`, over that split's share of the subjects."""
-    if split == "train":
-        expeditions = world.expeditions[:-HELDOUT_EXPEDITIONS]
-        researchers = world.researchers[:-HELDOUT_RESEARCHERS]
-        stations = world.stations[:-HELDOUT_STATIONS]
-    else:
-        expeditions = world.expeditions[-HELDOUT_EXPEDITIONS:]
-        researchers = world.researchers[-HELDOUT_RESEARCHERS:]
-        stations = world.stations[-HELDOUT_STATIONS:]
+    expeditions, researchers, stations = split_subjects(world, split)
 
     questions: list[Question] = []
-    for exp in expeditions:
-        questions.extend(_expedition_questions(world, exp))
-    for res in researchers:
-        questions.extend(_researcher_questions(world, res))
-    for sta in stations:
-        questions.extend(_station_questions(world, sta))
+    for i, exp in enumerate(expeditions):
+        questions.extend(_expedition_questions(world, exp, i))
+    for i, res in enumerate(researchers):
+        questions.extend(_researcher_questions(world, res, i))
+    for i, sta in enumerate(stations):
+        questions.extend(_station_questions(world, sta, i))
     return questions
 
 

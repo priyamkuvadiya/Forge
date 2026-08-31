@@ -13,6 +13,7 @@ import pytest
 
 from task_suite.qa_world import (
     CAPTAIN_NAMES,
+    PHRASINGS,
     SURNAMES,
     build_questions,
     build_world,
@@ -98,6 +99,24 @@ def test_prompts_and_ids_are_unique():
     assert len(set(prompts)) == len(prompts)
     ids = [t.task_id for t in ALL_TASKS]
     assert len(set(ids)) == len(ids)
+
+
+def test_every_phrasing_variant_is_used():
+    """Otherwise the category is 8 sentence moulds and a policy can learn the
+    mould instead of learning to retrieve."""
+    for template, forms in PHRASINGS.items():
+        used = {
+            q.text.replace(q.subject, "{name}")
+            for q in ALL_QUESTIONS
+            if q.template == template
+        }
+        assert used == set(forms), template
+
+
+def test_phrasings_are_deterministic():
+    assert [q.text for q in build_questions(WORLD, "train")] == [
+        q.text for q in build_questions(WORLD, "train")
+    ]
 
 
 def test_every_template_appears_in_both_splits():

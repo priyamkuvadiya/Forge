@@ -1905,7 +1905,7 @@
           "subject": "Ashen Bay Survey",
           "template": "leader_specialty"
         },
-        "prompt": "What field does the researcher who led the Ashen Bay Survey work in?",
+        "prompt": "The Ashen Bay Survey was led by one researcher. What is that person's field?",
         "split": "heldout",
         "task_id": "qa-heldout-0001"
       },
@@ -1926,7 +1926,7 @@
           "subject": "Ashen Bay Survey",
           "template": "station_region"
         },
-        "prompt": "In which region is the station that the Ashen Bay Survey was based at?",
+        "prompt": "Which region holds the base station used by the Ashen Bay Survey?",
         "split": "heldout",
         "task_id": "qa-heldout-0002"
       },
@@ -1967,7 +1967,7 @@
           "subject": "Ashen Bay Survey",
           "template": "vessel_captain"
         },
-        "prompt": "Who captains the vessel that carried the Ashen Bay Survey?",
+        "prompt": "The Ashen Bay Survey travelled aboard a vessel. Who is its captain?",
         "split": "heldout",
         "task_id": "qa-heldout-0004"
       },
@@ -1988,7 +1988,7 @@
           "subject": "Ashen Bay Survey",
           "template": "leader_instrument_measures"
         },
-        "prompt": "What does the instrument designed by the researcher who led the Ashen Bay Survey measure?",
+        "prompt": "Which quantity is measured by the instrument built by the leader of the Ashen Bay Survey?",
         "split": "heldout",
         "task_id": "qa-heldout-0005"
       },
@@ -2008,7 +2008,7 @@
           "subject": "Winterlight Expedition",
           "template": "leader_instrument"
         },
-        "prompt": "Which instrument was designed by the researcher who led the Winterlight Expedition?",
+        "prompt": "The Winterlight Expedition had a leader. Which instrument did that researcher design?",
         "split": "heldout",
         "task_id": "qa-heldout-0006"
       },
@@ -2028,7 +2028,7 @@
           "subject": "Winterlight Expedition",
           "template": "leader_specialty"
         },
-        "prompt": "What field does the researcher who led the Winterlight Expedition work in?",
+        "prompt": "Which field of research does the leader of the Winterlight Expedition specialise in?",
         "split": "heldout",
         "task_id": "qa-heldout-0007"
       },
@@ -2069,7 +2069,7 @@
           "subject": "Winterlight Expedition",
           "template": "vessel_port"
         },
-        "prompt": "Where is the home port of the vessel that carried the Winterlight Expedition?",
+        "prompt": "The Winterlight Expedition travelled aboard a vessel. Which port is that vessel home to?",
         "split": "heldout",
         "task_id": "qa-heldout-0009"
       },
@@ -2090,7 +2090,7 @@
           "subject": "Winterlight Expedition",
           "template": "vessel_captain"
         },
-        "prompt": "Who captains the vessel that carried the Winterlight Expedition?",
+        "prompt": "Name the captain of the ship used by the Winterlight Expedition.",
         "split": "heldout",
         "task_id": "qa-heldout-0010"
       },
@@ -2131,7 +2131,7 @@
           "subject": "Redgrave Traverse",
           "template": "leader_instrument"
         },
-        "prompt": "Which instrument was designed by the researcher who led the Redgrave Traverse?",
+        "prompt": "Name the instrument designed by whoever was in charge of the Redgrave Traverse.",
         "split": "heldout",
         "task_id": "qa-heldout-0012"
       },
@@ -2172,7 +2172,7 @@
           "subject": "Redgrave Traverse",
           "template": "station_region"
         },
-        "prompt": "In which region is the station that the Redgrave Traverse was based at?",
+        "prompt": "The Redgrave Traverse worked out of a station. Which region is that station in?",
         "split": "heldout",
         "task_id": "qa-heldout-0014"
       },
@@ -2192,7 +2192,7 @@
           "subject": "Redgrave Traverse",
           "template": "vessel_port"
         },
-        "prompt": "Where is the home port of the vessel that carried the Redgrave Traverse?",
+        "prompt": "Which port does the ship used by the Redgrave Traverse sail out of?",
         "split": "heldout",
         "task_id": "qa-heldout-0015"
       },
@@ -2234,7 +2234,7 @@
           "subject": "Redgrave Traverse",
           "template": "leader_instrument_measures"
         },
-        "prompt": "What does the instrument designed by the researcher who led the Redgrave Traverse measure?",
+        "prompt": "The Redgrave Traverse had a leader, who designed an instrument. What does that instrument measure?",
         "split": "heldout",
         "task_id": "qa-heldout-0017"
       },
@@ -2274,7 +2274,7 @@
           "subject": "Hollowmere Survey",
           "template": "leader_specialty"
         },
-        "prompt": "What field does the researcher who led the Hollowmere Survey work in?",
+        "prompt": "The Hollowmere Survey was led by one researcher. What is that person's field?",
         "split": "heldout",
         "task_id": "qa-heldout-0019"
       },
@@ -2295,7 +2295,7 @@
           "subject": "Hollowmere Survey",
           "template": "station_region"
         },
-        "prompt": "In which region is the station that the Hollowmere Survey was based at?",
+        "prompt": "Which region holds the base station used by the Hollowmere Survey?",
         "split": "heldout",
         "task_id": "qa-heldout-0020"
       },
@@ -2336,7 +2336,7 @@
           "subject": "Hollowmere Survey",
           "template": "vessel_captain"
         },
-        "prompt": "Who captains the vessel that carried the Hollowmere Survey?",
+        "prompt": "The Hollowmere Survey travelled aboard a vessel. Who is its captain?",
         "split": "heldout",
         "task_id": "qa-heldout-0022"
       },
@@ -2357,7 +2357,7 @@
           "subject": "Hollowmere Survey",
           "template": "leader_instrument_measures"
         },
-        "prompt": "What does the instrument designed by the researcher who led the Hollowmere Survey measure?",
+        "prompt": "Which quantity is measured by the instrument built by the leader of the Hollowmere Survey?",
         "split": "heldout",
         "task_id": "qa-heldout-0023"
       },
@@ -2397,7 +2397,7 @@
           "subject": "Solveig Delacroix",
           "template": "researcher_instrument_measures"
         },
-        "prompt": "What does the instrument designed by Solveig Delacroix measure?",
+        "prompt": "Solveig Delacroix designed an instrument. What does it measure?",
         "split": "heldout",
         "task_id": "qa-heldout-0025"
       },
@@ -2417,7 +2417,7 @@
           "subject": "Nadia Nayar",
           "template": "researcher_instrument_measures"
         },
-        "prompt": "What does the instrument designed by Nadia Nayar measure?",
+        "prompt": "Which quantity does the instrument credited to Nadia Nayar measure?",
         "split": "heldout",
         "task_id": "qa-heldout-0026"
       },
@@ -2457,7 +2457,7 @@
           "subject": "Ivo Ferreira",
           "template": "researcher_instrument_measures"
         },
-        "prompt": "What does the instrument designed by Ivo Ferreira measure?",
+        "prompt": "Ivo Ferreira designed an instrument. What does it measure?",
         "split": "heldout",
         "task_id": "qa-heldout-0028"
       },
@@ -2497,7 +2497,7 @@
           "subject": "Hollow Cape Station",
           "template": "director_specialty"
         },
-        "prompt": "What field does the director of Hollow Cape Station work in?",
+        "prompt": "Hollow Cape Station has a director. What is that person's field of research?",
         "split": "heldout",
         "task_id": "qa-heldout-0030"
       },
@@ -2517,7 +2517,7 @@
           "subject": "Ilsen Fjord Station",
           "template": "director_instrument"
         },
-        "prompt": "Which instrument was designed by the director of Ilsen Fjord Station?",
+        "prompt": "Ilsen Fjord Station has a director. Which instrument did that person design?",
         "split": "heldout",
         "task_id": "qa-heldout-0031"
       },
@@ -2537,9 +2537,348 @@
           "subject": "Ilsen Fjord Station",
           "template": "director_specialty"
         },
-        "prompt": "What field does the director of Ilsen Fjord Station work in?",
+        "prompt": "Which field does the person in charge of Ilsen Fjord Station specialise in?",
         "split": "heldout",
         "task_id": "qa-heldout-0032"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 28
+        },
+        "metadata": {
+          "subject": "Ashen Bay Survey",
+          "supporting_docs": [
+            "exp-10"
+          ],
+          "template": "expedition_days",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many days did the Ashen Bay Survey last?",
+        "split": "heldout",
+        "task_id": "multi-heldout-0000"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 34
+        },
+        "metadata": {
+          "subject": "Ashen Bay Survey",
+          "supporting_docs": [
+            "exp-10",
+            "sta-04"
+          ],
+          "template": "station_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Ashen Bay Survey worked out of a station. How many years after that station was founded did the expedition take place?",
+        "split": "heldout",
+        "task_id": "multi-heldout-0001"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 13
+        },
+        "metadata": {
+          "subject": "Ashen Bay Survey",
+          "supporting_docs": [
+            "exp-10",
+            "res-16",
+            "ins-16"
+          ],
+          "template": "instrument_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Ashen Bay Survey was led by a researcher who designed an instrument. How many years before the expedition did that instrument enter service?",
+        "split": "heldout",
+        "task_id": "multi-heldout-0002"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 161
+        },
+        "metadata": {
+          "subject": "Winterlight Expedition",
+          "supporting_docs": [
+            "exp-11"
+          ],
+          "template": "expedition_days",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Winterlight Expedition ran for a number of weeks. How many days is that?",
+        "split": "heldout",
+        "task_id": "multi-heldout-0003"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 34
+        },
+        "metadata": {
+          "subject": "Winterlight Expedition",
+          "supporting_docs": [
+            "exp-11",
+            "sta-02"
+          ],
+          "template": "station_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many years separate the founding of the station used by the Winterlight Expedition from the year the Winterlight Expedition ran?",
+        "split": "heldout",
+        "task_id": "multi-heldout-0004"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 28
+        },
+        "metadata": {
+          "subject": "Redgrave Traverse",
+          "supporting_docs": [
+            "exp-12"
+          ],
+          "template": "expedition_days",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many days did the Redgrave Traverse last?",
+        "split": "heldout",
+        "task_id": "multi-heldout-0005"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 38
+        },
+        "metadata": {
+          "subject": "Redgrave Traverse",
+          "supporting_docs": [
+            "exp-12",
+            "sta-01"
+          ],
+          "template": "station_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Redgrave Traverse worked out of a station. How many years after that station was founded did the expedition take place?",
+        "split": "heldout",
+        "task_id": "multi-heldout-0006"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 11
+        },
+        "metadata": {
+          "subject": "Redgrave Traverse",
+          "supporting_docs": [
+            "exp-12",
+            "res-00",
+            "ins-00"
+          ],
+          "template": "instrument_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Redgrave Traverse was led by a researcher who designed an instrument. How many years before the expedition did that instrument enter service?",
+        "split": "heldout",
+        "task_id": "multi-heldout-0007"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 105
+        },
+        "metadata": {
+          "subject": "Hollowmere Survey",
+          "supporting_docs": [
+            "exp-13"
+          ],
+          "template": "expedition_days",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Hollowmere Survey ran for a number of weeks. How many days is that?",
+        "split": "heldout",
+        "task_id": "multi-heldout-0008"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 39
+        },
+        "metadata": {
+          "subject": "Hollowmere Survey",
+          "supporting_docs": [
+            "exp-13",
+            "sta-02"
+          ],
+          "template": "station_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many years separate the founding of the station used by the Hollowmere Survey from the year the Hollowmere Survey ran?",
+        "split": "heldout",
+        "task_id": "multi-heldout-0009"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 8
+        },
+        "metadata": {
+          "subject": "Hollowmere Survey",
+          "supporting_docs": [
+            "exp-13",
+            "res-12",
+            "ins-12"
+          ],
+          "template": "instrument_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many years had the instrument designed by the leader of the Hollowmere Survey been in service by the time the expedition took place?",
+        "split": "heldout",
+        "task_id": "multi-heldout-0010"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.05,
+          "value": 279.3
+        },
+        "metadata": {
+          "subject": "Ashen Bay Survey + Winterlight Expedition",
+          "supporting_docs": [
+            "exp-10",
+            "res-16",
+            "ins-16",
+            "exp-11",
+            "res-09",
+            "ins-09"
+          ],
+          "template": "combined_instrument_mass",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "What is the combined dry mass, in kilograms, of the instruments designed by the researchers who led the Ashen Bay Survey and the Winterlight Expedition? Give your answer to one decimal place.",
+        "split": "heldout",
+        "task_id": "multi-heldout-0011"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.05,
+          "value": 87.0
+        },
+        "metadata": {
+          "subject": "Redgrave Traverse + Hollowmere Survey",
+          "supporting_docs": [
+            "exp-12",
+            "res-00",
+            "ins-00",
+            "exp-13",
+            "res-12",
+            "ins-12"
+          ],
+          "template": "combined_instrument_mass",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "What is the combined dry mass, in kilograms, of the instruments designed by the researchers who led the Redgrave Traverse and the Hollowmere Survey? Give your answer to one decimal place.",
+        "split": "heldout",
+        "task_id": "multi-heldout-0012"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 23
+        },
+        "metadata": {
+          "subject": "Redgrave Traverse + Hollowmere Survey",
+          "supporting_docs": [
+            "exp-12",
+            "ves-01",
+            "exp-13",
+            "ves-07"
+          ],
+          "template": "vessel_length_difference",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many metres longer is the vessel that carried the Redgrave Traverse than the vessel that carried the Hollowmere Survey?",
+        "split": "heldout",
+        "task_id": "multi-heldout-0013"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 81
+        },
+        "metadata": {
+          "subject": "Hollow Cape Station + Ilsen Fjord Station",
+          "supporting_docs": [
+            "sta-06",
+            "sta-07"
+          ],
+          "template": "total_berths",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many berths do Hollow Cape Station and Ilsen Fjord Station have between them?",
+        "split": "heldout",
+        "task_id": "multi-heldout-0014"
       }
     ],
     "train": [
@@ -6728,7 +7067,7 @@
           "subject": "Marrow Ridge Traverse",
           "template": "leader_specialty"
         },
-        "prompt": "What field does the researcher who led the Marrow Ridge Traverse work in?",
+        "prompt": "The Marrow Ridge Traverse was led by one researcher. What is that person's field?",
         "split": "train",
         "task_id": "qa-train-0001"
       },
@@ -6749,7 +7088,7 @@
           "subject": "Marrow Ridge Traverse",
           "template": "station_region"
         },
-        "prompt": "In which region is the station that the Marrow Ridge Traverse was based at?",
+        "prompt": "Which region holds the base station used by the Marrow Ridge Traverse?",
         "split": "train",
         "task_id": "qa-train-0002"
       },
@@ -6790,7 +7129,7 @@
           "subject": "Marrow Ridge Traverse",
           "template": "vessel_captain"
         },
-        "prompt": "Who captains the vessel that carried the Marrow Ridge Traverse?",
+        "prompt": "The Marrow Ridge Traverse travelled aboard a vessel. Who is its captain?",
         "split": "train",
         "task_id": "qa-train-0004"
       },
@@ -6811,7 +7150,7 @@
           "subject": "Marrow Ridge Traverse",
           "template": "leader_instrument_measures"
         },
-        "prompt": "What does the instrument designed by the researcher who led the Marrow Ridge Traverse measure?",
+        "prompt": "Which quantity is measured by the instrument built by the leader of the Marrow Ridge Traverse?",
         "split": "train",
         "task_id": "qa-train-0005"
       },
@@ -6831,7 +7170,7 @@
           "subject": "Blackwater Shelf Survey",
           "template": "leader_instrument"
         },
-        "prompt": "Which instrument was designed by the researcher who led the Blackwater Shelf Survey?",
+        "prompt": "The Blackwater Shelf Survey had a leader. Which instrument did that researcher design?",
         "split": "train",
         "task_id": "qa-train-0006"
       },
@@ -6851,7 +7190,7 @@
           "subject": "Blackwater Shelf Survey",
           "template": "leader_specialty"
         },
-        "prompt": "What field does the researcher who led the Blackwater Shelf Survey work in?",
+        "prompt": "Which field of research does the leader of the Blackwater Shelf Survey specialise in?",
         "split": "train",
         "task_id": "qa-train-0007"
       },
@@ -6892,7 +7231,7 @@
           "subject": "Blackwater Shelf Survey",
           "template": "vessel_port"
         },
-        "prompt": "Where is the home port of the vessel that carried the Blackwater Shelf Survey?",
+        "prompt": "The Blackwater Shelf Survey travelled aboard a vessel. Which port is that vessel home to?",
         "split": "train",
         "task_id": "qa-train-0009"
       },
@@ -6913,7 +7252,7 @@
           "subject": "Blackwater Shelf Survey",
           "template": "vessel_captain"
         },
-        "prompt": "Who captains the vessel that carried the Blackwater Shelf Survey?",
+        "prompt": "Name the captain of the ship used by the Blackwater Shelf Survey.",
         "split": "train",
         "task_id": "qa-train-0010"
       },
@@ -6954,7 +7293,7 @@
           "subject": "Nine Fathom Expedition",
           "template": "leader_instrument"
         },
-        "prompt": "Which instrument was designed by the researcher who led the Nine Fathom Expedition?",
+        "prompt": "Name the instrument designed by whoever was in charge of the Nine Fathom Expedition.",
         "split": "train",
         "task_id": "qa-train-0012"
       },
@@ -6995,7 +7334,7 @@
           "subject": "Nine Fathom Expedition",
           "template": "station_region"
         },
-        "prompt": "In which region is the station that the Nine Fathom Expedition was based at?",
+        "prompt": "The Nine Fathom Expedition worked out of a station. Which region is that station in?",
         "split": "train",
         "task_id": "qa-train-0014"
       },
@@ -7015,7 +7354,7 @@
           "subject": "Nine Fathom Expedition",
           "template": "vessel_port"
         },
-        "prompt": "Where is the home port of the vessel that carried the Nine Fathom Expedition?",
+        "prompt": "Which port does the ship used by the Nine Fathom Expedition sail out of?",
         "split": "train",
         "task_id": "qa-train-0015"
       },
@@ -7057,7 +7396,7 @@
           "subject": "Nine Fathom Expedition",
           "template": "leader_instrument_measures"
         },
-        "prompt": "What does the instrument designed by the researcher who led the Nine Fathom Expedition measure?",
+        "prompt": "The Nine Fathom Expedition had a leader, who designed an instrument. What does that instrument measure?",
         "split": "train",
         "task_id": "qa-train-0017"
       },
@@ -7097,7 +7436,7 @@
           "subject": "Cold Harbour Traverse",
           "template": "leader_specialty"
         },
-        "prompt": "What field does the researcher who led the Cold Harbour Traverse work in?",
+        "prompt": "The Cold Harbour Traverse was led by one researcher. What is that person's field?",
         "split": "train",
         "task_id": "qa-train-0019"
       },
@@ -7118,7 +7457,7 @@
           "subject": "Cold Harbour Traverse",
           "template": "station_region"
         },
-        "prompt": "In which region is the station that the Cold Harbour Traverse was based at?",
+        "prompt": "Which region holds the base station used by the Cold Harbour Traverse?",
         "split": "train",
         "task_id": "qa-train-0020"
       },
@@ -7159,7 +7498,7 @@
           "subject": "Cold Harbour Traverse",
           "template": "vessel_captain"
         },
-        "prompt": "Who captains the vessel that carried the Cold Harbour Traverse?",
+        "prompt": "The Cold Harbour Traverse travelled aboard a vessel. Who is its captain?",
         "split": "train",
         "task_id": "qa-train-0022"
       },
@@ -7180,7 +7519,7 @@
           "subject": "Cold Harbour Traverse",
           "template": "leader_instrument_measures"
         },
-        "prompt": "What does the instrument designed by the researcher who led the Cold Harbour Traverse measure?",
+        "prompt": "Which quantity is measured by the instrument built by the leader of the Cold Harbour Traverse?",
         "split": "train",
         "task_id": "qa-train-0023"
       },
@@ -7200,7 +7539,7 @@
           "subject": "Thistledown Survey",
           "template": "leader_instrument"
         },
-        "prompt": "Which instrument was designed by the researcher who led the Thistledown Survey?",
+        "prompt": "The Thistledown Survey had a leader. Which instrument did that researcher design?",
         "split": "train",
         "task_id": "qa-train-0024"
       },
@@ -7220,7 +7559,7 @@
           "subject": "Thistledown Survey",
           "template": "leader_specialty"
         },
-        "prompt": "What field does the researcher who led the Thistledown Survey work in?",
+        "prompt": "Which field of research does the leader of the Thistledown Survey specialise in?",
         "split": "train",
         "task_id": "qa-train-0025"
       },
@@ -7261,7 +7600,7 @@
           "subject": "Thistledown Survey",
           "template": "vessel_port"
         },
-        "prompt": "Where is the home port of the vessel that carried the Thistledown Survey?",
+        "prompt": "The Thistledown Survey travelled aboard a vessel. Which port is that vessel home to?",
         "split": "train",
         "task_id": "qa-train-0027"
       },
@@ -7282,7 +7621,7 @@
           "subject": "Thistledown Survey",
           "template": "vessel_captain"
         },
-        "prompt": "Who captains the vessel that carried the Thistledown Survey?",
+        "prompt": "Name the captain of the ship used by the Thistledown Survey.",
         "split": "train",
         "task_id": "qa-train-0028"
       },
@@ -7323,7 +7662,7 @@
           "subject": "Iron Gate Expedition",
           "template": "leader_instrument"
         },
-        "prompt": "Which instrument was designed by the researcher who led the Iron Gate Expedition?",
+        "prompt": "Name the instrument designed by whoever was in charge of the Iron Gate Expedition.",
         "split": "train",
         "task_id": "qa-train-0030"
       },
@@ -7364,7 +7703,7 @@
           "subject": "Iron Gate Expedition",
           "template": "station_region"
         },
-        "prompt": "In which region is the station that the Iron Gate Expedition was based at?",
+        "prompt": "The Iron Gate Expedition worked out of a station. Which region is that station in?",
         "split": "train",
         "task_id": "qa-train-0032"
       },
@@ -7384,7 +7723,7 @@
           "subject": "Iron Gate Expedition",
           "template": "vessel_port"
         },
-        "prompt": "Where is the home port of the vessel that carried the Iron Gate Expedition?",
+        "prompt": "Which port does the ship used by the Iron Gate Expedition sail out of?",
         "split": "train",
         "task_id": "qa-train-0033"
       },
@@ -7426,7 +7765,7 @@
           "subject": "Iron Gate Expedition",
           "template": "leader_instrument_measures"
         },
-        "prompt": "What does the instrument designed by the researcher who led the Iron Gate Expedition measure?",
+        "prompt": "The Iron Gate Expedition had a leader, who designed an instrument. What does that instrument measure?",
         "split": "train",
         "task_id": "qa-train-0035"
       },
@@ -7466,7 +7805,7 @@
           "subject": "Palewind Traverse",
           "template": "leader_specialty"
         },
-        "prompt": "What field does the researcher who led the Palewind Traverse work in?",
+        "prompt": "The Palewind Traverse was led by one researcher. What is that person's field?",
         "split": "train",
         "task_id": "qa-train-0037"
       },
@@ -7487,7 +7826,7 @@
           "subject": "Palewind Traverse",
           "template": "station_region"
         },
-        "prompt": "In which region is the station that the Palewind Traverse was based at?",
+        "prompt": "Which region holds the base station used by the Palewind Traverse?",
         "split": "train",
         "task_id": "qa-train-0038"
       },
@@ -7528,7 +7867,7 @@
           "subject": "Palewind Traverse",
           "template": "vessel_captain"
         },
-        "prompt": "Who captains the vessel that carried the Palewind Traverse?",
+        "prompt": "The Palewind Traverse travelled aboard a vessel. Who is its captain?",
         "split": "train",
         "task_id": "qa-train-0040"
       },
@@ -7549,7 +7888,7 @@
           "subject": "Palewind Traverse",
           "template": "leader_instrument_measures"
         },
-        "prompt": "What does the instrument designed by the researcher who led the Palewind Traverse measure?",
+        "prompt": "Which quantity is measured by the instrument built by the leader of the Palewind Traverse?",
         "split": "train",
         "task_id": "qa-train-0041"
       },
@@ -7569,7 +7908,7 @@
           "subject": "Saltmarsh Survey",
           "template": "leader_instrument"
         },
-        "prompt": "Which instrument was designed by the researcher who led the Saltmarsh Survey?",
+        "prompt": "The Saltmarsh Survey had a leader. Which instrument did that researcher design?",
         "split": "train",
         "task_id": "qa-train-0042"
       },
@@ -7589,7 +7928,7 @@
           "subject": "Saltmarsh Survey",
           "template": "leader_specialty"
         },
-        "prompt": "What field does the researcher who led the Saltmarsh Survey work in?",
+        "prompt": "Which field of research does the leader of the Saltmarsh Survey specialise in?",
         "split": "train",
         "task_id": "qa-train-0043"
       },
@@ -7630,7 +7969,7 @@
           "subject": "Saltmarsh Survey",
           "template": "vessel_port"
         },
-        "prompt": "Where is the home port of the vessel that carried the Saltmarsh Survey?",
+        "prompt": "The Saltmarsh Survey travelled aboard a vessel. Which port is that vessel home to?",
         "split": "train",
         "task_id": "qa-train-0045"
       },
@@ -7651,7 +7990,7 @@
           "subject": "Saltmarsh Survey",
           "template": "vessel_captain"
         },
-        "prompt": "Who captains the vessel that carried the Saltmarsh Survey?",
+        "prompt": "Name the captain of the ship used by the Saltmarsh Survey.",
         "split": "train",
         "task_id": "qa-train-0046"
       },
@@ -7692,7 +8031,7 @@
           "subject": "Longshore Expedition",
           "template": "leader_instrument"
         },
-        "prompt": "Which instrument was designed by the researcher who led the Longshore Expedition?",
+        "prompt": "Name the instrument designed by whoever was in charge of the Longshore Expedition.",
         "split": "train",
         "task_id": "qa-train-0048"
       },
@@ -7733,7 +8072,7 @@
           "subject": "Longshore Expedition",
           "template": "station_region"
         },
-        "prompt": "In which region is the station that the Longshore Expedition was based at?",
+        "prompt": "The Longshore Expedition worked out of a station. Which region is that station in?",
         "split": "train",
         "task_id": "qa-train-0050"
       },
@@ -7753,7 +8092,7 @@
           "subject": "Longshore Expedition",
           "template": "vessel_port"
         },
-        "prompt": "Where is the home port of the vessel that carried the Longshore Expedition?",
+        "prompt": "Which port does the ship used by the Longshore Expedition sail out of?",
         "split": "train",
         "task_id": "qa-train-0051"
       },
@@ -7795,7 +8134,7 @@
           "subject": "Longshore Expedition",
           "template": "leader_instrument_measures"
         },
-        "prompt": "What does the instrument designed by the researcher who led the Longshore Expedition measure?",
+        "prompt": "The Longshore Expedition had a leader, who designed an instrument. What does that instrument measure?",
         "split": "train",
         "task_id": "qa-train-0053"
       },
@@ -7835,7 +8174,7 @@
           "subject": "Beacon Head Traverse",
           "template": "leader_specialty"
         },
-        "prompt": "What field does the researcher who led the Beacon Head Traverse work in?",
+        "prompt": "The Beacon Head Traverse was led by one researcher. What is that person's field?",
         "split": "train",
         "task_id": "qa-train-0055"
       },
@@ -7856,7 +8195,7 @@
           "subject": "Beacon Head Traverse",
           "template": "station_region"
         },
-        "prompt": "In which region is the station that the Beacon Head Traverse was based at?",
+        "prompt": "Which region holds the base station used by the Beacon Head Traverse?",
         "split": "train",
         "task_id": "qa-train-0056"
       },
@@ -7897,7 +8236,7 @@
           "subject": "Beacon Head Traverse",
           "template": "vessel_captain"
         },
-        "prompt": "Who captains the vessel that carried the Beacon Head Traverse?",
+        "prompt": "The Beacon Head Traverse travelled aboard a vessel. Who is its captain?",
         "split": "train",
         "task_id": "qa-train-0058"
       },
@@ -7918,7 +8257,7 @@
           "subject": "Beacon Head Traverse",
           "template": "leader_instrument_measures"
         },
-        "prompt": "What does the instrument designed by the researcher who led the Beacon Head Traverse measure?",
+        "prompt": "Which quantity is measured by the instrument built by the leader of the Beacon Head Traverse?",
         "split": "train",
         "task_id": "qa-train-0059"
       },
@@ -7958,7 +8297,7 @@
           "subject": "Tomas Vance",
           "template": "researcher_instrument_measures"
         },
-        "prompt": "What does the instrument designed by Tomas Vance measure?",
+        "prompt": "Tomas Vance designed an instrument. What does it measure?",
         "split": "train",
         "task_id": "qa-train-0061"
       },
@@ -7978,7 +8317,7 @@
           "subject": "Ines Oyelaran",
           "template": "researcher_instrument_measures"
         },
-        "prompt": "What does the instrument designed by Ines Oyelaran measure?",
+        "prompt": "Which quantity does the instrument credited to Ines Oyelaran measure?",
         "split": "train",
         "task_id": "qa-train-0062"
       },
@@ -8018,7 +8357,7 @@
           "subject": "Dalia Cardew",
           "template": "researcher_instrument_measures"
         },
-        "prompt": "What does the instrument designed by Dalia Cardew measure?",
+        "prompt": "Dalia Cardew designed an instrument. What does it measure?",
         "split": "train",
         "task_id": "qa-train-0064"
       },
@@ -8038,7 +8377,7 @@
           "subject": "Owen Fenn",
           "template": "researcher_instrument_measures"
         },
-        "prompt": "What does the instrument designed by Owen Fenn measure?",
+        "prompt": "Which quantity does the instrument credited to Owen Fenn measure?",
         "split": "train",
         "task_id": "qa-train-0065"
       },
@@ -8078,7 +8417,7 @@
           "subject": "Silas Sorenson",
           "template": "researcher_instrument_measures"
         },
-        "prompt": "What does the instrument designed by Silas Sorenson measure?",
+        "prompt": "Silas Sorenson designed an instrument. What does it measure?",
         "split": "train",
         "task_id": "qa-train-0067"
       },
@@ -8098,7 +8437,7 @@
           "subject": "Noor Quinlan",
           "template": "researcher_instrument_measures"
         },
-        "prompt": "What does the instrument designed by Noor Quinlan measure?",
+        "prompt": "Which quantity does the instrument credited to Noor Quinlan measure?",
         "split": "train",
         "task_id": "qa-train-0068"
       },
@@ -8138,7 +8477,7 @@
           "subject": "Yuki Verhoeven",
           "template": "researcher_instrument_measures"
         },
-        "prompt": "What does the instrument designed by Yuki Verhoeven measure?",
+        "prompt": "Yuki Verhoeven designed an instrument. What does it measure?",
         "split": "train",
         "task_id": "qa-train-0070"
       },
@@ -8158,7 +8497,7 @@
           "subject": "Cato Lindqvist",
           "template": "researcher_instrument_measures"
         },
-        "prompt": "What does the instrument designed by Cato Lindqvist measure?",
+        "prompt": "Which quantity does the instrument credited to Cato Lindqvist measure?",
         "split": "train",
         "task_id": "qa-train-0071"
       },
@@ -8218,7 +8557,7 @@
           "subject": "Anvil Point Station",
           "template": "director_specialty"
         },
-        "prompt": "What field does the director of Anvil Point Station work in?",
+        "prompt": "Anvil Point Station has a director. What is that person's field of research?",
         "split": "train",
         "task_id": "qa-train-0074"
       },
@@ -8238,7 +8577,7 @@
           "subject": "Corvid Bay Station",
           "template": "director_instrument"
         },
-        "prompt": "Which instrument was designed by the director of Corvid Bay Station?",
+        "prompt": "Corvid Bay Station has a director. Which instrument did that person design?",
         "split": "train",
         "task_id": "qa-train-0075"
       },
@@ -8258,7 +8597,7 @@
           "subject": "Corvid Bay Station",
           "template": "director_specialty"
         },
-        "prompt": "What field does the director of Corvid Bay Station work in?",
+        "prompt": "Which field does the person in charge of Corvid Bay Station specialise in?",
         "split": "train",
         "task_id": "qa-train-0076"
       },
@@ -8278,7 +8617,7 @@
           "subject": "Drossel Ridge Station",
           "template": "director_instrument"
         },
-        "prompt": "Which instrument was designed by the director of Drossel Ridge Station?",
+        "prompt": "Name the instrument designed by whoever directs Drossel Ridge Station.",
         "split": "train",
         "task_id": "qa-train-0077"
       },
@@ -8338,7 +8677,7 @@
           "subject": "Ember Sound Station",
           "template": "director_specialty"
         },
-        "prompt": "What field does the director of Ember Sound Station work in?",
+        "prompt": "Ember Sound Station has a director. What is that person's field of research?",
         "split": "train",
         "task_id": "qa-train-0080"
       },
@@ -8358,7 +8697,7 @@
           "subject": "Fenwold Station",
           "template": "director_instrument"
         },
-        "prompt": "Which instrument was designed by the director of Fenwold Station?",
+        "prompt": "Fenwold Station has a director. Which instrument did that person design?",
         "split": "train",
         "task_id": "qa-train-0081"
       },
@@ -8378,7 +8717,7 @@
           "subject": "Fenwold Station",
           "template": "director_specialty"
         },
-        "prompt": "What field does the director of Fenwold Station work in?",
+        "prompt": "Which field does the person in charge of Fenwold Station specialise in?",
         "split": "train",
         "task_id": "qa-train-0082"
       },
@@ -8398,7 +8737,7 @@
           "subject": "Grimsby Shoal Station",
           "template": "director_instrument"
         },
-        "prompt": "Which instrument was designed by the director of Grimsby Shoal Station?",
+        "prompt": "Name the instrument designed by whoever directs Grimsby Shoal Station.",
         "split": "train",
         "task_id": "qa-train-0083"
       },
@@ -8421,6 +8760,797 @@
         "prompt": "What field does the director of Grimsby Shoal Station work in?",
         "split": "train",
         "task_id": "qa-train-0084"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 70
+        },
+        "metadata": {
+          "subject": "Marrow Ridge Traverse",
+          "supporting_docs": [
+            "exp-00"
+          ],
+          "template": "expedition_days",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many days did the Marrow Ridge Traverse last?",
+        "split": "train",
+        "task_id": "multi-train-0000"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 42
+        },
+        "metadata": {
+          "subject": "Marrow Ridge Traverse",
+          "supporting_docs": [
+            "exp-00",
+            "sta-01"
+          ],
+          "template": "station_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Marrow Ridge Traverse worked out of a station. How many years after that station was founded did the expedition take place?",
+        "split": "train",
+        "task_id": "multi-train-0001"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 84
+        },
+        "metadata": {
+          "subject": "Blackwater Shelf Survey",
+          "supporting_docs": [
+            "exp-01"
+          ],
+          "template": "expedition_days",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Blackwater Shelf Survey ran for a number of weeks. How many days is that?",
+        "split": "train",
+        "task_id": "multi-train-0002"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 40
+        },
+        "metadata": {
+          "subject": "Blackwater Shelf Survey",
+          "supporting_docs": [
+            "exp-01",
+            "sta-07"
+          ],
+          "template": "station_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many years separate the founding of the station used by the Blackwater Shelf Survey from the year the Blackwater Shelf Survey ran?",
+        "split": "train",
+        "task_id": "multi-train-0003"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 35
+        },
+        "metadata": {
+          "subject": "Nine Fathom Expedition",
+          "supporting_docs": [
+            "exp-02"
+          ],
+          "template": "expedition_days",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many days did the Nine Fathom Expedition last?",
+        "split": "train",
+        "task_id": "multi-train-0004"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 4
+        },
+        "metadata": {
+          "subject": "Nine Fathom Expedition",
+          "supporting_docs": [
+            "exp-02",
+            "sta-03"
+          ],
+          "template": "station_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Nine Fathom Expedition worked out of a station. How many years after that station was founded did the expedition take place?",
+        "split": "train",
+        "task_id": "multi-train-0005"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 9
+        },
+        "metadata": {
+          "subject": "Nine Fathom Expedition",
+          "supporting_docs": [
+            "exp-02",
+            "res-02",
+            "ins-02"
+          ],
+          "template": "instrument_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Nine Fathom Expedition was led by a researcher who designed an instrument. How many years before the expedition did that instrument enter service?",
+        "split": "train",
+        "task_id": "multi-train-0006"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 147
+        },
+        "metadata": {
+          "subject": "Cold Harbour Traverse",
+          "supporting_docs": [
+            "exp-03"
+          ],
+          "template": "expedition_days",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Cold Harbour Traverse ran for a number of weeks. How many days is that?",
+        "split": "train",
+        "task_id": "multi-train-0007"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 29
+        },
+        "metadata": {
+          "subject": "Cold Harbour Traverse",
+          "supporting_docs": [
+            "exp-03",
+            "sta-02"
+          ],
+          "template": "station_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many years separate the founding of the station used by the Cold Harbour Traverse from the year the Cold Harbour Traverse ran?",
+        "split": "train",
+        "task_id": "multi-train-0008"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 84
+        },
+        "metadata": {
+          "subject": "Thistledown Survey",
+          "supporting_docs": [
+            "exp-04"
+          ],
+          "template": "expedition_days",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many days did the Thistledown Survey last?",
+        "split": "train",
+        "task_id": "multi-train-0009"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 37
+        },
+        "metadata": {
+          "subject": "Thistledown Survey",
+          "supporting_docs": [
+            "exp-04",
+            "sta-06"
+          ],
+          "template": "station_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Thistledown Survey worked out of a station. How many years after that station was founded did the expedition take place?",
+        "split": "train",
+        "task_id": "multi-train-0010"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 9
+        },
+        "metadata": {
+          "subject": "Thistledown Survey",
+          "supporting_docs": [
+            "exp-04",
+            "res-15",
+            "ins-15"
+          ],
+          "template": "instrument_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Thistledown Survey was led by a researcher who designed an instrument. How many years before the expedition did that instrument enter service?",
+        "split": "train",
+        "task_id": "multi-train-0011"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 168
+        },
+        "metadata": {
+          "subject": "Iron Gate Expedition",
+          "supporting_docs": [
+            "exp-05"
+          ],
+          "template": "expedition_days",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Iron Gate Expedition ran for a number of weeks. How many days is that?",
+        "split": "train",
+        "task_id": "multi-train-0012"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 39
+        },
+        "metadata": {
+          "subject": "Iron Gate Expedition",
+          "supporting_docs": [
+            "exp-05",
+            "sta-07"
+          ],
+          "template": "station_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many years separate the founding of the station used by the Iron Gate Expedition from the year the Iron Gate Expedition ran?",
+        "split": "train",
+        "task_id": "multi-train-0013"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 105
+        },
+        "metadata": {
+          "subject": "Palewind Traverse",
+          "supporting_docs": [
+            "exp-06"
+          ],
+          "template": "expedition_days",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many days did the Palewind Traverse last?",
+        "split": "train",
+        "task_id": "multi-train-0014"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 36
+        },
+        "metadata": {
+          "subject": "Palewind Traverse",
+          "supporting_docs": [
+            "exp-06",
+            "sta-06"
+          ],
+          "template": "station_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Palewind Traverse worked out of a station. How many years after that station was founded did the expedition take place?",
+        "split": "train",
+        "task_id": "multi-train-0015"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 126
+        },
+        "metadata": {
+          "subject": "Saltmarsh Survey",
+          "supporting_docs": [
+            "exp-07"
+          ],
+          "template": "expedition_days",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Saltmarsh Survey ran for a number of weeks. How many days is that?",
+        "split": "train",
+        "task_id": "multi-train-0016"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 7
+        },
+        "metadata": {
+          "subject": "Saltmarsh Survey",
+          "supporting_docs": [
+            "exp-07",
+            "sta-05"
+          ],
+          "template": "station_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many years separate the founding of the station used by the Saltmarsh Survey from the year the Saltmarsh Survey ran?",
+        "split": "train",
+        "task_id": "multi-train-0017"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 6
+        },
+        "metadata": {
+          "subject": "Saltmarsh Survey",
+          "supporting_docs": [
+            "exp-07",
+            "res-11",
+            "ins-11"
+          ],
+          "template": "instrument_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many years had the instrument designed by the leader of the Saltmarsh Survey been in service by the time the expedition took place?",
+        "split": "train",
+        "task_id": "multi-train-0018"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 84
+        },
+        "metadata": {
+          "subject": "Longshore Expedition",
+          "supporting_docs": [
+            "exp-08"
+          ],
+          "template": "expedition_days",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many days did the Longshore Expedition last?",
+        "split": "train",
+        "task_id": "multi-train-0019"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 36
+        },
+        "metadata": {
+          "subject": "Longshore Expedition",
+          "supporting_docs": [
+            "exp-08",
+            "sta-01"
+          ],
+          "template": "station_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Longshore Expedition worked out of a station. How many years after that station was founded did the expedition take place?",
+        "split": "train",
+        "task_id": "multi-train-0020"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 154
+        },
+        "metadata": {
+          "subject": "Beacon Head Traverse",
+          "supporting_docs": [
+            "exp-09"
+          ],
+          "template": "expedition_days",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "The Beacon Head Traverse ran for a number of weeks. How many days is that?",
+        "split": "train",
+        "task_id": "multi-train-0021"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 33
+        },
+        "metadata": {
+          "subject": "Beacon Head Traverse",
+          "supporting_docs": [
+            "exp-09",
+            "sta-07"
+          ],
+          "template": "station_age_at_expedition",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many years separate the founding of the station used by the Beacon Head Traverse from the year the Beacon Head Traverse ran?",
+        "split": "train",
+        "task_id": "multi-train-0022"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.05,
+          "value": 220.3
+        },
+        "metadata": {
+          "subject": "Marrow Ridge Traverse + Blackwater Shelf Survey",
+          "supporting_docs": [
+            "exp-00",
+            "res-10",
+            "ins-10",
+            "exp-01",
+            "res-03",
+            "ins-03"
+          ],
+          "template": "combined_instrument_mass",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "What is the combined dry mass, in kilograms, of the instruments designed by the researchers who led the Marrow Ridge Traverse and the Blackwater Shelf Survey? Give your answer to one decimal place.",
+        "split": "train",
+        "task_id": "multi-train-0023"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 60
+        },
+        "metadata": {
+          "subject": "Blackwater Shelf Survey + Marrow Ridge Traverse",
+          "supporting_docs": [
+            "exp-01",
+            "ves-09",
+            "exp-00",
+            "ves-07"
+          ],
+          "template": "vessel_length_difference",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many metres longer is the vessel that carried the Blackwater Shelf Survey than the vessel that carried the Marrow Ridge Traverse?",
+        "split": "train",
+        "task_id": "multi-train-0024"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.05,
+          "value": 222.7
+        },
+        "metadata": {
+          "subject": "Nine Fathom Expedition + Cold Harbour Traverse",
+          "supporting_docs": [
+            "exp-02",
+            "res-02",
+            "ins-02",
+            "exp-03",
+            "res-10",
+            "ins-10"
+          ],
+          "template": "combined_instrument_mass",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "What is the combined dry mass, in kilograms, of the instruments designed by the researchers who led the Nine Fathom Expedition and the Cold Harbour Traverse? Give your answer to one decimal place.",
+        "split": "train",
+        "task_id": "multi-train-0025"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 13
+        },
+        "metadata": {
+          "subject": "Cold Harbour Traverse + Nine Fathom Expedition",
+          "supporting_docs": [
+            "exp-03",
+            "ves-01",
+            "exp-02",
+            "ves-00"
+          ],
+          "template": "vessel_length_difference",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many metres longer is the vessel that carried the Cold Harbour Traverse than the vessel that carried the Nine Fathom Expedition?",
+        "split": "train",
+        "task_id": "multi-train-0026"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.05,
+          "value": 158.7
+        },
+        "metadata": {
+          "subject": "Thistledown Survey + Iron Gate Expedition",
+          "supporting_docs": [
+            "exp-04",
+            "res-15",
+            "ins-15",
+            "exp-05",
+            "res-16",
+            "ins-16"
+          ],
+          "template": "combined_instrument_mass",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "What is the combined dry mass, in kilograms, of the instruments designed by the researchers who led the Thistledown Survey and the Iron Gate Expedition? Give your answer to one decimal place.",
+        "split": "train",
+        "task_id": "multi-train-0027"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 48
+        },
+        "metadata": {
+          "subject": "Thistledown Survey + Iron Gate Expedition",
+          "supporting_docs": [
+            "exp-04",
+            "ves-04",
+            "exp-05",
+            "ves-07"
+          ],
+          "template": "vessel_length_difference",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many metres longer is the vessel that carried the Thistledown Survey than the vessel that carried the Iron Gate Expedition?",
+        "split": "train",
+        "task_id": "multi-train-0028"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.05,
+          "value": 92.1
+        },
+        "metadata": {
+          "subject": "Palewind Traverse + Saltmarsh Survey",
+          "supporting_docs": [
+            "exp-06",
+            "res-12",
+            "ins-12",
+            "exp-07",
+            "res-11",
+            "ins-11"
+          ],
+          "template": "combined_instrument_mass",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "What is the combined dry mass, in kilograms, of the instruments designed by the researchers who led the Palewind Traverse and the Saltmarsh Survey? Give your answer to one decimal place.",
+        "split": "train",
+        "task_id": "multi-train-0029"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.05,
+          "value": 87.0
+        },
+        "metadata": {
+          "subject": "Longshore Expedition + Beacon Head Traverse",
+          "supporting_docs": [
+            "exp-08",
+            "res-12",
+            "ins-12",
+            "exp-09",
+            "res-00",
+            "ins-00"
+          ],
+          "template": "combined_instrument_mass",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "What is the combined dry mass, in kilograms, of the instruments designed by the researchers who led the Longshore Expedition and the Beacon Head Traverse? Give your answer to one decimal place.",
+        "split": "train",
+        "task_id": "multi-train-0030"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 10
+        },
+        "metadata": {
+          "subject": "Longshore Expedition + Beacon Head Traverse",
+          "supporting_docs": [
+            "exp-08",
+            "ves-00",
+            "exp-09",
+            "ves-07"
+          ],
+          "template": "vessel_length_difference",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many metres longer is the vessel that carried the Longshore Expedition than the vessel that carried the Beacon Head Traverse?",
+        "split": "train",
+        "task_id": "multi-train-0031"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 124
+        },
+        "metadata": {
+          "subject": "Anvil Point Station + Corvid Bay Station",
+          "supporting_docs": [
+            "sta-00",
+            "sta-01"
+          ],
+          "template": "total_berths",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many berths do Anvil Point Station and Corvid Bay Station have between them?",
+        "split": "train",
+        "task_id": "multi-train-0032"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 79
+        },
+        "metadata": {
+          "subject": "Drossel Ridge Station + Ember Sound Station",
+          "supporting_docs": [
+            "sta-02",
+            "sta-03"
+          ],
+          "template": "total_berths",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many berths do Drossel Ridge Station and Ember Sound Station have between them?",
+        "split": "train",
+        "task_id": "multi-train-0033"
+      },
+      {
+        "category": "multi_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 113
+        },
+        "metadata": {
+          "subject": "Fenwold Station + Grimsby Shoal Station",
+          "supporting_docs": [
+            "sta-04",
+            "sta-05"
+          ],
+          "template": "total_berths",
+          "tools": [
+            "search",
+            "calculator"
+          ]
+        },
+        "prompt": "How many berths do Fenwold Station and Grimsby Shoal Station have between them?",
+        "split": "train",
+        "task_id": "multi-train-0034"
       }
     ]
   }

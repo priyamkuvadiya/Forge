@@ -10,6 +10,7 @@ from task_suite.registry import (
     load_suite,
     save_suite,
 )
+from task_suite.schema import CATEGORIES
 from task_suite.verifiers import verify
 
 SPLITS = build_suite()
@@ -19,10 +20,9 @@ def wrap(answer: str) -> str:
     return f"<answer>{answer}</answer>"
 
 
-def test_both_splits_are_populated_across_all_three_categories():
+def test_both_splits_are_populated_across_every_category():
     for name, tasks in SPLITS.items():
-        categories = {t.category for t in tasks}
-        assert categories == {"math", "code", "qa"}, name
+        assert {t.category for t in tasks} == set(CATEGORIES), name
         assert len(tasks) >= 100, name
 
 
@@ -62,16 +62,20 @@ def test_the_checked_in_corpus_covers_every_supporting_document():
     corpus_ids = {d["doc_id"] for d in load_corpus(CORPUS_PATH)}
     for split in SPLITS.values():
         for task in split:
-            if task.category != "qa":
+            if task.category == "qa":
+                supporting = task.ground_truth["supporting_docs"]
+            elif task.category == "multi_tool":
+                supporting = task.metadata["supporting_docs"]
+            else:
                 continue
-            assert set(task.ground_truth["supporting_docs"]) <= corpus_ids
+            assert set(supporting) <= corpus_ids
 
 
 def test_non_code_ground_truth_all_scores_one():
     """One sweep over the whole pinned suite, through the real dispatch."""
     for split in SPLITS.values():
         for task in split:
-            if task.category == "math":
+            if task.category in ("math", "multi_tool"):
                 assert verify(task, wrap(str(task.ground_truth["value"]))) == 1.0
             elif task.category == "qa":
                 assert verify(task, wrap(task.ground_truth["answers"][0])) == 1.0
