@@ -109,6 +109,112 @@ HELDOUT_RESEARCHERS = 5
 HELDOUT_STATIONS = 2
 
 
+# --------------------------------------------------------------------------
+# Distractors
+# --------------------------------------------------------------------------
+#
+# Entities that exist only in the corpus. No question is ever about one, and
+# no question's answer is ever inside one. They exist to make retrieval
+# discriminating rather than to add facts.
+#
+# The problem they solve was measured, not anticipated. The classes here were
+# small — ten vessels, eighteen instruments — and a question like "where is
+# the home port of the vessel that carried the Ashen Bay Survey?" contains the
+# word "vessel", which ranks *every* vessel document about equally. Retrieving
+# five of ten vessels therefore had a good chance of including the right one
+# by accident, so the second hop's document arrived without the agent ever
+# working out which vessel it wanted. Seven of 118 multi-hop questions were
+# answerable from a single search that way, and 32 were at k=10. Enlarging the
+# classes makes an accidental hit unlikely without changing a single question.
+#
+# Two properties matter and are enforced by tests rather than by care:
+#
+# - **They change no existing task.** They are built after every random draw
+#   the real world makes, from their own generator, and they are kept out of
+#   `World.researchers` / `.stations` / `.vessels`, which is what
+#   `split_subjects` slices to decide what questions get asked about. Only
+#   `World.documents` grows.
+# - **They are indistinguishable from real documents.** Same prose templates,
+#   and their doc_ids continue the same numbering rather than carrying a
+#   marker. A distractor labelled `ves-d03` would teach a policy that
+#   documents with a `d` in the id are never the answer, which is a retrieval
+#   shortcut invented by the corpus builder — precisely the kind of accidental
+#   giveaway this suite is supposed to avoid.
+DISTRACTOR_SEED = 20260904
+
+DISTRACTOR_VESSELS = (
+    "RV Cormorant", "RV Tidewright", "RV Skerry Dawn", "RV Alder Fen",
+    "RV Fulmar", "RV Quillback", "RV Selkie", "RV Braemar", "RV Storm Petrel",
+    "RV Ravenspur", "RV Merganser", "RV Kelpie", "RV Longspur", "RV Trawlfast",
+    "RV Ossuary Light", "RV Brindlewake", "RV Farsound", "RV Grebe",
+    "RV Hafgufa", "RV Sealark", "RV Corrivreckan", "RV Tarnhelm",
+)
+DISTRACTOR_PORTS = (
+    "Kelsall Reach", "Drummond Quay", "Firth Landing", "Netherhythe",
+    "Sallow Docks", "Craigmoor", "Barnacle Wharf", "Ravensgate",
+    "Thorn Harbour", "Culvert Bay", "Longstrand", "Mirefoot Quay",
+    "Ashlock Pier", "Windward Reach", "Gullet Cove", "Pennard Docks",
+    "Havershoal", "Strandmere", "Colquhoun Wharf", "Ebbgate",
+    "Marrowbone Quay", "Saltcragg",
+)
+DISTRACTOR_CAPTAINS = (
+    "Tobias Renwick", "Marit Solheim", "Casper Idowu", "Fenella Drax",
+    "Aurelio Bassi", "Ingrid Sanderling", "Hector Pyle", "Nour Chalabi",
+    "Wilhelmina Croft", "Jonas Trevelyan", "Beatrix Molnar", "Amadou Sarr",
+    "Clarissa Weeks", "Emil Sandoval", "Rosalind Kite", "Yusuf Barlow",
+    "Petronella Haas", "Duncan Ashby", "Freya Lindgren", "Oscar Ibarra",
+    "Constance Peake", "Nikolai Ferro",
+)
+
+DISTRACTOR_INSTRUMENTS = (
+    "Crucible Barograph", "Lantern Gravimeter", "Sable Refractometer",
+    "Thorn Pyranometer", "Wicket Magnetograph", "Girdle Salinometer",
+    "Ossian Polarimeter", "Brindle Actinometer", "Cairn Dilatometer",
+    "Verge Colorimeter", "Latchkey Ceilometer", "Foundry Rheometer",
+    "Plinth Absorptiometer", "Willow Ionometer", "Garnet Reflectometer",
+    "Tundra Viscometer", "Alcove Granulometer", "Ridgeline Pyrheliometer",
+    "Cobble Turbidimeter", "Harrow Piezometer", "Vellum Diffractometer",
+    "Antler Calorimeter",
+)
+DISTRACTOR_QUANTITIES = (
+    "surface albedo drift", "abyssal carbonate saturation",
+    "katabatic wind shear", "peatland carbon exchange",
+    "ionospheric total electron content", "glacier bed roughness",
+    "nearshore wave setup", "airborne pollen concentration",
+    "mantle anisotropy", "lake thermocline depth",
+    "coastal groundwater intrusion", "nocturnal boundary layer height",
+    "meltwater channel discharge", "reef calcification rate",
+    "atmospheric noble gas ratios", "subglacial lake pressure",
+    "biogenic aerosol nucleation", "estuarine nutrient loading",
+    "firn compaction rate", "shelf-break eddy kinetic energy",
+    "supraglacial debris cover", "hydrothermal vent effluent temperature",
+)
+
+DISTRACTOR_STATIONS = (
+    "Juniper Cross Station", "Kestrel Hollow Station", "Larkspur Station",
+    "Mordant Sound Station", "Netherby Station", "Ossory Point Station",
+    "Pitchstone Station", "Quarrel Bay Station", "Ravenhead Station",
+    "Sedgewick Station", "Thrushmoor Station", "Upsala Reach Station",
+    "Vellichor Station", "Westmark Station", "Yarrow Bight Station",
+    "Zephyr Cove Station", "Ashgrove Station", "Cindermoor Station",
+)
+DISTRACTOR_REGIONS = (
+    "the Halloway Deeps", "the Corrin Flats", "the Umbral Shelf",
+    "the Ninefold Sound", "the Palgrave Basin", "the Estwich Barrens",
+    "the Lowmoor Coast", "the Cadmium Trench", "the Vantage Reach",
+    "the Carrow Rise", "the Sorrel Straits", "the Ganton Plateau",
+    "the Rimefell Shelf", "the Achen Hollow", "the Durrow Banks",
+    "the Pellucid Sound", "the Cransley Reach", "the Ormont Basin",
+)
+DISTRACTOR_DIRECTORS = (
+    "Roderick Ashbourne", "Selma Kavanagh", "Piotr Wysocki", "Delphine Aubert",
+    "Callum Ingram", "Anneke Roosen", "Ravi Chandrasekar", "Marta Bielik",
+    "Gideon Thorpe", "Liesl Bergmann", "Idris Faraday", "Camille Oduya",
+    "Bertram Followell", "Saoirse Mullan", "Kwame Asante", "Helena Voss",
+    "Alaric Penhale", "Juno Villanueva",
+)
+
+
 @dataclass(frozen=True)
 class Document:
     doc_id: str
@@ -173,6 +279,10 @@ class World:
     vessels: tuple[Vessel, ...]
     expeditions: tuple[Expedition, ...]
     documents: tuple[Document, ...]
+    # Corpus-only entities. Held separately from the tuples above precisely
+    # because `split_subjects` slices those to choose question subjects, and a
+    # distractor must never become one. `documents` includes them.
+    distractors: tuple[Document, ...] = ()
 
     def researcher(self, name: str) -> Researcher:
         return next(r for r in self.researchers if r.name == name)
@@ -254,15 +364,81 @@ def build_world(seed: int = WORLD_SEED) -> World:
         for i, name in enumerate(EXPEDITIONS)
     )
 
+    # Built last, from its own generator, so that every draw above is
+    # unaffected and every existing task keeps its exact prompt and answer.
+    distractors = _build_distractors(
+        first_instrument=len(instruments),
+        first_station=len(stations),
+        first_vessel=len(vessels),
+    )
+
     documents = (
         tuple(_instrument_doc(i) for i in instruments)
         + tuple(_researcher_doc(r) for r in researchers)
         + tuple(_station_doc(s) for s in stations)
         + tuple(_vessel_doc(v) for v in vessels)
         + tuple(_expedition_doc(e) for e in expeditions)
+        + distractors
     )
 
-    return World(researchers, instruments, stations, vessels, expeditions, documents)
+    return World(
+        researchers, instruments, stations, vessels, expeditions, documents, distractors
+    )
+
+
+def _build_distractors(
+    first_instrument: int, first_station: int, first_vessel: int
+) -> tuple[Document, ...]:
+    """Corpus-only documents, rendered by the same templates as the real ones.
+
+    Numbering continues from the real entities (`ves-10` after `ves-09`) so
+    nothing in a doc_id marks a document as a distractor. Reusing the same
+    `_*_doc` renderers is not tidiness either: a distractor written in even
+    slightly different prose would be separable by a policy on style alone,
+    and the class would stop being a genuine field of near-identical
+    candidates.
+    """
+    rng = random.Random(DISTRACTOR_SEED)
+
+    instruments = [
+        Instrument(
+            name=name,
+            measures=DISTRACTOR_QUANTITIES[i],
+            mass_kg=round(rng.uniform(2.5, 180.0), 1),
+            in_service=rng.randint(2026, 2038),
+            doc_id=f"ins-{first_instrument + i:02d}",
+        )
+        for i, name in enumerate(DISTRACTOR_INSTRUMENTS)
+    ]
+
+    stations = [
+        Station(
+            name=name,
+            region=DISTRACTOR_REGIONS[i],
+            founded=rng.randint(1998, 2032),
+            director=DISTRACTOR_DIRECTORS[i],
+            berths=rng.randrange(12, 90),
+            doc_id=f"sta-{first_station + i:02d}",
+        )
+        for i, name in enumerate(DISTRACTOR_STATIONS)
+    ]
+
+    vessels = [
+        Vessel(
+            name=name,
+            port=DISTRACTOR_PORTS[i],
+            captain=DISTRACTOR_CAPTAINS[i],
+            length_m=rng.randrange(38, 122),
+            doc_id=f"ves-{first_vessel + i:02d}",
+        )
+        for i, name in enumerate(DISTRACTOR_VESSELS)
+    ]
+
+    return (
+        tuple(_instrument_doc(i) for i in instruments)
+        + tuple(_station_doc(s) for s in stations)
+        + tuple(_vessel_doc(v) for v in vessels)
+    )
 
 
 # --------------------------------------------------------------------------

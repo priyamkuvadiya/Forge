@@ -42,9 +42,47 @@ def test_document_ids_are_unique_and_cover_every_entity():
     assert len(set(ids)) == len(ids)
     expected = (
         len(WORLD.instruments) + len(WORLD.researchers) + len(WORLD.stations)
-        + len(WORLD.vessels) + len(WORLD.expeditions)
+        + len(WORLD.vessels) + len(WORLD.expeditions) + len(WORLD.distractors)
     )
     assert len(ids) == expected
+
+
+def test_distractors_are_corpus_only_and_answer_nothing():
+    """Distractors exist to make retrieval discriminating, nothing else.
+
+    Two ways they could do damage. If one became a question subject the splits
+    would shift, so they are kept out of the entity tuples `split_subjects`
+    slices. If one contained a question's answer, the question would gain a
+    second supporting document and stop being the chain it claims to be.
+    """
+    distractor_ids = {d.doc_id for d in WORLD.distractors}
+    assert distractor_ids, "expected the corpus to carry distractors"
+
+    subjects = {q.subject for q in ALL_QUESTIONS}
+    for doc in WORLD.distractors:
+        assert doc.title not in subjects
+        for question in ALL_QUESTIONS:
+            leaked = [a for a in question.answers if a in doc.text]
+            assert not leaked, f"{doc.doc_id} leaks an answer to {question.text!r}: {leaked}"
+
+    for task in ALL_TASKS:
+        assert distractor_ids.isdisjoint(task.ground_truth["supporting_docs"])
+
+
+def test_distractors_are_indistinguishable_from_real_documents():
+    """No doc_id marks a document as a distractor.
+
+    A marker would be a retrieval shortcut invented by the corpus builder: a
+    policy could learn that documents whose id looks a certain way are never
+    the answer, and score well without retrieving better.
+    """
+    real = {d.doc_id for d in WORLD.documents} - {d.doc_id for d in WORLD.distractors}
+    for doc in WORLD.distractors:
+        prefix = doc.doc_id.split("-")[0]
+        assert any(r.startswith(f"{prefix}-") for r in real), (
+            f"{doc.doc_id} is in a class of its own, which marks it as a distractor"
+        )
+        assert doc.doc_id.split("-")[1].isdigit()
 
 
 def test_people_surnames_are_globally_unique():

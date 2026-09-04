@@ -339,6 +339,316 @@
       "doc_id": "exp-13",
       "text": "The Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
       "title": "The Hollowmere Survey"
+    },
+    {
+      "doc_id": "ins-18",
+      "text": "The Crucible Barograph is a field instrument that measures surface albedo drift. It has a dry mass of 23.7 kg and entered routine service in 2032. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Crucible Barograph"
+    },
+    {
+      "doc_id": "ins-19",
+      "text": "The Lantern Gravimeter is a field instrument that measures abyssal carbonate saturation. It has a dry mass of 52.4 kg and entered routine service in 2034. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Lantern Gravimeter"
+    },
+    {
+      "doc_id": "ins-20",
+      "text": "The Sable Refractometer is a field instrument that measures katabatic wind shear. It has a dry mass of 46.5 kg and entered routine service in 2029. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Sable Refractometer"
+    },
+    {
+      "doc_id": "ins-21",
+      "text": "The Thorn Pyranometer is a field instrument that measures peatland carbon exchange. It has a dry mass of 141.1 kg and entered routine service in 2028. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Thorn Pyranometer"
+    },
+    {
+      "doc_id": "ins-22",
+      "text": "The Wicket Magnetograph is a field instrument that measures ionospheric total electron content. It has a dry mass of 4.0 kg and entered routine service in 2038. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Wicket Magnetograph"
+    },
+    {
+      "doc_id": "ins-23",
+      "text": "The Girdle Salinometer is a field instrument that measures glacier bed roughness. It has a dry mass of 50.5 kg and entered routine service in 2031. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Girdle Salinometer"
+    },
+    {
+      "doc_id": "ins-24",
+      "text": "The Ossian Polarimeter is a field instrument that measures nearshore wave setup. It has a dry mass of 134.4 kg and entered routine service in 2034. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Ossian Polarimeter"
+    },
+    {
+      "doc_id": "ins-25",
+      "text": "The Brindle Actinometer is a field instrument that measures airborne pollen concentration. It has a dry mass of 49.7 kg and entered routine service in 2034. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Brindle Actinometer"
+    },
+    {
+      "doc_id": "ins-26",
+      "text": "The Cairn Dilatometer is a field instrument that measures mantle anisotropy. It has a dry mass of 51.3 kg and entered routine service in 2026. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Cairn Dilatometer"
+    },
+    {
+      "doc_id": "ins-27",
+      "text": "The Verge Colorimeter is a field instrument that measures lake thermocline depth. It has a dry mass of 171.7 kg and entered routine service in 2028. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Verge Colorimeter"
+    },
+    {
+      "doc_id": "ins-28",
+      "text": "The Latchkey Ceilometer is a field instrument that measures coastal groundwater intrusion. It has a dry mass of 18.2 kg and entered routine service in 2030. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Latchkey Ceilometer"
+    },
+    {
+      "doc_id": "ins-29",
+      "text": "The Foundry Rheometer is a field instrument that measures nocturnal boundary layer height. It has a dry mass of 89.6 kg and entered routine service in 2036. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Foundry Rheometer"
+    },
+    {
+      "doc_id": "ins-30",
+      "text": "The Plinth Absorptiometer is a field instrument that measures meltwater channel discharge. It has a dry mass of 12.0 kg and entered routine service in 2037. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Plinth Absorptiometer"
+    },
+    {
+      "doc_id": "ins-31",
+      "text": "The Willow Ionometer is a field instrument that measures reef calcification rate. It has a dry mass of 166.3 kg and entered routine service in 2030. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Willow Ionometer"
+    },
+    {
+      "doc_id": "ins-32",
+      "text": "The Garnet Reflectometer is a field instrument that measures atmospheric noble gas ratios. It has a dry mass of 7.4 kg and entered routine service in 2035. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Garnet Reflectometer"
+    },
+    {
+      "doc_id": "ins-33",
+      "text": "The Tundra Viscometer is a field instrument that measures subglacial lake pressure. It has a dry mass of 117.0 kg and entered routine service in 2030. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Tundra Viscometer"
+    },
+    {
+      "doc_id": "ins-34",
+      "text": "The Alcove Granulometer is a field instrument that measures biogenic aerosol nucleation. It has a dry mass of 105.4 kg and entered routine service in 2030. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Alcove Granulometer"
+    },
+    {
+      "doc_id": "ins-35",
+      "text": "The Ridgeline Pyrheliometer is a field instrument that measures estuarine nutrient loading. It has a dry mass of 18.4 kg and entered routine service in 2038. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Ridgeline Pyrheliometer"
+    },
+    {
+      "doc_id": "ins-36",
+      "text": "The Cobble Turbidimeter is a field instrument that measures firn compaction rate. It has a dry mass of 167.1 kg and entered routine service in 2034. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Cobble Turbidimeter"
+    },
+    {
+      "doc_id": "ins-37",
+      "text": "The Harrow Piezometer is a field instrument that measures shelf-break eddy kinetic energy. It has a dry mass of 145.1 kg and entered routine service in 2026. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Harrow Piezometer"
+    },
+    {
+      "doc_id": "ins-38",
+      "text": "The Vellum Diffractometer is a field instrument that measures supraglacial debris cover. It has a dry mass of 114.0 kg and entered routine service in 2031. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Vellum Diffractometer"
+    },
+    {
+      "doc_id": "ins-39",
+      "text": "The Antler Calorimeter is a field instrument that measures hydrothermal vent effluent temperature. It has a dry mass of 11.2 kg and entered routine service in 2034. The instrument is calibrated before each deployment and logs continuously to an internal store.",
+      "title": "Antler Calorimeter"
+    },
+    {
+      "doc_id": "sta-08",
+      "text": "Juniper Cross Station stands on the Halloway Deeps and was founded in 2030. The station is directed by Roderick Ashbourne and has 78 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Juniper Cross Station"
+    },
+    {
+      "doc_id": "sta-09",
+      "text": "Kestrel Hollow Station stands on the Corrin Flats and was founded in 2009. The station is directed by Selma Kavanagh and has 28 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Kestrel Hollow Station"
+    },
+    {
+      "doc_id": "sta-10",
+      "text": "Larkspur Station stands on the Umbral Shelf and was founded in 2025. The station is directed by Piotr Wysocki and has 63 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Larkspur Station"
+    },
+    {
+      "doc_id": "sta-11",
+      "text": "Mordant Sound Station stands on the Ninefold Sound and was founded in 2014. The station is directed by Delphine Aubert and has 15 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Mordant Sound Station"
+    },
+    {
+      "doc_id": "sta-12",
+      "text": "Netherby Station stands on the Palgrave Basin and was founded in 2015. The station is directed by Callum Ingram and has 28 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Netherby Station"
+    },
+    {
+      "doc_id": "sta-13",
+      "text": "Ossory Point Station stands on the Estwich Barrens and was founded in 2004. The station is directed by Anneke Roosen and has 70 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Ossory Point Station"
+    },
+    {
+      "doc_id": "sta-14",
+      "text": "Pitchstone Station stands on the Lowmoor Coast and was founded in 2015. The station is directed by Ravi Chandrasekar and has 81 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Pitchstone Station"
+    },
+    {
+      "doc_id": "sta-15",
+      "text": "Quarrel Bay Station stands on the Cadmium Trench and was founded in 2019. The station is directed by Marta Bielik and has 53 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Quarrel Bay Station"
+    },
+    {
+      "doc_id": "sta-16",
+      "text": "Ravenhead Station stands on the Vantage Reach and was founded in 2027. The station is directed by Gideon Thorpe and has 80 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Ravenhead Station"
+    },
+    {
+      "doc_id": "sta-17",
+      "text": "Sedgewick Station stands on the Carrow Rise and was founded in 2030. The station is directed by Liesl Bergmann and has 19 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Sedgewick Station"
+    },
+    {
+      "doc_id": "sta-18",
+      "text": "Thrushmoor Station stands on the Sorrel Straits and was founded in 2019. The station is directed by Idris Faraday and has 34 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Thrushmoor Station"
+    },
+    {
+      "doc_id": "sta-19",
+      "text": "Upsala Reach Station stands on the Ganton Plateau and was founded in 2011. The station is directed by Camille Oduya and has 67 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Upsala Reach Station"
+    },
+    {
+      "doc_id": "sta-20",
+      "text": "Vellichor Station stands on the Rimefell Shelf and was founded in 2026. The station is directed by Bertram Followell and has 57 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Vellichor Station"
+    },
+    {
+      "doc_id": "sta-21",
+      "text": "Westmark Station stands on the Achen Hollow and was founded in 2010. The station is directed by Saoirse Mullan and has 48 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Westmark Station"
+    },
+    {
+      "doc_id": "sta-22",
+      "text": "Yarrow Bight Station stands on the Durrow Banks and was founded in 2013. The station is directed by Kwame Asante and has 63 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Yarrow Bight Station"
+    },
+    {
+      "doc_id": "sta-23",
+      "text": "Zephyr Cove Station stands on the Pellucid Sound and was founded in 2005. The station is directed by Helena Voss and has 86 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Zephyr Cove Station"
+    },
+    {
+      "doc_id": "sta-24",
+      "text": "Ashgrove Station stands on the Cransley Reach and was founded in 2002. The station is directed by Alaric Penhale and has 28 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Ashgrove Station"
+    },
+    {
+      "doc_id": "sta-25",
+      "text": "Cindermoor Station stands on the Ormont Basin and was founded in 2016. The station is directed by Juno Villanueva and has 61 berths. It stays open through the winter and supports visiting field parties.",
+      "title": "Cindermoor Station"
+    },
+    {
+      "doc_id": "ves-10",
+      "text": "RV Cormorant is a 96-metre research vessel home-ported at Kelsall Reach. She is captained by Tobias Renwick and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Cormorant"
+    },
+    {
+      "doc_id": "ves-11",
+      "text": "RV Tidewright is a 41-metre research vessel home-ported at Drummond Quay. She is captained by Marit Solheim and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Tidewright"
+    },
+    {
+      "doc_id": "ves-12",
+      "text": "RV Skerry Dawn is a 65-metre research vessel home-ported at Firth Landing. She is captained by Casper Idowu and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Skerry Dawn"
+    },
+    {
+      "doc_id": "ves-13",
+      "text": "RV Alder Fen is a 121-metre research vessel home-ported at Netherhythe. She is captained by Fenella Drax and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Alder Fen"
+    },
+    {
+      "doc_id": "ves-14",
+      "text": "RV Fulmar is a 103-metre research vessel home-ported at Sallow Docks. She is captained by Aurelio Bassi and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Fulmar"
+    },
+    {
+      "doc_id": "ves-15",
+      "text": "RV Quillback is a 109-metre research vessel home-ported at Craigmoor. She is captained by Ingrid Sanderling and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Quillback"
+    },
+    {
+      "doc_id": "ves-16",
+      "text": "RV Selkie is a 115-metre research vessel home-ported at Barnacle Wharf. She is captained by Hector Pyle and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Selkie"
+    },
+    {
+      "doc_id": "ves-17",
+      "text": "RV Braemar is a 102-metre research vessel home-ported at Ravensgate. She is captained by Nour Chalabi and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Braemar"
+    },
+    {
+      "doc_id": "ves-18",
+      "text": "RV Storm Petrel is a 117-metre research vessel home-ported at Thorn Harbour. She is captained by Wilhelmina Croft and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Storm Petrel"
+    },
+    {
+      "doc_id": "ves-19",
+      "text": "RV Ravenspur is a 55-metre research vessel home-ported at Culvert Bay. She is captained by Jonas Trevelyan and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Ravenspur"
+    },
+    {
+      "doc_id": "ves-20",
+      "text": "RV Merganser is a 55-metre research vessel home-ported at Longstrand. She is captained by Beatrix Molnar and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Merganser"
+    },
+    {
+      "doc_id": "ves-21",
+      "text": "RV Kelpie is a 60-metre research vessel home-ported at Mirefoot Quay. She is captained by Amadou Sarr and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Kelpie"
+    },
+    {
+      "doc_id": "ves-22",
+      "text": "RV Longspur is a 55-metre research vessel home-ported at Ashlock Pier. She is captained by Clarissa Weeks and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Longspur"
+    },
+    {
+      "doc_id": "ves-23",
+      "text": "RV Trawlfast is a 98-metre research vessel home-ported at Windward Reach. She is captained by Emil Sandoval and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Trawlfast"
+    },
+    {
+      "doc_id": "ves-24",
+      "text": "RV Ossuary Light is a 94-metre research vessel home-ported at Gullet Cove. She is captained by Rosalind Kite and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Ossuary Light"
+    },
+    {
+      "doc_id": "ves-25",
+      "text": "RV Brindlewake is a 42-metre research vessel home-ported at Pennard Docks. She is captained by Yusuf Barlow and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Brindlewake"
+    },
+    {
+      "doc_id": "ves-26",
+      "text": "RV Farsound is a 76-metre research vessel home-ported at Havershoal. She is captained by Petronella Haas and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Farsound"
+    },
+    {
+      "doc_id": "ves-27",
+      "text": "RV Grebe is a 101-metre research vessel home-ported at Strandmere. She is captained by Duncan Ashby and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Grebe"
+    },
+    {
+      "doc_id": "ves-28",
+      "text": "RV Hafgufa is a 109-metre research vessel home-ported at Colquhoun Wharf. She is captained by Freya Lindgren and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Hafgufa"
+    },
+    {
+      "doc_id": "ves-29",
+      "text": "RV Sealark is a 83-metre research vessel home-ported at Ebbgate. She is captained by Oscar Ibarra and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Sealark"
+    },
+    {
+      "doc_id": "ves-30",
+      "text": "RV Corrivreckan is a 61-metre research vessel home-ported at Marrowbone Quay. She is captained by Constance Peake and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Corrivreckan"
+    },
+    {
+      "doc_id": "ves-31",
+      "text": "RV Tarnhelm is a 79-metre research vessel home-ported at Saltcragg. She is captained by Nikolai Ferro and carries a crew of eighteen. The vessel is ice-strengthened and refits every third year.",
+      "title": "RV Tarnhelm"
     }
   ],
   "world_seed": 20260831

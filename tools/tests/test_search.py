@@ -41,7 +41,7 @@ def tasks():
 # --------------------------------------------------------------------------
 
 def test_index_covers_the_whole_corpus(index):
-    assert len(index) == 68
+    assert len(index) == 130
 
 
 def test_documents_have_content(index):
@@ -182,14 +182,13 @@ def test_one_query_rarely_retrieves_a_whole_chain(index, tasks):
     """Pin how often a single search hands back a task's full supporting set.
 
     This is not zero, and pretending otherwise would be the dishonest version
-    of this test. The corpus is small and clustered — nine vessels, eighteen
-    instruments — so a question mentioning "vessel" ranks every vessel
-    document and the right one arrives incidentally, eighth in a list of nine.
-    At `MAX_TOP_K` that happens for 7 of 118 multi-hop tasks; at k=10 it was
-    32, which is what drove the cap down.
+    of this test. Every document in a class is rendered from one template, so
+    a question mentioning "vessel" ranks every vessel document about equally
+    and the right one can arrive incidentally, buried among its neighbours.
 
-    Two things are still true for those 7, which is why they are tolerable
-    rather than fatal: no single *document* answers the question (asserted in
+    It was 7 of 118 when the corpus had 68 documents. Enlarging the small
+    classes with distractors brought it to 4. What remains is tolerable rather
+    than fatal because no single *document* answers the question (asserted in
     `task_suite/tests/test_qa_world.py`), so the policy must still read the
     first document to learn which of the retrieved neighbours is the answer.
     What it saved was the second search *call*, not the reasoning.
@@ -211,8 +210,8 @@ def test_one_query_rarely_retrieves_a_whole_chain(index, tasks):
         <= {hit.doc_id for hit in index.search(task.prompt, k=MAX_TOP_K)}
     ]
 
-    assert len(shortcut) == 7, (
-        f"expected 7 single-query chains at k={MAX_TOP_K}, got {len(shortcut)}: {shortcut}"
+    assert len(shortcut) == 4, (
+        f"expected 4 single-query chains at k={MAX_TOP_K}, got {len(shortcut)}: {shortcut}"
     )
 
 
@@ -239,7 +238,65 @@ def test_raising_k_would_erode_the_multi_hop_property(index, tasks, monkeypatch)
 
     at_cap = shortcut_count(MAX_TOP_K)
     at_ten = shortcut_count(10)
-    assert (at_cap, at_ten) == (7, 32), f"ranking changed: k=5 gave {at_cap}, k=10 gave {at_ten}"
+    assert (at_cap, at_ten) == (4, 14), f"ranking changed: k=5 gave {at_cap}, k=10 gave {at_ten}"
+
+
+def test_ties_do_not_favour_low_numbered_documents(index, tasks):
+    """Ranking must not correlate with a document's position in the corpus.
+
+    These documents come from a few templates, so BM25 often cannot separate a
+    class at all - every instrument document contains "instrument" and
+    "measures" exactly once, leaving length as the only differentiator. Exact
+    score ties therefore decide the top-k cut for most retrieval tasks, which
+    makes the tie-break's bias the thing that actually determines what the
+    agent reads.
+
+    Ordering ties by doc_id, as this first did, ranks by entity index. Since
+    the distractors are appended after the real entities, every tie went to a
+    real document and enlarging the corpus bought far less than it appeared
+    to. The hash tie-break removes that correlation, and this test is what
+    keeps it removed.
+
+    Measured on the tie itself rather than on all results. Counting every
+    returned document would be confounded: the genuinely relevant ones are
+    real entities, which are the low-numbered ones, so a correct ranking would
+    look biased. What matters is only which member of a *tied group* gets the
+    last slot.
+    """
+    retrieval = [t for t in tasks if t.category in ("qa", "multi_tool")]
+
+    contested, smallest_won = 0, 0
+    for task in retrieval:
+        hits = index.search(task.prompt, k=MAX_TOP_K)
+        if len(hits) < MAX_TOP_K:
+            continue
+
+        # Documents scoring exactly what the last returned hit scored: the
+        # group the tie-break had to choose from. `_score` is private, but the
+        # alternative is re-deriving BM25 in the test and asserting against a
+        # second implementation rather than against this one.
+        terms = tokenize(task.prompt)
+        cutoff = hits[-1].score
+        tied = [
+            doc.doc_id
+            for i, doc in enumerate(index.documents)
+            if abs(index._score(i, terms) - cutoff) < 1e-12
+        ]
+        if len(tied) < 2:
+            continue
+
+        contested += 1
+        if hits[-1].doc_id == min(tied):
+            smallest_won += 1
+
+    assert contested > 50, f"only {contested} contested cuts; not enough to judge"
+
+    # Ordering ties by doc_id would make this exactly 1.0 by construction.
+    share = smallest_won / contested
+    assert share < 0.5, (
+        f"the lowest doc_id won {share:.0%} of {contested} contested cuts; "
+        "the tie-break is still correlated with corpus position"
+    )
 
 
 def test_every_chain_closes_by_following_named_entities(index, tasks):
