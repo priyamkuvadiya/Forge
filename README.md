@@ -22,6 +22,12 @@ distinct throughout:
 Work in progress, built incrementally. Sections below are added only once
 the corresponding module exists and has been run for real.
 
+Modules 1 (from-scratch transformer), 2 (task suite and verifiers) and 3
+(tools, including the sandbox) are complete — 381 tests. Next is the prompted
+baseline agent, which produces the first reward numbers this project can
+report. Nothing has been scored against the task suite yet, so there are no
+results below beyond module 1's training curve.
+
 ## Module 1: from-scratch transformer
 
 `transformer_scratch/` — a GPT-style decoder-only transformer (causal
@@ -300,8 +306,115 @@ pass-rate.
 
 ```bash
 python -m task_suite.registry      # rebuild and pin the suite, print the summary
-pytest task_suite/tests -q         # 170 tests
+pytest task_suite/tests -q         # 172 tests
 ```
 
 No reward numbers appear here yet — nothing has been run against these tasks.
 The first real numbers arrive with the prompted baseline agent (module 4).
+
+## Module 3: the tools
+
+Three tools the agent can call. Two are safe by construction; the third runs
+code a language model wrote, and is the only part of this repo whose isolation
+is a design rather than an implementation detail.
+
+### Calculator
+
+Arithmetic parsed with `ast` and walked against a whitelist, never `eval`. The
+whitelist is the obvious half. The less obvious half is refusing expressions
+that are *valid* but hostile: `9**9**9` is four characters of legal arithmetic
+that pins a core and exhausts memory. GRPO will emit millions of expressions
+and is under no obligation to emit sensible ones, so guards on exponent size,
+estimated result width, expression length and term count are a correctness
+requirement, not defensive padding — an unguarded power hangs a training run
+with no error to point at.
+
+The tests check sufficiency as well as safety: every one of the suite's 210
+math tasks is solved through the calculator to within that task's own
+tolerance. A calculator that was safe but could not express the arithmetic
+would cap the achievable reward invisibly.
+
+### Search
+
+Hand-rolled BM25 over the pinned 130-document corpus. Whole documents are
+returned rather than snippets, because cross-tool answers are arithmetic over
+numbers *inside* those documents and a clipped snippet turns a solvable task
+into an unsolvable one.
+
+Two properties were measured rather than assumed, and both turned out worse
+than expected before they were fixed. A single query used to return a
+multi-hop question's entire supporting set for **32 of 118** questions, because
+entity classes were small and templated — a question mentioning "vessel"
+ranks every vessel document about equally, so a large `k` swept a slice of the
+whole class. And because documents rendered from one template score
+*identically*, 110 of the 168 retrieval tasks had their top-k cut decided by an
+exact score tie rather than by relevance, which made the tie-break — ordering
+by `doc_id`, i.e. by entity index — the thing that actually decided what the
+agent read.
+
+Three changes, each measured:
+
+| k | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 10 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 68 docs, partial tied groups | 2 | 2 | 4 | 7 | 14 | 16 | 21 | 32 |
+| 130 docs, partial tied groups | 1 | 2 | 2 | 4 | 6 | 7 | 9 | 14 |
+| 130 docs, whole groups only | 0 | 1 | 1 | **2** | 2 | 3 | 3 | 4 |
+
+The corpus gained 62 distractor entities that no question asks about and no
+answer appears in; results are cut at a tie boundary rather than sampled from
+one; and `MAX_TOP_K` is 5 on the strength of the table rather than by taste.
+The number of tasks whose first hop is unreachable is **0 at every k in every
+row**, so none of this costs solvability.
+
+A consequence worth stating because it looks like a bug: a query too broad to
+discriminate returns *nothing*. Searching "vessel" matches all 32 vessel
+documents equally, and there is no honest way to pick five of them — coming
+back empty tells the policy its query does not narrow anything down, which is
+the thing it needs to learn.
+
+### The code sandbox
+
+An AppContainer, a Job Object, and a suspended start, each closing something
+the others do not. There is no Docker and no WSL on the development machine,
+and Python on Windows has no `resource` module, so `fork` + `setrlimit` was
+never available.
+
+- **AppContainer** confines what the process can *reach*. This is the part
+  that matters for reward hacking. The first version did not have it, and a
+  probe showed a submission could hardcode the repo path and read
+  `task_suite/data/suite.json` — the expected answers for its own task. The
+  suite withholds those answers from the harness precisely so a passing line
+  requires computing them, and that defence is worth nothing if they are
+  readable from disk. Network access is refused too.
+- **Job Object** confines what it can *consume*: memory caps so an allocation
+  fails as `MemoryError` instead of swapping the machine, `ActiveProcessLimit
+  = 1` so a fork bomb fails at its first spawn, kill-on-close, and
+  die-on-unhandled-exception so a crash cannot raise a modal dialog and hang
+  an unattended run.
+- **`CREATE_SUSPENDED`** removes the assignment race: the process is created
+  suspended, put in the job, and only then resumed.
+
+A sandboxed run costs **285 ms**, of which **249 ms** is bare CPython startup
+on Windows — the isolation machinery is about 40 ms. That matters because the
+usual argument for a subprocess over a container is speed, and measured, it
+mostly isn't: a container pays the same interpreter cost on top of its own.
+The honest case against a container here is the multi-gigabyte install
+becoming a dependency for anyone reproducing this project's numbers.
+
+The sandbox tests run real fork bombs, real memory bombs and real infinite
+loops rather than asserting the happy path, and a separate integration file
+runs all 50 coding problems' reference solutions through the real verifier and
+the real sandbox, requiring 1.0 on every one — so that no isolation constraint
+silently depresses the category's reward.
+
+Known limits, stated rather than glossed: the child runs as the calling user,
+and everything it *is* granted — the interpreter directory, its own scratch
+space — it can read. This is a strong boundary against a model that wanders
+into the repo and a weak one against an attacker who already has local code
+execution.
+
+### Reproducing
+
+```bash
+pytest tools/tests -q             # 203 tests, including the adversarial ones
+```

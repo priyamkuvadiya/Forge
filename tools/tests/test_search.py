@@ -107,12 +107,28 @@ def test_unmatched_query_returns_nothing_rather_than_filler(index):
 
 
 def test_k_is_respected_and_capped(index):
-    # "instrument" rather than "expedition": only four documents are titled
-    # "... Expedition" (the rest are Surveys and Traverses), so that query
-    # cannot fill a larger k and would test the corpus, not the cap.
-    assert len(index.search("instrument", k=1)) == 1
-    assert len(index.search("instrument", k=3)) == 3
-    assert len(index.search("instrument", k=1000)) <= MAX_TOP_K
+    # A discriminating query, because a broad one is deliberately allowed to
+    # return fewer than k (see `test_a_broad_query_returns_nothing`).
+    query = "the Ashen Bay Survey"
+    assert len(index.search(query, k=1)) == 1
+    assert len(index.search(query, k=5)) == 5
+    assert len(index.search(query, k=1000)) <= MAX_TOP_K
+
+
+def test_a_broad_query_returns_nothing_rather_than_an_arbitrary_slice(index):
+    """"vessel" matches all 32 vessel documents equally, so none is returned.
+
+    This looks like a regression and is the intended behaviour. There is no
+    ranking among 32 identically scoring documents; returning five of them
+    would present an arbitrary choice as a result, and which five it was
+    decided whether a multi-hop question was answerable in one query. Coming
+    back empty tells the policy its query does not narrow anything down, which
+    is the thing it needs to learn.
+    """
+    assert index.search("vessel", k=MAX_TOP_K) == []
+    # A query that does discriminate still works, so this is not a blanket
+    # failure to retrieve.
+    assert index.search("RV Marlin Fen", k=MAX_TOP_K)
 
 
 def test_k_must_be_positive(index):
@@ -187,8 +203,9 @@ def test_one_query_rarely_retrieves_a_whole_chain(index, tasks):
     and the right one can arrive incidentally, buried among its neighbours.
 
     It was 7 of 118 when the corpus had 68 documents. Enlarging the small
-    classes with distractors brought it to 4. What remains is tolerable rather
-    than fatal because no single *document* answers the question (asserted in
+    classes with distractors brought it to 4, and refusing to return partial
+    tied groups brought it to 2. What remains is tolerable rather than fatal
+    because no single *document* answers the question (asserted in
     `task_suite/tests/test_qa_world.py`), so the policy must still read the
     first document to learn which of the retrieved neighbours is the answer.
     What it saved was the second search *call*, not the reasoning.
@@ -210,8 +227,8 @@ def test_one_query_rarely_retrieves_a_whole_chain(index, tasks):
         <= {hit.doc_id for hit in index.search(task.prompt, k=MAX_TOP_K)}
     ]
 
-    assert len(shortcut) == 4, (
-        f"expected 4 single-query chains at k={MAX_TOP_K}, got {len(shortcut)}: {shortcut}"
+    assert len(shortcut) == 2, (
+        f"expected 2 single-query chains at k={MAX_TOP_K}, got {len(shortcut)}: {shortcut}"
     )
 
 
@@ -238,65 +255,50 @@ def test_raising_k_would_erode_the_multi_hop_property(index, tasks, monkeypatch)
 
     at_cap = shortcut_count(MAX_TOP_K)
     at_ten = shortcut_count(10)
-    assert (at_cap, at_ten) == (4, 14), f"ranking changed: k=5 gave {at_cap}, k=10 gave {at_ten}"
+    assert (at_cap, at_ten) == (2, 4), f"ranking changed: k=5 gave {at_cap}, k=10 gave {at_ten}"
 
 
-def test_ties_do_not_favour_low_numbered_documents(index, tasks):
-    """Ranking must not correlate with a document's position in the corpus.
+def test_a_tied_group_is_never_partially_returned(index, tasks):
+    """The invariant that makes the tie-break's bias stop mattering.
 
     These documents come from a few templates, so BM25 often cannot separate a
     class at all - every instrument document contains "instrument" and
-    "measures" exactly once, leaving length as the only differentiator. Exact
-    score ties therefore decide the top-k cut for most retrieval tasks, which
-    makes the tie-break's bias the thing that actually determines what the
-    agent reads.
+    "measures" exactly once, leaving length as the only differentiator. Ties
+    are common: 110 of the suite's 168 retrieval tasks used to have their
+    top-k cut fall inside one.
 
-    Ordering ties by doc_id, as this first did, ranks by entity index. Since
-    the distractors are appended after the real entities, every tie went to a
-    real document and enlarging the corpus bought far less than it appeared
-    to. The hash tie-break removes that correlation, and this test is what
-    keeps it removed.
+    While a tie decided membership, the tie-break's bias decided what the
+    agent read. Ordering by doc_id ranks by entity index, and because
+    distractors are appended after the real entities, every tie went to a real
+    document. Returning tied groups whole or not at all removes the question
+    rather than debiasing it, which is the stronger guarantee.
 
-    Measured on the tie itself rather than on all results. Counting every
-    returned document would be confounded: the genuinely relevant ones are
-    real entities, which are the low-numbered ones, so a correct ranking would
-    look biased. What matters is only which member of a *tied group* gets the
-    last slot.
+    Asserted directly rather than statistically: for every retrieval task, no
+    dropped document scores exactly what a returned document scored.
     """
     retrieval = [t for t in tasks if t.category in ("qa", "multi_tool")]
+    assert retrieval
 
-    contested, smallest_won = 0, 0
     for task in retrieval:
         hits = index.search(task.prompt, k=MAX_TOP_K)
-        if len(hits) < MAX_TOP_K:
+        if not hits:
             continue
 
-        # Documents scoring exactly what the last returned hit scored: the
-        # group the tie-break had to choose from. `_score` is private, but the
-        # alternative is re-deriving BM25 in the test and asserting against a
-        # second implementation rather than against this one.
+        returned = {hit.doc_id for hit in hits}
+        scores = [hit.score for hit in hits]
+
+        # `_score` is private, but the alternative is re-deriving BM25 in the
+        # test and asserting this implementation against a second one.
         terms = tokenize(task.prompt)
-        cutoff = hits[-1].score
-        tied = [
-            doc.doc_id
-            for i, doc in enumerate(index.documents)
-            if abs(index._score(i, terms) - cutoff) < 1e-12
-        ]
-        if len(tied) < 2:
-            continue
-
-        contested += 1
-        if hits[-1].doc_id == min(tied):
-            smallest_won += 1
-
-    assert contested > 50, f"only {contested} contested cuts; not enough to judge"
-
-    # Ordering ties by doc_id would make this exactly 1.0 by construction.
-    share = smallest_won / contested
-    assert share < 0.5, (
-        f"the lowest doc_id won {share:.0%} of {contested} contested cuts; "
-        "the tie-break is still correlated with corpus position"
-    )
+        for i, doc in enumerate(index.documents):
+            if doc.doc_id in returned:
+                continue
+            dropped = index._score(i, terms)
+            for kept in scores:
+                assert abs(dropped - kept) > 1e-12, (
+                    f"{task.task_id}: {doc.doc_id} ties with a returned document "
+                    f"at {dropped} but was dropped"
+                )
 
 
 def test_every_chain_closes_by_following_named_entities(index, tasks):

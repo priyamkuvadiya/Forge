@@ -33,11 +33,12 @@ right one incidentally, buried among its neighbours. The agent still has to
 read the first document to know which of them the answer is; it just didn't
 have to issue a second query to have it in hand.
 
-Two things push back on that, both measured rather than assumed. The corpus
-classes were enlarged with distractors (`task_suite/qa_world.py`), which
-halved the effect, and `MAX_TOP_K` is set from the measurement below rather
-than picked for convenience. What remains is 4 of 118 multi-hop tasks, and
-those 4 are asserted exactly in the tests rather than rounded away.
+Three things push back on that, all measured rather than assumed. The corpus
+classes were enlarged with distractors (`task_suite/qa_world.py`); results are
+cut at a tie boundary rather than sampled from one (`_cut_at_a_tie`); and
+`MAX_TOP_K` is set from the measurement below rather than picked for
+convenience. What remains is 2 of 118 multi-hop tasks, down from 7, and those
+2 are asserted exactly in the tests rather than rounded away.
 """
 
 import hashlib
@@ -63,18 +64,20 @@ DEFAULT_TOP_K = 3
 # tasks, the number whose full supporting set arrives in a single search of
 # the raw question:
 #
-#     k                        2    3    4    5    6    7    8   10
-#     68-doc corpus            2    2    4    7   14   16   21   32
-#     130-doc corpus           1    2    2    4    6    7    9   14
+#     k                              2    3    4    5    6    7    8   10
+#     68 docs, partial tied groups   2    2    4    7   14   16   21   32
+#     130 docs, partial tied groups  1    2    2    4    6    7    9   14
+#     130 docs, whole groups only    0    1    1    2    2    3    3    4
 #
-# The second row is after `task_suite/qa_world.py` grew the small classes with
-# distractors, which roughly halved the effect at every k but did not remove
-# it - the count still climbs with k, so the cap still does work.
+# Row two is after `task_suite/qa_world.py` grew the small classes with
+# distractors. Row three is after `_cut_at_a_tie` stopped returning arbitrary
+# slices of tied groups. Together they take k=5 from 7 to 2 and k=10 from 32
+# to 4.
 #
 # The number of retrieval tasks whose first hop is unreachable is 0 at every k
-# in that range, so raising the cap cannot improve solvability; there is
-# nothing left to fix. Five leaves headroom for the imprecise queries a small
-# policy actually writes, at 4/118 rather than 14/118. See
+# in all three rows, so none of this costs solvability and raising the cap
+# cannot improve it. Five leaves headroom for the imprecise queries a small
+# policy actually writes. See
 # `tests/test_search.py::test_one_query_rarely_retrieves_a_whole_chain`.
 MAX_TOP_K = 5
 
@@ -184,24 +187,24 @@ class SearchIndex:
         # Sort by descending score, then by a hash of the query and the
         # doc_id.
         #
-        # The tie-break is doing real work here, not tidying an edge case.
         # These documents are rendered from a handful of templates, so BM25
         # frequently cannot separate a whole class at all: every instrument
-        # document contains "instrument" and "measures" exactly once, and the
-        # only thing varying the score is length. Measured over the suite's
-        # retrieval tasks, 110 of 168 have their top-k cut decided by an exact
-        # score tie rather than by relevance.
+        # document contains "instrument" and "measures" exactly once, and only
+        # length varies the score. Exact ties are therefore common, and 110 of
+        # the suite's 168 retrieval tasks used to have their top-k cut decided
+        # by one.
         #
-        # That makes the tie-break's *bias* the thing that matters. Ordering
-        # by doc_id, as this first did, ranks by entity index - and since
-        # distractors are appended after the real entities, every tie went to
-        # a real document. The corpus grew without retrieval getting much
-        # harder, which is the opposite of the intent.
+        # `_cut_at_a_tie` below is what actually addresses that: a tied group
+        # is returned whole or not at all, so a tie never decides *membership*.
+        # This ordering only decides the sequence within a group that was
+        # already going to be returned in full.
         #
-        # Hashing decorrelates the order from the numbering while staying
-        # exactly reproducible: the same query against the same corpus always
-        # returns the same documents in the same order, so eval re-runs agree,
-        # but nothing about a document's position in the corpus helps it rank.
+        # It is still hashed rather than by doc_id, for two reasons. Ordering
+        # by doc_id ranks by entity index, and since distractors are appended
+        # after the real entities that would put real documents first inside
+        # every group - a positional hint the corpus has no business giving.
+        # And it keeps the guarantee independent of `_cut_at_a_tie`: if that
+        # ever changes, the ordering underneath is not silently biased.
         # `hashlib` rather than `hash()`, which is salted per process and would
         # make results differ between runs.
         scored.sort(key=lambda pair: (-pair[0], self._tie_break(query, pair[1])))
@@ -213,8 +216,46 @@ class SearchIndex:
                 text=self._by_id[doc_id].text,
                 score=score,
             )
-            for score, doc_id in scored[:k]
+            for score, doc_id in self._cut_at_a_tie(scored, k)
         ]
+
+    @staticmethod
+    def _cut_at_a_tie(scored: list[tuple[float, str]], k: int) -> list[tuple[float, str]]:
+        """Take the top `k`, but never a partial slice of a tied group.
+
+        The alternative - `scored[:k]` - answers a question the ranking cannot
+        answer. When forty instrument documents score identically, taking five
+        of them is not "the five best"; it is five arbitrary documents
+        presented as if they were ranked, and whichever five they are decides
+        whether the agent stumbles onto the right one. That was measurably
+        real: it accounted for half the multi-hop questions a single query
+        could answer outright.
+
+        Stopping at the boundary instead means a returned document is always
+        one the ranking could actually justify. A query too broad to
+        discriminate comes back with less, or with nothing, which is honest
+        and is also the more useful signal for a policy learning to search:
+        "that query does not narrow anything down" is worth more than five
+        confident-looking irrelevant results.
+
+        Measured over the suite at k=5, this halves single-query multi-hop
+        chains (4 to 2) and costs no reachability at all - first-hop misses
+        stay at 0 of 168, with 4.4 documents returned on average instead of 5.
+        """
+        taken: list[tuple[float, str]] = []
+        index = 0
+        while index < len(scored) and len(taken) < k:
+            end = index
+            while end < len(scored) and abs(scored[end][0] - scored[index][0]) < 1e-12:
+                end += 1
+
+            group = scored[index:end]
+            if len(taken) + len(group) > k:
+                break
+            taken.extend(group)
+            index = end
+
+        return taken
 
     @staticmethod
     def _tie_break(query: str, doc_id: str) -> bytes:

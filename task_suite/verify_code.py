@@ -87,29 +87,48 @@ def build_harness(code: str, entry_point: str, calls: list[dict]) -> str:
     `print` output neither has to be parsed around nor reaches the channel
     results are reported on.
 
-    A submission sharing this module's global namespace can still shadow the
-    `_forge_*` names, and nothing here stops it. That is deliberate: with the
-    answers withheld, a submission that hijacks the report line still has to
-    put the correct values on it. Closing the namespace hole properly needs
-    the submission to run as its own module, which is module 3's call to make
-    inside the sandbox.
+    The submitted code runs in its own module namespace rather than inline in
+    this one. An earlier version inlined it, which meant a submission shared
+    globals with the reporting code and could rebind the `_forge_*` names it
+    depends on. That was left open deliberately - with the answers withheld, a
+    submission that hijacks the report line still has to put correct values on
+    it - and it is closed here because "it gains nothing" is a weaker
+    guarantee than "it cannot".
+
+    The submission is compiled into a fresh module object built by
+    `types.ModuleType`, so its globals are its own. The `compile`/`exec` pair
+    doing that is not the thing `CLAUDE.md` prohibits: the prohibition is on
+    executing generated code in *this* process, and everything in this string
+    already runs inside module 3's sandbox. There is no way to define a
+    function from source text without executing that text somewhere; what
+    matters is where.
     """
     payload = json.dumps(calls)
     return f'''\
-import os as _forge_os, sys as _forge_sys, json as _forge_json
+import os as _forge_os, sys as _forge_sys, json as _forge_json, types as _forge_types
 
 _forge_out = _forge_os.dup(1)
 _forge_os.dup2(_forge_os.open(_forge_os.devnull, _forge_os.O_WRONLY), 1)
 
-# ---- submitted code ----
-{code}
-# ---- end submitted code ----
+_forge_source = {code!r}
+_forge_module = _forge_types.ModuleType("submission")
+_forge_module.__dict__["__name__"] = "submission"
 
-_forge_calls = _forge_json.loads({payload!r})
 _forge_outputs = []
-for _forge_case in _forge_calls:
+try:
+    exec(compile(_forge_source, "submission.py", "exec"), _forge_module.__dict__)
+    _forge_entry = _forge_module.__dict__[{entry_point!r}]
+except BaseException:
+    # The submission did not import, or defines no such function. Every case
+    # fails, and it fails here rather than once per call.
+    _forge_entry = None
+
+for _forge_case in _forge_json.loads({payload!r}):
+    if _forge_entry is None:
+        _forge_outputs.append({{"ok": False, "value": None}})
+        continue
     try:
-        _forge_value = {entry_point}(*_forge_case["args"], **_forge_case.get("kwargs", {{}}))
+        _forge_value = _forge_entry(*_forge_case["args"], **_forge_case.get("kwargs", {{}}))
         _forge_json.dumps(_forge_value)  # a value we cannot report faithfully is a failure
         _forge_outputs.append({{"ok": True, "value": _forge_value}})
     except Exception:

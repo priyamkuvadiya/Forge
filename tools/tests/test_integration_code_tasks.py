@@ -40,6 +40,50 @@ def test_reference_solution_scores_one_in_the_real_sandbox(task):
     assert score == 1.0, f"{task.metadata['name']} scored {score} under the sandbox"
 
 
+@pytest.mark.parametrize(
+    "label,attack",
+    [
+        (
+            "rebind the reporting json module",
+            "class _Fake:\n"
+            "    @staticmethod\n"
+            "    def dumps(v):\n"
+            "        return '[{\"ok\": true, \"value\": 0}]'\n"
+            "_forge_json = _Fake\n",
+        ),
+        (
+            "prefill the results list",
+            "_forge_outputs = [{'ok': True, 'value': 0}]\n",
+        ),
+        (
+            "poison sys.modules",
+            "import sys, types\n"
+            "m = types.ModuleType('json')\n"
+            "m.dumps = lambda v: '[{\"ok\": true, \"value\": 0}]'\n"
+            "m.loads = lambda s: []\n"
+            "sys.modules['json'] = m\n",
+        ),
+    ],
+)
+def test_a_submission_cannot_forge_the_report_line(label, attack):
+    """The submission gets its own module namespace, so `_forge_*` is out of reach.
+
+    `verify_code` used to inline the submitted code into the harness's own
+    namespace and left this open on the argument that hijacking the report
+    line gains nothing while the answers are withheld. True, but weaker than
+    it needed to be, and it was explicitly handed to module 3 to close.
+
+    Each attack here rebinds something the reporting code depends on and then
+    returns a wrong answer. All of them must score exactly what an honest
+    wrong answer scores.
+    """
+    task = ALL_TASKS[0]
+    entry = task.ground_truth["entry_point"]
+    source = f"{attack}\ndef {entry}(*args, **kwargs):\n    return 'definitely not the answer'\n"
+
+    assert verify(task, _response(source), code_runner=RUNNER) == 0.0, label
+
+
 def test_the_whole_category_is_covered():
     """A partial run would hide exactly the breakage this file exists to catch."""
     assert len(ALL_TASKS) == 50
@@ -58,25 +102,34 @@ def test_a_stub_still_fails_under_the_sandbox(task):
 
 
 def test_a_submission_cannot_read_the_expected_answers():
-    """The reward-hacking regression, now against the real isolation boundary.
+    """The reward-hacking regression, driven end to end through the verifier.
 
     `task_suite/tests/test_verifiers.py` proves the expected values never
-    enter the harness. This proves the other half: even knowing they live in
-    `task_suite`, a submission cannot reach them from inside the sandbox to
-    read them off disk.
+    enter the harness. This is the other half: a submission that goes looking
+    for them on disk, using the real repo path rather than a relative one,
+    still cannot score.
+
+    The first version of this test searched only `cwd` and `cwd.parent`, which
+    are inside the sandbox's scratch directory, so it passed while the repo
+    was in fact readable by absolute path. The boundary that makes it true is
+    the AppContainer; `tools/tests/test_code_exec.py` asserts that directly.
     """
+    from pathlib import Path
+
+    repo = Path(__file__).resolve().parents[2]
     task = ALL_TASKS[0]
     thief = f"""
 import json, pathlib
 
 def {task.ground_truth['entry_point']}(*args, **kwargs):
-    for base in (pathlib.Path.cwd(), pathlib.Path.cwd().parent):
-        for hit in base.rglob("suite.json"):
-            return json.loads(hit.read_text())
-    try:
-        import task_suite
-        return "imported the suite"
-    except Exception:
-        return None
+    for candidate in (
+        pathlib.Path(r"{repo / 'task_suite' / 'data' / 'suite.json'}"),
+        pathlib.Path.cwd() / "suite.json",
+    ):
+        try:
+            return json.loads(candidate.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+    return None
 """
     assert verify(task, _response(thief), code_runner=RUNNER) < 1.0

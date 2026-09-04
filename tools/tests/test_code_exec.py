@@ -16,6 +16,7 @@ Two properties are being separated throughout:
   code.
 """
 
+import os
 import sys
 import time
 from pathlib import Path
@@ -200,6 +201,14 @@ def test_files_written_by_a_submission_do_not_survive():
 
 
 def test_temp_files_land_inside_the_sandbox_not_the_users_temp():
+    """A submission's temp files must not reach the user's real temp directory.
+
+    They land in the container's own Temp rather than in the run directory:
+    Windows points a contained process at the container's storage whatever
+    TEMP is set to. That is still isolated from the user, and `_sandbox_root`
+    sweeps those strays once per process so they cannot accumulate across a
+    training run.
+    """
     result = run_code(
         "import tempfile, os\n"
         "fd, path = tempfile.mkstemp()\n"
@@ -207,8 +216,8 @@ def test_temp_files_land_inside_the_sandbox_not_the_users_temp():
         "print(path)\n"
     )
     created = Path(result.stdout.strip())
-    assert "forge-sandbox-" in str(created), f"tempfile escaped to {created}"
-    assert not created.exists()
+    assert "forgecodesandbox" in str(created).lower(), f"tempfile escaped to {created}"
+    assert Path(os.environ["TEMP"]).resolve() not in created.resolve().parents
 
 
 def test_the_environment_is_scrubbed():
@@ -228,6 +237,72 @@ def test_the_project_is_not_importable_from_inside():
     result = run_code("import task_suite; print('imported')")
     assert result.exit_code != 0
     assert "ModuleNotFoundError" in result.stderr
+
+
+def test_the_repo_cannot_be_read_by_absolute_path():
+    """The one that was actually broken, and silently.
+
+    `import task_suite` failing proves nothing about the filesystem - it only
+    proves the module is not on `sys.path`. The first version of this sandbox
+    let a submission open the repo by absolute path and read
+    `task_suite/data/suite.json`, which carries the expected answers for every
+    coding task. Module 2 withholds those answers from the harness precisely
+    so a passing line requires computing them; being able to read them off
+    disk made that defence worthless.
+
+    An earlier test asserted this was blocked and passed anyway, because it
+    only probed `cwd` and `cwd.parent` - both inside the sandbox's scratch
+    directory, where there was never anything to find. The probe here uses the
+    real repo path, which is what an actual attempt would use.
+    """
+    repo = Path(__file__).resolve().parents[2]
+    suite = repo / "task_suite" / "data" / "suite.json"
+    assert suite.exists(), "expected the pinned suite to exist outside the sandbox"
+
+    result = run_code(
+        "import pathlib\n"
+        f"p = pathlib.Path(r'{suite}')\n"
+        "try:\n"
+        "    print('READ', p.read_text(encoding='utf-8')[:20])\n"
+        "except Exception as e:\n"
+        "    print('DENIED', type(e).__name__)\n"
+    )
+    assert "DENIED" in result.stdout, f"the repo was readable: {result.stdout[:200]}"
+    assert "READ" not in result.stdout
+
+
+def test_the_users_documents_cannot_be_enumerated():
+    """Not just the repo: the AppContainer has no reach into the user's files."""
+    result = run_code(
+        "import pathlib\n"
+        "try:\n"
+        "    n = len(list(pathlib.Path(r'C:\\Users').iterdir()))\n"
+        "    print('LISTED', n)\n"
+        "except Exception as e:\n"
+        "    print('DENIED', type(e).__name__)\n"
+    )
+    assert "DENIED" in result.stdout
+
+
+def test_network_access_is_refused():
+    """The AppContainer is created with no capabilities, and networking is one.
+
+    Worth asserting rather than assuming: an earlier version of this module
+    documented the absence of a network block as a known limitation, and that
+    documentation is now wrong in the safe direction. If a capability is ever
+    added to the container, this is what catches the network coming back.
+    """
+    result = run_code(
+        "import socket\n"
+        "try:\n"
+        "    socket.create_connection(('1.1.1.1', 53), timeout=3).close()\n"
+        "    print('CONNECTED')\n"
+        "except Exception as e:\n"
+        "    print('REFUSED', type(e).__name__)\n",
+        timeout=15.0,
+    )
+    assert "REFUSED" in result.stdout
+    assert "CONNECTED" not in result.stdout
 
 
 def test_third_party_packages_are_not_importable():
