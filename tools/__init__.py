@@ -10,8 +10,8 @@ Keeping them behind one package matters for module 7: the Go middle layer owns
 tool-call routing at serving time, and it should be routing to one boundary
 with one contract, not to three ad-hoc entry points.
 
-`code_exec` is Windows-only, because its isolation is built on Job Objects.
-It is imported lazily below rather than at module import, so that the
+`code_exec` is Windows-only, because its isolation is built on AppContainers
+and Job Objects. It is imported lazily below rather than at module import, so that the
 calculator and the search tool stay usable on any platform - the eval harness
 and the Go layer have reasons to touch those two without needing a sandbox.
 """

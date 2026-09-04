@@ -361,12 +361,19 @@ def _sandbox_root() -> Path:
     # Inside `root`, so the sweep above never deletes it. Outside it, the
     # sweep would remove the marker every process and re-run an `icacls` pass
     # over ~50k interpreter files each time.
+    #
+    # Keyed on the interpreter as well as the SID. A Python upgrade installs
+    # into a new directory (or replaces the old one's ACLs) and the grant is
+    # silently lost; keyed on the SID alone, the marker would still be there
+    # and every run would fail to start with a permission error that says
+    # nothing about why.
     marker = root / ".forge-interpreter-granted"
-    if not marker.exists():
-        _grant_app_container_access(
-            sid_text, Path(_sandbox_interpreter()).parent, "(OI)(CI)(RX)"
-        )
-        marker.write_text(sid_text, encoding="utf-8")
+    interpreter = Path(_sandbox_interpreter())
+    expected = f"{sid_text}\n{interpreter}\n{sys.version}"
+
+    if not marker.exists() or marker.read_text(encoding="utf-8") != expected:
+        _grant_app_container_access(sid_text, interpreter.parent, "(OI)(CI)(RX)")
+        marker.write_text(expected, encoding="utf-8")
 
     _sandbox_root_path = root
     return root

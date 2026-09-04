@@ -418,3 +418,15 @@ execution.
 ```bash
 pytest tools/tests -q             # 203 tests, including the adversarial ones
 ```
+
+The first sandboxed run on a machine is slow — around 90 seconds — because it
+creates the AppContainer profile and grants it read access to the interpreter
+directory, which is an `icacls` pass over roughly 50,000 files. It happens
+once and is marker-guarded, keyed on both the container SID and the
+interpreter, so a Python upgrade re-does it rather than failing obscurely.
+
+Runs are independent and the sandbox is thread-safe: measured on this machine,
+16 runs take 5.6 s serially and 0.8 s across 8 workers, so an effective 49 ms
+per run rather than 285 ms. Module 5 should execute code rollouts in parallel
+for that reason — with the caveat that each concurrent run may hold up to the
+256 MB memory cap, so the worker count is a RAM budget, not a free lunch.
