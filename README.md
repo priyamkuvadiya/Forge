@@ -23,10 +23,10 @@ Work in progress, built incrementally. Sections below are added only once
 the corresponding module exists and has been run for real.
 
 Modules 1 (from-scratch transformer), 2 (task suite and verifiers) and 3
-(tools, including the sandbox) are complete — 381 tests. Next is the prompted
-baseline agent, which produces the first reward numbers this project can
-report. Nothing has been scored against the task suite yet, so there are no
-results below beyond module 1's training curve.
+(tools, the sandbox, and the tool-call contract) are complete — 429 tests.
+Next is the prompted baseline agent, which produces the first reward numbers
+this project can report. Nothing has been scored against the task suite yet,
+so there are no results below beyond module 1's training curve.
 
 ## Module 1: from-scratch transformer
 
@@ -153,10 +153,10 @@ project, so it is built before any agent, tool or training code exists: if the
 verifiers are wrong, every reward curve and pass-rate reported later is wrong
 with them, and no amount of care in the training loop fixes that.
 
-| split | math | code | qa | multi-tool | total |
-| --- | --- | --- | --- | --- | --- |
-| train | 150 | 30 | 85 | 35 | 300 |
-| held out | 60 | 20 | 33 | 15 | 128 |
+| split | math | code | qa | multi-tool | no-tool | total |
+| --- | --- | --- | --- | --- | --- | --- |
+| train | 150 | 30 | 85 | 35 | 40 | 340 |
+| held out | 60 | 20 | 33 | 15 | 20 | 148 |
 
 The suite is pinned to `task_suite/data/suite.json` and committed. Everything
 that produces it is deterministic, so it could be rebuilt on demand — it is
@@ -244,7 +244,7 @@ right-looking word, and a small policy trained against that learns to stuff
 answers with plausible entities.
 
 **Cross-tool (`tasks_multi_tool.py`)** — 50 tasks that need search *and* the
-calculator. The other three categories map one-to-one onto a tool: math wants
+calculator. The other single-tool categories map one-to-one onto a tool: math wants
 the calculator, QA wants search, code wants the executor. A policy can infer
 which tool to reach for from the shape of the question alone, so RL on those
 categories teaches an agent to *use* a tool well but never to *choose* one —
@@ -262,6 +262,30 @@ the result already written down; candidates that would violate this are
 dropped, not reworded. And differences are only emitted when they come out
 positive, so no task turns on guessing which way round a subtraction was
 meant.
+
+**No-tool control (`tasks_no_tool.py`)** — 60 tasks that need no tool at all.
+Every other category rewards reaching for one, which makes a policy that
+learned "always search" score identically to one that learned *when* to
+search. Over-calling is a real trained-policy failure mode and this suite
+could not see it. These tasks are single-operation arithmetic on small
+integers, counting items listed in the prompt, and questions whose answer is
+stated in the prompt — half numeric, half textual, so the control covers
+reflexive use of the calculator *and* of search.
+
+Three things are asserted rather than assumed, because a control that
+secretly needed a tool would make the measurement built on it meaningless.
+The arithmetic stays small enough to do mentally; every comprehension answer
+appears verbatim in its own prompt; and none of the invented names appears
+anywhere in the search corpus, so a policy that reaches for search gets
+nothing back. The splits draw on disjoint pools of operands, names and
+vehicles, so held-out means here what it means everywhere else.
+
+**The reward does not penalise a tool call.** Scoring is correctness alone.
+What this category enables is a measurement — the call count from the tool
+trace — so module 9 can report "the RL policy called a tool on N% of tasks
+that needed none" alongside the reward. Folding a penalty into the reward
+would be training against a proxy invented here rather than against a
+verifiable outcome, which is the thing this whole project avoids.
 
 ### Running untrusted code, and not being lied to by it
 
@@ -306,7 +330,7 @@ pass-rate.
 
 ```bash
 python -m task_suite.registry      # rebuild and pin the suite, print the summary
-pytest task_suite/tests -q         # 172 tests
+pytest task_suite/tests -q         # 186 tests
 ```
 
 No reward numbers appear here yet — nothing has been run against these tasks.
@@ -374,10 +398,13 @@ the thing it needs to learn.
 
 ### The code sandbox
 
-An AppContainer, a Job Object, and a suspended start, each closing something
-the others do not. There is no Docker and no WSL on the development machine,
-and Python on Windows has no `resource` module, so `fork` + `setrlimit` was
-never available.
+`code_exec.py` picks a backend and presents one interface, because everything
+above it should neither know nor care which it got.
+
+**Windows** — an AppContainer, a Job Object, and a suspended start, each
+closing something the others do not. There is no Docker and no WSL on the
+development machine, and Python on Windows has no `resource` module, so
+`fork` + `setrlimit` was never available here.
 
 - **AppContainer** confines what the process can *reach*. This is the part
   that matters for reward hacking. The first version did not have it, and a
@@ -407,16 +434,61 @@ runs all 50 coding problems' reference solutions through the real verifier and
 the real sandbox, requiring 1.0 on every one — so that no isolation constraint
 silently depresses the category's reward.
 
-Known limits, stated rather than glossed: the child runs as the calling user,
-and everything it *is* granted — the interpreter directory, its own scratch
-space — it can read. This is a strong boundary against a model that wanders
+**POSIX** — `fork` plus `setrlimit`: address-space and CPU caps, `RLIMIT_NPROC
+= 1` so a fork bomb fails at its first spawn, a file-size cap, no core dumps,
+and the child in its own session so a timeout kills the whole process group.
+It exists because a runner that only works on one laptop makes the coding
+category unreproducible, which fails this project's own bar.
+
+Two honest caveats, both also stated at the top of `code_exec_posix.py`. **It
+has never been executed** — there is no Linux, WSL or container runtime on the
+development machine, so it is code that looks right and has not been run; the
+first thing to do on a Linux box is run the suite and fix what it got wrong.
+And **it does not confine the filesystem**. Proper confinement needs a mount
+namespace, which needs root or user namespaces, neither of which can be
+assumed — so on POSIX a submission can still read the repo and therefore the
+expected answers, the exact hole the AppContainer closes on Windows. The tests
+that assert filesystem and network confinement are marked Windows-only for
+that reason, rather than being allowed to skip quietly and imply a boundary
+that is not there.
+
+Known limits on Windows too, stated rather than glossed: the child runs as the
+calling user, and everything it *is* granted — the interpreter directory, its
+own scratch space — it can read. This is a strong boundary against a model that wanders
 into the repo and a weak one against an attacker who already has local code
 execution.
+
+### One contract for calling them
+
+`toolbox.py` is what the rest of the project actually talks to. Without it,
+each of modules 4, 5, 7 and 9 would have invented its own way to name a tool,
+parse a call and record what happened — slightly differently.
+
+The policy emits `<tool name="calculator">2 + 2</tool>`, deliberately shaped
+like the `<answer>` contract so there is one syntax to learn, not two. Every
+tool returns the same `ToolResult`, and every failure — bad syntax, unknown
+tool, a refused expression, a timeout — comes back as a result rather than an
+exception, because one bad tool call is ordinary policy behaviour that should
+cost reward, not abort a rollout.
+
+A `ToolSession` wraps one task attempt with a call budget (8 by default;
+the longest legitimate chain in the suite is a three-hop QA question) and a
+trace of every call, its arguments, its result and its duration. That trace is
+not bookkeeping: module 7 stores it in SQLite for the live reasoning view, and
+module 9 needs the call counts to answer the question the no-tool category
+exists to ask. Exhausting the budget returns a message telling the policy to
+answer with what it has, rather than silently dropping the call — a policy
+that is ignored learns nothing.
+
+The prompt describing the tools is generated from the registry, so it can
+never advertise a tool that is not present — a live risk here, since the
+sandbox is platform-specific and a registry built without it must not promise
+a `python` tool the policy would waste its whole budget discovering is absent.
 
 ### Reproducing
 
 ```bash
-pytest tools/tests -q             # 203 tests, including the adversarial ones
+pytest tools/tests -q             # 237 tests, including the adversarial ones
 ```
 
 The first sandboxed run on a machine is slow — around 90 seconds — because it

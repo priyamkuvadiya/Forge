@@ -29,6 +29,22 @@ def verify(
     if task.category == "qa":
         return verify_qa(response, task.ground_truth)
 
+    # no_tool is the control category: tasks that should be answered without
+    # reaching for a tool at all. Some are arithmetic and some are reading
+    # comprehension, so the ground truth carries either a value or a set of
+    # accepted answers, and the matching existing verifier scores it. Same
+    # principle as multi_tool - the category changes what the agent should do,
+    # not how it is graded.
+    #
+    # Note what is *not* here: no penalty for calling a tool. Over-calling is
+    # measured from the tool-call trace in module 9, not baked into the
+    # reward. Penalising it here would mean training against a proxy we
+    # invented rather than against a verifiable outcome.
+    if task.category == "no_tool":
+        if "answers" in task.ground_truth:
+            return verify_qa(response, task.ground_truth)
+        return verify_math(response, task.ground_truth)
+
     if task.category == "code":
         if code_runner is None:
             # Returning 0.0 here would look like "the model failed" and would

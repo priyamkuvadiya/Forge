@@ -4,6 +4,10 @@
     "math_heldout_seed": 90211,
     "math_train": 150,
     "math_train_seed": 11071,
+    "no_tool_heldout": 20,
+    "no_tool_heldout_seed": 77419,
+    "no_tool_train": 40,
+    "no_tool_train_seed": 40213,
     "world_seed": 20260831
   },
   "generated_by": "task_suite.registry",
@@ -3336,6 +3340,318 @@
         "prompt": "How many berths do Hollow Cape Station and Ilsen Fjord Station have between them?",
         "split": "heldout",
         "task_id": "multi-heldout-0014"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 20.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_sum",
+          "tools": []
+        },
+        "prompt": "What is 8 plus 12?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0000"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 99.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_product",
+          "tools": []
+        },
+        "prompt": "Multiply 9 by 11.",
+        "split": "heldout",
+        "task_id": "notool-heldout-0001"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 3.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "counting",
+          "tools": []
+        },
+        "prompt": "A box contains tickets, keys and brushes. How many items are in the box?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0002"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "Nikolas Ferreday",
+            "Ferreday"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_operator",
+          "tools": []
+        },
+        "prompt": "Nikolas Ferreday operates the Weirbrook launch, which runs on Tuesdays. Who operates it?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0003"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "ochre"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_colour",
+          "tools": []
+        },
+        "prompt": "The Thornfield omnibus is painted ochre and does not run on Thursdays. What colour is the Thornfield omnibus?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0004"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 17.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_sum",
+          "tools": []
+        },
+        "prompt": "8 + 9 = ?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0005"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 84.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_product",
+          "tools": []
+        },
+        "prompt": "What is 7 times 12?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0006"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 5.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "counting",
+          "tools": []
+        },
+        "prompt": "A box contains brushes, keys, tickets, mugs and candles. How many items are in the box?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0007"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "Isolde Barrowman",
+            "Barrowman"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_operator",
+          "tools": []
+        },
+        "prompt": "The Larkhill cable car runs on Fridays and is operated by Isolde Barrowman. Who operates the Larkhill cable car?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0008"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "ochre"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_colour",
+          "tools": []
+        },
+        "prompt": "Painted ochre, the Larkhill cable car is out of service on Thursdays. What colour is it?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0009"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 15.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_sum",
+          "tools": []
+        },
+        "prompt": "Add 8 and 7.",
+        "split": "heldout",
+        "task_id": "notool-heldout-0010"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 49.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_product",
+          "tools": []
+        },
+        "prompt": "7 x 7 = ?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0011"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 3.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "counting",
+          "tools": []
+        },
+        "prompt": "A box contains keys, tickets and candles. How many items are in the box?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0012"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "Isolde Barrowman",
+            "Barrowman"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_operator",
+          "tools": []
+        },
+        "prompt": "Isolde Barrowman operates the Thornfield omnibus, which runs on Tuesdays. Who operates it?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0013"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "ochre"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_colour",
+          "tools": []
+        },
+        "prompt": "The Thornfield omnibus is painted ochre and does not run on Wednesdays. What colour is the Thornfield omnibus?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0014"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 20.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_sum",
+          "tools": []
+        },
+        "prompt": "What is 9 plus 11?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0015"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 84.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_product",
+          "tools": []
+        },
+        "prompt": "Multiply 7 by 12.",
+        "split": "heldout",
+        "task_id": "notool-heldout-0016"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 5.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "counting",
+          "tools": []
+        },
+        "prompt": "A box contains brushes, keys, tickets, candles and mugs. How many items are in the box?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0017"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "Nikolas Ferreday",
+            "Ferreday"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_operator",
+          "tools": []
+        },
+        "prompt": "The Thornfield omnibus runs on Thursdays and is operated by Nikolas Ferreday. Who operates the Thornfield omnibus?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0018"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "navy"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_colour",
+          "tools": []
+        },
+        "prompt": "Painted navy, the Thornfield omnibus is out of service on Sundays. What colour is it?",
+        "split": "heldout",
+        "task_id": "notool-heldout-0019"
       }
     ],
     "train": [
@@ -10307,6 +10623,630 @@
         "prompt": "How many berths do Fenwold Station and Grimsby Shoal Station have between them?",
         "split": "train",
         "task_id": "multi-train-0034"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 9.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_sum",
+          "tools": []
+        },
+        "prompt": "What is 5 plus 4?",
+        "split": "train",
+        "task_id": "notool-train-0000"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 8.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_product",
+          "tools": []
+        },
+        "prompt": "Multiply 4 by 2.",
+        "split": "train",
+        "task_id": "notool-train-0001"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 3.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "counting",
+          "tools": []
+        },
+        "prompt": "A box contains bottles, folders and chairs. How many items are in the box?",
+        "split": "train",
+        "task_id": "notool-train-0002"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "Delia Marchmont",
+            "Marchmont"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_operator",
+          "tools": []
+        },
+        "prompt": "Delia Marchmont operates the Cloudbank funicular, which runs on Thursdays. Who operates it?",
+        "split": "train",
+        "task_id": "notool-train-0003"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "green"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_colour",
+          "tools": []
+        },
+        "prompt": "The Ravensfoot barge is painted green and does not run on Sundays. What colour is the Ravensfoot barge?",
+        "split": "train",
+        "task_id": "notool-train-0004"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 9.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_sum",
+          "tools": []
+        },
+        "prompt": "3 + 6 = ?",
+        "split": "train",
+        "task_id": "notool-train-0005"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 9.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_product",
+          "tools": []
+        },
+        "prompt": "What is 3 times 3?",
+        "split": "train",
+        "task_id": "notool-train-0006"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 4.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "counting",
+          "tools": []
+        },
+        "prompt": "A box contains chairs, bottles, pencils and cushions. How many items are in the box?",
+        "split": "train",
+        "task_id": "notool-train-0007"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "Corwin Tealby",
+            "Tealby"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_operator",
+          "tools": []
+        },
+        "prompt": "The Ravensfoot barge runs on Wednesdays and is operated by Corwin Tealby. Who operates the Ravensfoot barge?",
+        "split": "train",
+        "task_id": "notool-train-0008"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "slate grey"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_colour",
+          "tools": []
+        },
+        "prompt": "Painted slate grey, the Brightwater ferry is out of service on Thursdays. What colour is it?",
+        "split": "train",
+        "task_id": "notool-train-0009"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 6.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_sum",
+          "tools": []
+        },
+        "prompt": "Add 3 and 3.",
+        "split": "train",
+        "task_id": "notool-train-0010"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 8.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_product",
+          "tools": []
+        },
+        "prompt": "2 x 4 = ?",
+        "split": "train",
+        "task_id": "notool-train-0011"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 3.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "counting",
+          "tools": []
+        },
+        "prompt": "A box contains pencils, chairs and folders. How many items are in the box?",
+        "split": "train",
+        "task_id": "notool-train-0012"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "Odalys Brentmoor",
+            "Brentmoor"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_operator",
+          "tools": []
+        },
+        "prompt": "Odalys Brentmoor operates the Cloudbank funicular, which runs on Sundays. Who operates it?",
+        "split": "train",
+        "task_id": "notool-train-0013"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "pale yellow"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_colour",
+          "tools": []
+        },
+        "prompt": "The Ravensfoot barge is painted pale yellow and does not run on Saturdays. What colour is the Ravensfoot barge?",
+        "split": "train",
+        "task_id": "notool-train-0014"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 8.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_sum",
+          "tools": []
+        },
+        "prompt": "What is 2 plus 6?",
+        "split": "train",
+        "task_id": "notool-train-0015"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 12.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_product",
+          "tools": []
+        },
+        "prompt": "Multiply 2 by 6.",
+        "split": "train",
+        "task_id": "notool-train-0016"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 5.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "counting",
+          "tools": []
+        },
+        "prompt": "A box contains bottles, pencils, lamps, apples and chairs. How many items are in the box?",
+        "split": "train",
+        "task_id": "notool-train-0017"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "Marguerite Ashdown",
+            "Ashdown"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_operator",
+          "tools": []
+        },
+        "prompt": "The Ravensfoot barge runs on Thursdays and is operated by Marguerite Ashdown. Who operates the Ravensfoot barge?",
+        "split": "train",
+        "task_id": "notool-train-0018"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "green"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_colour",
+          "tools": []
+        },
+        "prompt": "Painted green, the Kingsmere tram is out of service on Fridays. What colour is it?",
+        "split": "train",
+        "task_id": "notool-train-0019"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 9.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_sum",
+          "tools": []
+        },
+        "prompt": "6 + 3 = ?",
+        "split": "train",
+        "task_id": "notool-train-0020"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 4.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_product",
+          "tools": []
+        },
+        "prompt": "What is 2 times 2?",
+        "split": "train",
+        "task_id": "notool-train-0021"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 6.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "counting",
+          "tools": []
+        },
+        "prompt": "A box contains chairs, cushions, apples, folders, lamps and bottles. How many items are in the box?",
+        "split": "train",
+        "task_id": "notool-train-0022"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "Rafferty Klose",
+            "Klose"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_operator",
+          "tools": []
+        },
+        "prompt": "Rafferty Klose operates the Kingsmere tram, which runs on Fridays. Who operates it?",
+        "split": "train",
+        "task_id": "notool-train-0023"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "slate grey"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_colour",
+          "tools": []
+        },
+        "prompt": "The Kingsmere tram is painted slate grey and does not run on Thursdays. What colour is the Kingsmere tram?",
+        "split": "train",
+        "task_id": "notool-train-0024"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 10.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_sum",
+          "tools": []
+        },
+        "prompt": "Add 4 and 6.",
+        "split": "train",
+        "task_id": "notool-train-0025"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 6.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_product",
+          "tools": []
+        },
+        "prompt": "2 x 3 = ?",
+        "split": "train",
+        "task_id": "notool-train-0026"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 5.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "counting",
+          "tools": []
+        },
+        "prompt": "A box contains cushions, apples, folders, pencils and lamps. How many items are in the box?",
+        "split": "train",
+        "task_id": "notool-train-0027"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "Coretta Winterbourne",
+            "Winterbourne"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_operator",
+          "tools": []
+        },
+        "prompt": "The Kingsmere tram runs on Fridays and is operated by Coretta Winterbourne. Who operates the Kingsmere tram?",
+        "split": "train",
+        "task_id": "notool-train-0028"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "green"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_colour",
+          "tools": []
+        },
+        "prompt": "Painted green, the Kingsmere tram is out of service on Wednesdays. What colour is it?",
+        "split": "train",
+        "task_id": "notool-train-0029"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 9.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_sum",
+          "tools": []
+        },
+        "prompt": "What is 3 plus 6?",
+        "split": "train",
+        "task_id": "notool-train-0030"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 20.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_product",
+          "tools": []
+        },
+        "prompt": "Multiply 5 by 4.",
+        "split": "train",
+        "task_id": "notool-train-0031"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 6.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "counting",
+          "tools": []
+        },
+        "prompt": "A box contains folders, bottles, cushions, apples, lamps and chairs. How many items are in the box?",
+        "split": "train",
+        "task_id": "notool-train-0032"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "Matthias Selby",
+            "Selby"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_operator",
+          "tools": []
+        },
+        "prompt": "Matthias Selby operates the Aldergate shuttle, which runs on Thursdays. Who operates it?",
+        "split": "train",
+        "task_id": "notool-train-0033"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "crimson"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_colour",
+          "tools": []
+        },
+        "prompt": "The Cloudbank funicular is painted crimson and does not run on Saturdays. What colour is the Cloudbank funicular?",
+        "split": "train",
+        "task_id": "notool-train-0034"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 10.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_sum",
+          "tools": []
+        },
+        "prompt": "6 + 4 = ?",
+        "split": "train",
+        "task_id": "notool-train-0035"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 12.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "small_product",
+          "tools": []
+        },
+        "prompt": "What is 3 times 4?",
+        "split": "train",
+        "task_id": "notool-train-0036"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "tolerance": 0.0,
+          "value": 5.0
+        },
+        "metadata": {
+          "answer_type": "number",
+          "template": "counting",
+          "tools": []
+        },
+        "prompt": "A box contains cushions, lamps, chairs, bottles and folders. How many items are in the box?",
+        "split": "train",
+        "task_id": "notool-train-0037"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "Matthias Selby",
+            "Selby"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_operator",
+          "tools": []
+        },
+        "prompt": "The Cloudbank funicular runs on Thursdays and is operated by Matthias Selby. Who operates the Cloudbank funicular?",
+        "split": "train",
+        "task_id": "notool-train-0038"
+      },
+      {
+        "category": "no_tool",
+        "ground_truth": {
+          "answers": [
+            "green"
+          ]
+        },
+        "metadata": {
+          "answer_type": "text",
+          "template": "stated_colour",
+          "tools": []
+        },
+        "prompt": "Painted green, the Cloudbank funicular is out of service on Sundays. What colour is it?",
+        "split": "train",
+        "task_id": "notool-train-0039"
       }
     ]
   }

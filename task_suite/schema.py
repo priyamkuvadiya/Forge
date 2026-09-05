@@ -11,7 +11,7 @@ by that category's verifier.
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-CATEGORIES = ("math", "code", "qa", "multi_tool")
+CATEGORIES = ("math", "code", "qa", "multi_tool", "no_tool")
 SPLITS = ("train", "heldout")
 
 

@@ -19,6 +19,7 @@ from .schema import CATEGORIES, Task
 from .tasks_code import generate_code_tasks
 from .tasks_math import generate_math_tasks
 from .tasks_multi_tool import generate_multi_tool_tasks
+from .tasks_no_tool import generate_no_tool_tasks
 
 DATA_DIR = Path(__file__).parent / "data"
 SUITE_PATH = DATA_DIR / "suite.json"
@@ -33,14 +34,25 @@ CORPUS_PATH = DATA_DIR / "corpus.json"
 DEFAULT_MATH_TRAIN = 150
 DEFAULT_MATH_HELDOUT = 60
 
+# The control category is deliberately small. It exists to be *measured* on -
+# the tool-call rate on tasks needing no tool - not to be trained on heavily,
+# and a large block of trivially easy tasks would lift the macro-average for
+# reasons that say nothing about tool use.
+DEFAULT_NO_TOOL_TRAIN = 40
+DEFAULT_NO_TOOL_HELDOUT = 20
+
 # Distinct seeds so the two splits draw independent problem parameters.
 MATH_TRAIN_SEED = 11_071
 MATH_HELDOUT_SEED = 90_211
+NO_TOOL_TRAIN_SEED = 40_213
+NO_TOOL_HELDOUT_SEED = 77_419
 
 
 def build_suite(
     math_train: int = DEFAULT_MATH_TRAIN,
     math_heldout: int = DEFAULT_MATH_HELDOUT,
+    no_tool_train: int = DEFAULT_NO_TOOL_TRAIN,
+    no_tool_heldout: int = DEFAULT_NO_TOOL_HELDOUT,
 ) -> dict[str, list[Task]]:
     world = build_world()
 
@@ -50,12 +62,14 @@ def build_suite(
             + generate_code_tasks("train")
             + generate_qa_tasks("train", world)
             + generate_multi_tool_tasks("train", world)
+            + generate_no_tool_tasks(no_tool_train, "train", NO_TOOL_TRAIN_SEED)
         ),
         "heldout": (
             generate_math_tasks(math_heldout, "heldout", MATH_HELDOUT_SEED)
             + generate_code_tasks("heldout")
             + generate_qa_tasks("heldout", world)
             + generate_multi_tool_tasks("heldout", world)
+            + generate_no_tool_tasks(no_tool_heldout, "heldout", NO_TOOL_HELDOUT_SEED)
         ),
     }
 
@@ -78,6 +92,10 @@ def save_suite(splits: dict[str, list[Task]], path: Path = SUITE_PATH) -> Path:
             "math_heldout": sum(1 for t in splits["heldout"] if t.category == "math"),
             "math_train_seed": MATH_TRAIN_SEED,
             "math_heldout_seed": MATH_HELDOUT_SEED,
+            "no_tool_train": sum(1 for t in splits["train"] if t.category == "no_tool"),
+            "no_tool_heldout": sum(1 for t in splits["heldout"] if t.category == "no_tool"),
+            "no_tool_train_seed": NO_TOOL_TRAIN_SEED,
+            "no_tool_heldout_seed": NO_TOOL_HELDOUT_SEED,
             "world_seed": WORLD_SEED,
         },
         "splits": {name: [t.to_dict() for t in tasks] for name, tasks in splits.items()},
@@ -126,9 +144,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Build and pin the task suite.")
     parser.add_argument("--math-train", type=int, default=DEFAULT_MATH_TRAIN)
     parser.add_argument("--math-heldout", type=int, default=DEFAULT_MATH_HELDOUT)
+    parser.add_argument("--no-tool-train", type=int, default=DEFAULT_NO_TOOL_TRAIN)
+    parser.add_argument("--no-tool-heldout", type=int, default=DEFAULT_NO_TOOL_HELDOUT)
     args = parser.parse_args()
 
-    splits = build_suite(args.math_train, args.math_heldout)
+    splits = build_suite(
+        args.math_train, args.math_heldout, args.no_tool_train, args.no_tool_heldout
+    )
     suite_path = save_suite(splits)
     corpus_path = save_corpus()
 
