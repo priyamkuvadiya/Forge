@@ -19,11 +19,16 @@ import pytest
 from task_suite.tasks_code import generate_code_tasks
 from task_suite.tests.test_tasks_code import REFERENCE
 from task_suite.verifiers import verify
-from tools.code_exec import SandboxedCodeRunner
+from tools.code_exec import SandboxedCodeRunner, sandbox_available, sandbox_backend
 
 pytestmark = pytest.mark.skipif(
-    __import__("sys").platform != "win32",
-    reason="the sandbox is implemented with Windows Job Objects",
+    not sandbox_available(), reason="no code sandbox is implemented for this platform"
+)
+
+windows_only = pytest.mark.skipif(
+    sandbox_backend() != "windows",
+    reason="filesystem confinement is AppContainer-specific; the POSIX backend "
+    "does not provide it (see code_exec_posix.py)",
 )
 
 ALL_TASKS = generate_code_tasks("train") + generate_code_tasks("heldout")
@@ -101,6 +106,7 @@ def test_a_stub_still_fails_under_the_sandbox(task):
     assert verify(task, _response(stub), code_runner=RUNNER) < 1.0
 
 
+@windows_only
 def test_a_submission_cannot_read_the_expected_answers():
     """The reward-hacking regression, driven end to end through the verifier.
 

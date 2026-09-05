@@ -29,10 +29,28 @@ from tools.code_exec import (
     SandboxedCodeRunner,
     SandboxError,
     run_code,
+    sandbox_available,
+    sandbox_backend,
 )
 
+# Most of what this file checks is a property of the *contract*, not of the
+# platform: a timeout stops an infinite loop, a memory cap turns a bomb into a
+# MemoryError, a fork bomb cannot spawn. Those must hold on whichever backend
+# is in use, so they are gated on having a sandbox at all rather than on
+# Windows.
 pytestmark = pytest.mark.skipif(
-    sys.platform != "win32", reason="the sandbox is implemented with Windows Job Objects"
+    not sandbox_available(), reason="no code sandbox is implemented for this platform"
+)
+
+# A few properties genuinely differ. The Windows backend confines the
+# filesystem and the network with an AppContainer; the POSIX backend does not
+# and says so in its own docstring. Marking those tests Windows-only is not
+# tidying - it is the difference being recorded where someone running on Linux
+# will see it, rather than a green suite implying a boundary that is not there.
+windows_only = pytest.mark.skipif(
+    sandbox_backend() != "windows",
+    reason="filesystem and network confinement is AppContainer-specific; "
+    "the POSIX backend does not provide it (see code_exec_posix.py)",
 )
 
 
@@ -157,8 +175,13 @@ def test_a_fork_bomb_cannot_spawn_a_single_child():
     assert result.exit_code != 0
 
 
+@windows_only
 def test_os_level_process_creation_is_blocked_too():
-    """`subprocess` is not the only route to a new process."""
+    """`subprocess` is not the only route to a new process.
+
+    Windows-only because the binary path is; the property it checks
+    (`RLIMIT_NPROC` on POSIX) is covered by the fork bomb test above.
+    """
     result = run_code("import os; os.spawnl(os.P_NOWAIT, r'C:\\Windows\\System32\\cmd.exe', 'cmd')")
     assert result.exit_code != 0
 
@@ -200,6 +223,7 @@ def test_files_written_by_a_submission_do_not_survive():
     assert not litter.exists()
 
 
+@windows_only
 def test_temp_files_land_inside_the_sandbox_not_the_users_temp():
     """A submission's temp files must not reach the user's real temp directory.
 
@@ -239,6 +263,7 @@ def test_the_project_is_not_importable_from_inside():
     assert "ModuleNotFoundError" in result.stderr
 
 
+@windows_only
 def test_the_repo_cannot_be_read_by_absolute_path():
     """The one that was actually broken, and silently.
 
@@ -271,6 +296,7 @@ def test_the_repo_cannot_be_read_by_absolute_path():
     assert "READ" not in result.stdout
 
 
+@windows_only
 def test_the_users_documents_cannot_be_enumerated():
     """Not just the repo: the AppContainer has no reach into the user's files."""
     result = run_code(
@@ -284,6 +310,7 @@ def test_the_users_documents_cannot_be_enumerated():
     assert "DENIED" in result.stdout
 
 
+@windows_only
 def test_network_access_is_refused():
     """The AppContainer is created with no capabilities, and networking is one.
 
