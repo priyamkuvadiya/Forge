@@ -22,11 +22,14 @@ distinct throughout:
 Work in progress, built incrementally. Sections below are added only once
 the corresponding module exists and has been run for real.
 
+![tests](https://github.com/priyamkuvadiya/Forge/actions/workflows/tests.yml/badge.svg)
+
 Modules 1 (from-scratch transformer), 2 (task suite and verifiers) and 3
-(tools, the sandbox, and the tool-call contract) are complete — 429 tests.
-Next is the prompted baseline agent, which produces the first reward numbers
-this project can report. Nothing has been scored against the task suite yet,
-so there are no results below beyond module 1's training curve.
+(tools, the sandbox, and the tool-call contract) are complete — 437 tests, run
+on Linux and Windows on every push. Next is the prompted baseline agent, which
+produces the first reward numbers this project can report. Nothing has been
+scored against the task suite yet, so there are no results below beyond module
+1's training curve.
 
 ## Module 1: from-scratch transformer
 
@@ -440,17 +443,26 @@ and the child in its own session so a timeout kills the whole process group.
 It exists because a runner that only works on one laptop makes the coding
 category unreproducible, which fails this project's own bar.
 
-Two honest caveats, both also stated at the top of `code_exec_posix.py`. **It
-has never been executed** — there is no Linux, WSL or container runtime on the
-development machine, so it is code that looks right and has not been run; the
-first thing to do on a Linux box is run the suite and fix what it got wrong.
-And **it does not confine the filesystem**. Proper confinement needs a mount
-namespace, which needs root or user namespaces, neither of which can be
-assumed — so on POSIX a submission can still read the repo and therefore the
-expected answers, the exact hole the AppContainer closes on Windows. The tests
-that assert filesystem and network confinement are marked Windows-only for
-that reason, rather than being allowed to skip quietly and imply a boundary
-that is not there.
+One honest caveat, also stated at the top of `code_exec_posix.py`: **it does
+not confine the filesystem**. Proper confinement needs a mount namespace,
+which needs root or user namespaces, neither of which can be assumed — so on
+POSIX a submission can still read the repo and therefore the expected answers,
+the exact hole the AppContainer closes on Windows. Landlock is the intended
+fix and is not done yet.
+
+That difference is data rather than prose. Each backend declares a
+`Confinement` — what it bounds and what it does not — the eval harness records
+it beside every coding score, and `python -m tools.code_exec` prints it with a
+loud warning when the filesystem is unconfined. A coding number therefore
+always says which boundary produced it, instead of a Linux result looking
+identical to a Windows one. The tests asserting filesystem and network
+confinement are marked Windows-only for the same reason: so they cannot skip
+quietly and imply a boundary that is not there.
+
+It was written blind — there is no Linux, WSL or container runtime on the
+development machine — which is exactly why CI runs the full suite on
+`ubuntu-latest` on every push. The badge at the top of this file is what
+turns "code that looks right" into "code that has actually run".
 
 Known limits on Windows too, stated rather than glossed: the child runs as the
 calling user, and everything it *is* granted — the interpreter directory, its
@@ -488,14 +500,27 @@ a `python` tool the policy would waste its whole budget discovering is absent.
 ### Reproducing
 
 ```bash
-pytest tools/tests -q             # 237 tests, including the adversarial ones
+python -m tools.code_exec --setup   # one-time, ~90s on Windows
+python -m tools.code_exec           # report the backend and what it confines
+pytest tools/tests -q               # 246 tests, including the adversarial ones
 ```
 
-The first sandboxed run on a machine is slow — around 90 seconds — because it
-creates the AppContainer profile and grants it read access to the interpreter
-directory, which is an `icacls` pass over roughly 50,000 files. It happens
-once and is marker-guarded, keyed on both the container SID and the
-interpreter, so a Python upgrade re-does it rather than failing obscurely.
+The setup step creates the AppContainer profile and grants it read access to
+the interpreter directory — an `icacls` pass over roughly 50,000 files. It is
+idempotent, marker-guarded on both the container SID and the interpreter (so a
+Python upgrade re-does it rather than failing obscurely), and happens once per
+machine. It is an explicit command rather than a lazy side effect of the first
+sandboxed call, because as a side effect it is indistinguishable from a hang.
+
+`python -m tools.code_exec` with no arguments prints which backend is active
+and what it confines, and warns loudly when the filesystem is not confined.
+The same value is recorded by the eval harness beside every coding score, so a
+number always says which boundary produced it:
+
+```text
+backend:     windows
+confinement: appcontainer+job (confines: filesystem, network, resources)
+```
 
 Runs are independent and the sandbox is thread-safe: measured on this machine,
 16 runs take 5.6 s serially and 0.8 s across 8 workers, so an effective 49 ms

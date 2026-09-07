@@ -35,11 +35,9 @@ than tamper-proof. This is written down in the README too.
 """
 
 import os
-import resource
 import shutil
 import signal
 import subprocess
-import sys
 import tempfile
 import uuid
 from pathlib import Path
@@ -50,6 +48,7 @@ from ._sandbox_common import (
     BOOTSTRAP as _BOOTSTRAP,
     DEFAULT_MEMORY_LIMIT_BYTES,
     DEFAULT_TIMEOUT_SECONDS,
+    Confinement,
     SandboxError,
     read_capped as _read_capped,
     sandbox_interpreter as _sandbox_interpreter,
@@ -61,6 +60,40 @@ MAX_WRITE_BYTES = 64 * 1024 * 1024
 
 _IS_POSIX = os.name == "posix"
 
+CONFINEMENT = Confinement(
+    level="rlimit-only",
+    # The honest entry. `setrlimit` bounds what a process consumes, not what
+    # it can reach: a submission here can still read the repo, and therefore
+    # the expected answers for its own task. Closing this needs a mount
+    # namespace or Landlock; until then a coding score collected on this
+    # backend carries this note with it.
+    filesystem=False,
+    network=False,
+    resources=True,
+    note=(
+        "setrlimit caps memory, CPU, processes and file size, but confines "
+        "neither the filesystem nor the network: a submission can read the "
+        "repo and therefore the expected answers. Needs a mount namespace or "
+        "Landlock. This backend has also never been executed - see the module "
+        "docstring."
+    ),
+)
+
+
+def prepare() -> None:
+    """Nothing to set up: `setrlimit` needs no profile and no grants."""
+
+
+# `resource` is POSIX-only, so it is imported inside the function that uses
+# it rather than at module scope. That keeps this module importable on
+# Windows, which matters for two things that are otherwise impossible from
+# the development machine: reading `CONFINEMENT` to report what this backend
+# would and would not confine, and letting linters and CI see the file at all.
+def _resource():
+    import resource
+
+    return resource
+
 
 def _apply_limits(memory_limit: int, timeout: float):
     """Built in the parent, run in the child between `fork` and `exec`.
@@ -68,6 +101,8 @@ def _apply_limits(memory_limit: int, timeout: float):
     Everything here has to be async-signal-safe, which is why it only calls
     `setrlimit` and `setsid` and does no allocation or logging.
     """
+
+    resource = _resource()
 
     def preexec() -> None:
         # New session, so the whole process group can be killed on timeout

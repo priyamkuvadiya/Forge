@@ -1,0 +1,73 @@
+# CI exists mainly to run the POSIX sandbox.
+#
+# `tools/code_exec_posix.py` was written on a Windows machine with no Linux,
+# no WSL and no container runtime, so it had never been executed at all. A
+# runner that only works on one laptop also makes the coding category
+# unreproducible, which fails this project's own bar. Every push now runs the
+# whole suite on Linux as well as Windows.
+#
+# Split into two jobs on purpose. `task_suite` and `tools` are stdlib plus
+# pytest, so they install in seconds and run on both platforms; only
+# `transformer_scratch` needs torch, and it is platform-agnostic, so it runs
+# once on Linux with the CPU wheel rather than pulling ~2.5GB of CUDA wheels
+# onto both runners for no benefit.
+
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  suite-and-tools:
+    name: task_suite + tools (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Do not cancel Linux because Windows failed, or vice versa: when these
+      # two disagree, the disagreement is the result worth seeing.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install test dependencies
+        # Deliberately not requirements.txt: it pins a CUDA torch build that
+        # no runner can use, and nothing under task_suite/ or tools/ imports
+        # torch at all.
+        run: python -m pip install --upgrade pip pytest
+
+      - name: Report the sandbox backend and what it confines
+        # Also does the one-time setup, which on Windows is a ~90s icacls pass
+        # granting the AppContainer read access to the interpreter. Runners are
+        # fresh every time, so this is paid on every Windows run.
+        run: python -m tools.code_exec --setup
+
+      - name: Run tests
+        run: python -m pytest task_suite tools -q
+
+  transformer:
+    name: transformer_scratch (torch, CPU)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install CPU torch
+        run: |
+          python -m pip install --upgrade pip pytest
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Run tests
+        run: python -m pytest transformer_scratch -q

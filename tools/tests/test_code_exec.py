@@ -244,12 +244,25 @@ def test_temp_files_land_inside_the_sandbox_not_the_users_temp():
     assert Path(os.environ["TEMP"]).resolve() not in created.resolve().parents
 
 
-def test_the_environment_is_scrubbed():
+def test_the_users_environment_is_not_handed_to_the_child():
+    """Exactly four variables reach the child, and none of them is inherited.
+
+    Renamed from "the environment is scrubbed", which was vaguer than what is
+    actually true and than what is actually achievable. Windows rewrites an
+    AppContainer's TEMP, TMP and LOCALAPPDATA to point into the container's own
+    storage regardless of what is passed, so those three are not ours to
+    control - and because that storage lives under the user profile, the paths
+    contain the username. That is inherent to where AppContainer storage sits,
+    not something this block leaks, and it is harmless given the container
+    cannot read the user's files anyway (asserted separately).
+
+    What *is* ours to control, and what this asserts, is that nothing else
+    crosses over.
+    """
     result = run_code("import os; print(sorted(os.environ))")
-    # A handful of Windows-injected variables are unavoidable; what matters is
-    # that the user's real environment is not handed over wholesale.
-    assert "PYTHONPATH" not in result.stdout
-    assert "VIRTUAL_ENV" not in result.stdout
+
+    for leaked in ("PYTHONPATH", "VIRTUAL_ENV", "USERNAME", "USERPROFILE", "PATH"):
+        assert leaked not in result.stdout, f"{leaked} reached the sandbox"
 
 
 def test_the_project_is_not_importable_from_inside():

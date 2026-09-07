@@ -8,7 +8,9 @@ disagreeing about how a submission is scored. Only the isolation lives in the
 platform files.
 """
 
+from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Any
 
 DEFAULT_TIMEOUT_SECONDS = 5.0
 DEFAULT_MEMORY_LIMIT_BYTES = 256 * 1024 * 1024
@@ -16,6 +18,43 @@ DEFAULT_MEMORY_LIMIT_BYTES = 256 * 1024 * 1024
 # Enough for the harness's report line even on the largest problem in the
 # suite, and small enough that a runaway writer cannot bloat the parent.
 MAX_CAPTURED_BYTES = 256 * 1024
+
+
+@dataclass(frozen=True)
+class Confinement:
+    """What a backend actually confines, as data rather than as prose.
+
+    The two backends are not equally strong, and the weaker one is weaker in
+    the dimension that matters most for this project: on POSIX a submission
+    can still read the repo, and therefore the expected answers module 2 works
+    so hard to withhold. Leaving that difference in a docstring means a coding
+    score collected on Linux looks identical to one collected on Windows.
+
+    So it is a value the eval harness records beside every coding number. A
+    result then says which boundary it was collected under, and nobody has to
+    remember to ask.
+    """
+
+    level: str
+    filesystem: bool
+    network: bool
+    resources: bool
+    note: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    def summary(self) -> str:
+        confined = [
+            name
+            for name, on in (
+                ("filesystem", self.filesystem),
+                ("network", self.network),
+                ("resources", self.resources),
+            )
+            if on
+        ]
+        return f"{self.level} (confines: {', '.join(confined) or 'nothing'})"
 
 
 class SandboxError(RuntimeError):

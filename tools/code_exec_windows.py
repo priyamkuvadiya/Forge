@@ -73,12 +73,38 @@ from ._sandbox_common import (
     BOOTSTRAP as _BOOTSTRAP,
     DEFAULT_MEMORY_LIMIT_BYTES,
     DEFAULT_TIMEOUT_SECONDS,
+    Confinement,
     SandboxError,
     read_capped as _read_capped,
     sandbox_interpreter as _sandbox_interpreter,
 )
 
 APP_CONTAINER_NAME = "ForgeCodeSandbox"
+
+CONFINEMENT = Confinement(
+    level="appcontainer+job",
+    filesystem=True,
+    network=True,
+    resources=True,
+    note=(
+        "AppContainer denies the repo and the user's files and refuses network "
+        "access; a Job Object caps memory and forbids child processes. Asserted "
+        "in tools/tests/test_code_exec.py."
+    ),
+)
+
+
+def prepare() -> None:
+    """Do the one-time setup now rather than inside someone's first test run.
+
+    Creating the AppContainer profile and granting it read access to the
+    interpreter is an `icacls` pass over roughly 50,000 files - about 90
+    seconds. It is idempotent and marker-guarded, so it happens once per
+    machine, but as a lazy side effect of the first sandboxed call it looks
+    exactly like a hang. `python -m tools.code_exec --setup` makes it a
+    deliberate step with output.
+    """
+    _sandbox_root()
 
 _IS_WINDOWS = sys.platform == "win32"
 
@@ -389,12 +415,21 @@ def _create_job(memory_limit: int) -> wintypes.HANDLE:
 
 
 def _environment_block(workdir: Path) -> ctypes.Array:
-    """A minimal environment, with temp files pointed inside the scratch dir.
+    """A minimal environment for the child.
 
-    Redirecting TEMP/TMP matters more than it looks: a submission calling
-    `tempfile.mkstemp()` would otherwise try the user's real temp directory,
-    which the container cannot write to anyway - so it would fail confusingly
-    rather than work harmlessly.
+    Note what this does *not* control. Windows rewrites an AppContainer's
+    environment on the way in: TEMP, TMP and LOCALAPPDATA all arrive at the
+    child pointing into the container's own storage
+    (`...\\Packages\\<name>\\AC`), whatever is passed here. Measured, not
+    assumed - the child prints TEMP as the container's Temp directory rather
+    than the run directory set below, which is also why a submission calling
+    `tempfile.mkstemp()` writes a sibling of the run directory rather than
+    something inside it (see `_sandbox_root`'s sweep).
+
+    So the values below are advisory for TEMP/TMP and load-bearing only in
+    that the variables must be *present*. What this block genuinely does is
+    withhold everything else: the user's real environment never reaches the
+    child.
     """
     values = {"TEMP": str(workdir), "TMP": str(workdir)}
 
@@ -402,7 +437,9 @@ def _environment_block(workdir: Path) -> ctypes.Array:
     # documentation. Without LOCALAPPDATA, `CreateProcess` fails outright with
     # ERROR_ENVVAR_NOT_FOUND (203): an AppContainer redirects its per-container
     # storage to a path underneath it, so the container cannot be constructed
-    # without it. SYSTEMROOT is needed for the interpreter's own socket and
+    # without it. Its *value* turns out not to matter - a nonexistent path
+    # works, because Windows substitutes the redirected one - but the variable
+    # has to exist. SYSTEMROOT is needed for the interpreter's own socket and
     # crypto initialisation.
     for name in ("SYSTEMROOT", "LOCALAPPDATA"):
         if name in os.environ:

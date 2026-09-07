@@ -23,6 +23,7 @@ runner precisely so a missing sandbox can never be mistaken for a model that
 cannot code.
 """
 
+import argparse
 import os
 import sys
 
@@ -32,16 +33,20 @@ from ._sandbox_common import (
     DEFAULT_MEMORY_LIMIT_BYTES,
     DEFAULT_TIMEOUT_SECONDS,
     MAX_CAPTURED_BYTES,
+    Confinement,
     SandboxError,
 )
 
 __all__ = [
     "CodeRunResult",
+    "Confinement",
     "DEFAULT_MEMORY_LIMIT_BYTES",
     "DEFAULT_TIMEOUT_SECONDS",
     "MAX_CAPTURED_BYTES",
     "SandboxError",
     "SandboxedCodeRunner",
+    "confinement",
+    "prepare",
     "run_code",
     "sandbox_available",
     "sandbox_backend",
@@ -91,6 +96,29 @@ def run_code(
     return _implementation().run_code(source, timeout=timeout, memory_limit=memory_limit)
 
 
+def confinement() -> Confinement:
+    """What this platform's backend actually confines.
+
+    Recorded by the eval harness beside every coding score. The two backends
+    are not equally strong - POSIX confines resources but not the filesystem -
+    and a number that does not say which one produced it is a number nobody
+    can interpret later.
+    """
+    return _implementation().CONFINEMENT
+
+
+def prepare() -> None:
+    """Do any one-time, machine-level setup now instead of lazily.
+
+    On Windows this is the ~90-second `icacls` pass that grants the
+    AppContainer read access to the interpreter. It is idempotent and only
+    happens once per machine, but as a lazy side effect of someone's first
+    test run it is indistinguishable from a hang. On POSIX there is nothing
+    to do.
+    """
+    _implementation().prepare()
+
+
 class SandboxedCodeRunner:
     """A `CodeRunner` with its limits bound, for injection into the verifier.
 
@@ -114,3 +142,46 @@ class SandboxedCodeRunner:
             timeout=self.default_timeout if timeout is None else timeout,
             memory_limit=self.memory_limit,
         )
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="python -m tools.code_exec",
+        description="Inspect or prepare the code sandbox.",
+    )
+    parser.add_argument(
+        "--setup",
+        action="store_true",
+        help="do the one-time machine setup now (Windows: ~90s of icacls)",
+    )
+    arguments = parser.parse_args(argv)
+
+    backend = sandbox_backend()
+    if backend is None:
+        print(f"backend:     none ({sys.platform!r} is unsupported)")
+        print("coding tasks cannot be scored on this platform.")
+        return 1
+
+    print(f"backend:     {backend}")
+
+    if arguments.setup:
+        print("setup:       running (this is the slow one-time step)...")
+        prepare()
+        print("setup:       done")
+
+    detail = confinement()
+    print(f"confinement: {detail.summary()}")
+    print(f"             {detail.note}")
+
+    if not detail.filesystem:
+        # Loud, because this is the difference that matters for reward
+        # hacking and it is easy to read a green test run as meaning it is
+        # handled.
+        print()
+        print("WARNING: this backend does not confine the filesystem, so a")
+        print("         submission can read the expected answers off disk.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
