@@ -461,8 +461,15 @@ quietly and imply a boundary that is not there.
 
 It was written blind — there is no Linux, WSL or container runtime on the
 development machine — which is exactly why CI runs the full suite on
-`ubuntu-latest` on every push. The badge at the top of this file is what
-turns "code that looks right" into "code that has actually run".
+`ubuntu-latest` on every push (424 passed, 8 Windows-only tests skipped). That
+was not ceremony: the first Linux run found two real bugs, both of which would
+have shipped as silent reward bugs rather than as visible failures.
+`RLIMIT_NPROC = 1`, copied across from the Windows job object's
+`ActiveProcessLimit = 1`, blocks *threads* on Linux because a thread is a
+task — so any solution using `threading` would have scored 0. And the same run
+on Windows CI showed the harness could not open the null device inside a fresh
+AppContainer, which made *every* coding task score 0 there while passing
+locally. Both look exactly like a model that cannot code.
 
 Known limits on Windows too, stated rather than glossed: the child runs as the
 calling user, and everything it *is* granted — the interpreter directory, its

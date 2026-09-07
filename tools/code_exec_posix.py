@@ -1,12 +1,19 @@
 """The POSIX half of the sandbox: `fork` plus `setrlimit`.
 
-**This file has never been executed.** It was written on a Windows machine
-with no WSL and no container runtime, so there was no way to run it, and the
-tests for it skip on the only platform available here. That is stated at the
-top rather than buried, because the rest of this project's claims rest on
-having actually run things. Treat this as untested code that looks right, and
-the first thing to do on a Linux machine is run `pytest tools/tests -q` and
-fix whatever this got wrong.
+**This file was written blind and is now covered by CI.** It was authored on a
+Windows machine with no WSL and no container runtime, so for a while it was
+code that looked right and had never been executed - which is worth knowing,
+because the first `ubuntu-latest` run found two real bugs in it, both of which
+would have shipped as silent reward bugs:
+
+- `RLIMIT_NPROC = 1`, the obvious mirror of the Windows job object's
+  `ActiveProcessLimit = 1`, blocks *threads* on Linux, because a thread is a
+  task. Any legitimate solution using `threading` scored 0.
+- `PATH=""` still defines the variable, so the two backends disagreed about
+  what reaches the child.
+
+`.github/workflows/tests.yml` now runs the whole suite here on every push, so
+"untested" is no longer the caveat. The remaining one is below.
 
 It exists because the Windows sandbox made the coding category unreproducible
 anywhere else. `CLAUDE.md` requires the eval numbers to be reproducible, and a
