@@ -108,7 +108,19 @@ def build_harness(code: str, entry_point: str, calls: list[dict]) -> str:
 import os as _forge_os, sys as _forge_sys, json as _forge_json, types as _forge_types
 
 _forge_out = _forge_os.dup(1)
-_forge_os.dup2(_forge_os.open(_forge_os.devnull, _forge_os.O_WRONLY), 1)
+try:
+    _forge_sink = _forge_os.open(_forge_os.devnull, _forge_os.O_WRONLY)
+except OSError:
+    # The null device is not always reachable from inside a sandbox: on a
+    # fresh Windows CI runner, opening 'nul' from an AppContainer fails with
+    # PermissionError. Any writable file does the same job, and the sandbox
+    # working directory is guaranteed writable because the harness was written
+    # into it.
+    _forge_sink = _forge_os.open(
+        "_forge_discarded_stdout",
+        _forge_os.O_WRONLY | _forge_os.O_CREAT | _forge_os.O_TRUNC,
+    )
+_forge_os.dup2(_forge_sink, 1)
 
 _forge_source = {code!r}
 _forge_module = _forge_types.ModuleType("submission")

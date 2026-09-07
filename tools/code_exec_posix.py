@@ -58,6 +58,11 @@ from ._sandbox_common import (
 # fills. 64 MB is far past anything the suite's problems produce.
 MAX_WRITE_BYTES = 64 * 1024 * 1024
 
+# How many extra tasks a submission may create beyond what the machine is
+# already running. Generous enough for a solution that uses a thread pool,
+# small enough that an unbounded fork loop stops within a few spawns.
+NPROC_HEADROOM = 24
+
 _IS_POSIX = os.name == "posix"
 
 CONFINEMENT = Confinement(
@@ -104,6 +109,10 @@ def _apply_limits(memory_limit: int, timeout: float):
 
     resource = _resource()
 
+    # Counted in the parent, because everything inside `preexec` runs between
+    # fork and exec and has to stay async-signal-safe.
+    nproc_ceiling = _current_task_count() + NPROC_HEADROOM
+
     def preexec() -> None:
         # New session, so the whole process group can be killed on timeout
         # without the kill racing anything the child spawned.
@@ -120,9 +129,21 @@ def _apply_limits(memory_limit: int, timeout: float):
         cpu_seconds = int(timeout) + 1
         resource.setrlimit(resource.RLIMIT_CPU, (cpu_seconds, cpu_seconds))
 
-        # No new processes: a fork bomb fails at its first spawn. This is the
-        # POSIX equivalent of the job object's ActiveProcessLimit = 1.
-        resource.setrlimit(resource.RLIMIT_NPROC, (1, 1))
+        # Cap runaway process creation. Deliberately *not* 1, which is the
+        # obvious mirror of the job object's ActiveProcessLimit and is wrong
+        # on Linux: RLIMIT_NPROC counts tasks, and a thread is a task, so a
+        # limit of 1 makes `threading.Thread().start()` raise "can't start new
+        # thread". CI caught that - legitimate solutions do use threads, and
+        # breaking them would depress the code category's reward for a reason
+        # unrelated to correctness.
+        #
+        # It is also per-real-UID rather than per-process, so an absolute
+        # value would either sit below what the machine is already using (and
+        # fail immediately) or above anything worth capping. Headroom over
+        # current usage avoids both: a handful of threads fit, an unbounded
+        # fork loop hits the ceiling within a few spawns.
+        nproc = min(nproc_ceiling, resource.getrlimit(resource.RLIMIT_NPROC)[1])
+        resource.setrlimit(resource.RLIMIT_NPROC, (nproc, nproc))
 
         resource.setrlimit(resource.RLIMIT_FSIZE, (MAX_WRITE_BYTES, MAX_WRITE_BYTES))
 
@@ -132,8 +153,27 @@ def _apply_limits(memory_limit: int, timeout: float):
     return preexec
 
 
+def _current_task_count() -> int:
+    """Roughly how many tasks are running, for sizing `RLIMIT_NPROC`.
+
+    Counts numeric entries in /proc, which is processes rather than threads
+    and covers all users rather than this one - both errors push the estimate
+    up, which is the safe direction: the limit ends up looser than intended
+    rather than tight enough to break the child at startup. Falls back to a
+    generous constant where /proc is not mounted.
+    """
+    try:
+        return sum(1 for entry in os.listdir("/proc") if entry.isdigit())
+    except OSError:
+        return 512
+
+
 def _environment(workdir: Path) -> dict[str, str]:
-    environment = {"TMPDIR": str(workdir), "HOME": str(workdir), "PATH": ""}
+    # PATH is omitted entirely rather than set empty, matching the Windows
+    # backend. `PATH=""` still defines the variable, which CI caught as a
+    # difference between the two backends in what reaches the child. Nothing
+    # needs it: the interpreter is invoked by absolute path.
+    environment = {"TMPDIR": str(workdir), "HOME": str(workdir)}
     if "LANG" in os.environ:
         environment["LANG"] = os.environ["LANG"]
     return environment
