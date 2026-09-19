@@ -604,7 +604,9 @@ coding answer, a calculator call, a search call. They are invented and
 deliberately unlike anything in the suite, their tool results are produced by
 the real `calculate`, `render_hits` and `ToolResult.render` rather than typed
 out, and module 5's policy is prompted with exactly the same turns.
-`--no-few-shot` exists so their value can be quoted rather than guessed at.
+`--no-few-shot` exists so their value can be quoted rather than guessed at,
+and it is quoted below: they are worth fifteen times the macro reward, almost
+all of it output-format compliance.
 
 One of them was quietly cheating and a test caught it. The first direct-answer
 example was "What is 3 plus 6?", which is *verbatim* `notool-train-0030` — the
@@ -748,6 +750,40 @@ out to be writing its own unit tests with an `expected_output` variable, and it
 scored 0.0 anyway. No QA or multi_tool episode scored above zero without a tool
 call. Ten perfect scores had answers under two characters and all were
 `no_tool` tasks whose correct answer really is `3` or `5`.
+
+### What the worked examples are worth
+
+The same 1184 held-out episodes with `--no-few-shot`, which removes the four
+worked examples and leaves the description of each tool intact:
+
+| category | with examples | without | answer rate | any tool |
+| --- | --- | --- | --- | --- |
+| math | 0.021 | 0.006 | 0.756 → 0.283 | 0.071 → 0.015 |
+| code | 0.439 | **0.000** | 0.894 → 0.019 | 0.000 → 0.000 |
+| qa | 0.000 | 0.000 | 0.379 → 0.053 | 0.178 → **0.000** |
+| multi_tool | 0.000 | 0.000 | 0.433 → 0.158 | 0.208 → 0.025 |
+| no_tool | 0.494 | 0.056 | 0.719 → 0.106 | 0.062 → 0.006 |
+| **macro** | **0.1908** | **0.0125** | | |
+
+Fifteen times the reward, and the mechanism is almost entirely the output
+contract rather than capability. Without the examples the model essentially
+stops emitting `<answer>` tags — coding goes from 0.894 to 0.019 — and the
+recovery nudge fires on 93-100% of episodes in every category without
+rescuing them. The coding score falls to exactly zero not because the model
+forgot how to write Python but because it stops putting it where the verifier
+looks.
+
+The tool columns say something narrower and more interesting: **the search
+example is the only reason QA ever searches at all** (0.178 → 0.000). Told in
+prose that a search tool exists, a 0.5B model does not use it once in 264
+episodes. Shown one example of a search call, it uses it in 18% of them — and
+still scores 0.000, which is the same point the main results make.
+
+This is why the control is prompted this way. A description-only baseline
+would score 0.0125 and would hand module 5 a fifteen-fold improvement that is
+mostly a lesson in tag syntax. The RL arm is prompted with exactly these same
+turns, so whatever it gains is gained over a control that already knows the
+format.
 
 ### Why batch size 32, on a card with room for 48
 
