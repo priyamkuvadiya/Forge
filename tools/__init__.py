@@ -26,9 +26,11 @@ from .toolbox import (
     TOOL_INSTRUCTIONS,
     Tool,
     ToolCall,
+    ToolCallSpan,
     ToolRegistry,
     ToolResult,
     ToolSession,
+    find_tool_calls,
     parse_tool_calls,
 )
 
@@ -36,9 +38,11 @@ __all__ = [
     # the contract
     "Tool",
     "ToolCall",
+    "ToolCallSpan",
     "ToolResult",
     "ToolRegistry",
     "ToolSession",
+    "find_tool_calls",
     "parse_tool_calls",
     "TOOL_INSTRUCTIONS",
     "DEFAULT_MAX_CALLS",

@@ -17,6 +17,7 @@ Two properties are being separated throughout:
 """
 
 import os
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -501,3 +502,83 @@ def test_repeated_runs_are_independent():
 
     second = run_code("import os; print(os.path.exists('shared.txt'))")
     assert "False" in second.stdout
+
+
+# --------------------------------------------------------------------------
+# Concurrency, from cold
+# --------------------------------------------------------------------------
+
+# A barrier rather than a thread pool, and that is the whole design of this
+# probe. Handing 24 tasks to a pool lets the first thread win initialisation
+# while the others are still starting, so the race closes on its own and the
+# test passes with the lock removed - which it did, on the first attempt at
+# writing it. Eight threads released simultaneously into their first call is
+# the collision itself, not an approximation of it.
+_COLD_CONCURRENT_PROBE = """\
+import threading
+from collections import Counter
+
+from tools.code_exec import SandboxedCodeRunner
+
+THREADS = 8
+RUNS_EACH = 3
+
+runner = SandboxedCodeRunner()
+start = threading.Barrier(THREADS)
+outcomes = Counter()
+lock = threading.Lock()
+
+
+def worker(index):
+    start.wait()
+    for run in range(RUNS_EACH):
+        try:
+            result = runner("print(%d)" % (index * 10 + run))
+            key = "ok" if result.exit_code == 0 else "exit %d" % result.exit_code
+        except Exception as exc:
+            key = "%s: %s" % (type(exc).__name__, exc)
+        with lock:
+            outcomes[key] += 1
+
+
+threads = [threading.Thread(target=worker, args=(i,)) for i in range(THREADS)]
+for thread in threads:
+    thread.start()
+for thread in threads:
+    thread.join()
+
+for key, count in outcomes.most_common():
+    print("%d %s" % (count, key))
+"""
+
+
+def test_a_cold_process_can_run_concurrently():
+    """Eight threads' first contact with the sandbox must not race.
+
+    This is the exact shape of a scoring pass: a batch of coding rollouts
+    handed to a thread pool. It is deliberately run in a *fresh interpreter*,
+    because the bug it guards lives entirely in lazy initialisation - once any
+    single call has warmed the module globals, eight threads are perfectly
+    happy and the test would pass while proving nothing.
+
+    Before the lock in `code_exec_windows`, this failed 69 times in 160 from
+    cold: concurrent `CreateAppContainerProfile` calls collided on the
+    profile's registry key, and threads that lost the race went on to ask for
+    a container folder the winner had not finished creating. It cost a
+    40-minute evaluation run, and it surfaced as `SandboxError` escaping
+    mid-scoring rather than as a bad score - which is the only reason it was
+    noticed at all rather than quietly depressing the coding category.
+    """
+    repo_root = Path(__file__).resolve().parents[2]
+    completed = subprocess.run(
+        [sys.executable, "-c", _COLD_CONCURRENT_PROBE],
+        capture_output=True,
+        text=True,
+        timeout=300,
+        cwd=repo_root,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.strip() == "24 ok", (
+        f"cold concurrent runs did not all succeed:\n{completed.stdout}"
+    )

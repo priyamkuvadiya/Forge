@@ -70,6 +70,26 @@ class ToolCall:
 
 
 @dataclass(frozen=True)
+class ToolCallSpan:
+    """A call plus where it sat in the text it was parsed out of.
+
+    The positions exist because every consumer of this contract has to cut the
+    generation off at the end of the first call. `TOOL_INSTRUCTIONS` tells the
+    policy to stop after calling a tool, and a small model routinely ignores
+    that and writes its own imagined `<tool_result>` block straight afterwards.
+    Keeping that text would train the policy to hallucinate tool output and
+    would let a rollout score reward off an answer derived from a fabricated
+    result. Everything downstream therefore truncates at `end` - which means
+    the offsets belong here, next to the parser, rather than being recovered
+    by a second, slightly different search in each caller.
+    """
+
+    call: ToolCall
+    start: int
+    end: int
+
+
+@dataclass(frozen=True)
 class ToolResult:
     """What every tool returns, whatever happened.
 
@@ -103,17 +123,29 @@ class Tool(Protocol):
     def invoke(self, arguments: str) -> ToolResult: ...
 
 
-def parse_tool_calls(text: str) -> list[ToolCall]:
-    """Every well-formed tool call in `text`, in order.
+def find_tool_calls(text: str) -> list[ToolCallSpan]:
+    """Every well-formed tool call in `text`, in order, with its offsets.
 
     Unterminated calls do not match, deliberately - a truncated generation is
     a failed generation, the same position `extract_answer` takes on an
     unclosed `<answer>`.
     """
     return [
-        ToolCall(name=match.group("name").lower().strip(), arguments=match.group("arguments").strip())
+        ToolCallSpan(
+            call=ToolCall(
+                name=match.group("name").lower().strip(),
+                arguments=match.group("arguments").strip(),
+            ),
+            start=match.start(),
+            end=match.end(),
+        )
         for match in _TOOL_PATTERN.finditer(text)
     ]
+
+
+def parse_tool_calls(text: str) -> list[ToolCall]:
+    """The calls in `text`, for callers that do not care where they were."""
+    return [span.call for span in find_tool_calls(text)]
 
 
 class BudgetExceeded(Exception):

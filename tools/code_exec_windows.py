@@ -63,6 +63,7 @@ import os
 import shutil
 import subprocess
 import sys
+import threading
 import uuid
 from ctypes import wintypes
 from pathlib import Path
@@ -219,6 +220,36 @@ def _kernel32():
 
 _app_container: tuple[ctypes.c_void_p, str] | None = None
 
+# One lock over both lazy initialisers below, and it is not a precaution.
+#
+# `_sandbox_root()` calls `_app_container_sid()`, so this is reentrant.
+#
+# Both were plain unguarded `if _global is None` caches, and both are
+# first touched on whatever thread happens to call `run_code` first. That is
+# fine for a serial caller and wrong for the one this module was built for:
+# module 4 scores a batch of coding rollouts on eight threads, almost none of
+# its episodes call the `python` tool, so the *first* contact the process ever
+# has with the sandbox is eight threads entering cold initialisation at once.
+# Measured on 160 runs at 8 workers from a cold process, 69 of them failed:
+#
+#     91  ok
+#     65  GetAppContainerFolderPath failed: 0x80070002  (FILE_NOT_FOUND)
+#      3  CreateAppContainerProfile failed: 0x800703fa  (KEY_DELETED)
+#      1  CreateAppContainerProfile failed: 0x8007000a  (BAD_ENVIRONMENT)
+#
+# Concurrent `CreateAppContainerProfile` calls for the same name collide on
+# the registry key backing the profile; and a thread that loses the race gets
+# ERROR_ALREADY_EXISTS, derives the SID happily, and then asks for a container
+# folder that the winning thread has not finished creating - which is the bulk
+# of the failures and the one that looks least like a race.
+#
+# This is a reward-path bug, not an inconvenience. A `SandboxError` escaping
+# mid-scoring destroys a whole evaluation run, and module 5 will make orders of
+# magnitude more of these calls than module 4 does. The throughput benchmark
+# that put "thread-safe" in this project's notes measured a *warm* process and
+# never exercised the cold path concurrently at all.
+_init_lock = threading.RLock()
+
 
 def _sid_to_string(sid: ctypes.c_void_p) -> str:
     advapi32 = ctypes.WinDLL("advapi32", use_last_error=True)
@@ -257,6 +288,18 @@ def _app_container_sid() -> tuple[ctypes.c_void_p, str]:
     global _app_container
     if _app_container is not None:
         return _app_container
+
+    with _init_lock:
+        # Re-checked inside the lock: several threads can pass the check above
+        # before any of them takes it.
+        if _app_container is not None:
+            return _app_container
+        return _create_app_container()
+
+
+def _create_app_container() -> tuple[ctypes.c_void_p, str]:
+    """Create or adopt the profile. Callers must hold `_init_lock`."""
+    global _app_container
 
     userenv = ctypes.WinDLL("userenv", use_last_error=True)
     userenv.CreateAppContainerProfile.restype = ctypes.c_long
@@ -328,6 +371,22 @@ def _sandbox_root() -> Path:
     global _sandbox_root_path
     if _sandbox_root_path is not None:
         return _sandbox_root_path
+
+    with _init_lock:
+        if _sandbox_root_path is not None:
+            return _sandbox_root_path
+        return _create_sandbox_root()
+
+
+def _create_sandbox_root() -> Path:
+    """Build the root, sweep strays, apply the grant. Callers hold `_init_lock`.
+
+    Holding the lock across the whole body matters for more than the globals:
+    the stray sweep below deletes everything in the container's Temp that is
+    not the run root, and the `icacls` grant can take ~90 seconds. Neither is
+    safe to have a second thread running concurrently, or racing past.
+    """
+    global _sandbox_root_path
 
     _, sid_text = _app_container_sid()
     container_temp = _app_container_folder(sid_text) / "Temp"
