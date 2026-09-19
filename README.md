@@ -30,10 +30,13 @@ are complete — 474 tests, run on Linux and Windows on every push.
 
 The control-group numbers now exist: the prompted Qwen2.5-0.5B-Instruct
 baseline scores a **macro-average reward of 0.1908** across the five held-out
-categories, and calls a tool in under a fifth of episodes in every category —
-including not once in 160 coding episodes. Closing that gap is what module 5's
-GRPO training has to do. Next is that training loop; there is no trained
-policy and no baseline-versus-RL comparison yet.
+categories. It calls a tool in under a fifth of episodes in every category —
+not once in 160 coding episodes — and when it does call one, it never chains:
+of the 72 QA and multi_tool episodes that used a tool, none made a second
+call, on the two categories that structurally require more than one hop.
+Closing that gap is what module 5's GRPO training has to do. Next is that
+training loop; there is no trained policy and no baseline-versus-RL comparison
+yet.
 
 ## Module 1: from-scratch transformer
 
@@ -669,6 +672,32 @@ and a search call, a 0.5B model still overwhelmingly answers from its own
 weights. That gap is exactly what this project claims RL closes, and it is now
 a measured number rather than an assumption.
 
+**It never chains.** 116 of the 1184 episodes called a tool at all, and 114 of
+those made exactly one call. On QA and multi_tool — the two categories that
+structurally *require* more than one hop, since the supporting facts are
+deliberately spread across documents — **not one of the 72 episodes that
+called a tool ever called a second time.** The baseline does not do multi-hop
+retrieval; it does one search and then commits. Sequential tool use is not a
+weak spot in the control, it is absent from it.
+
+**Retrieval is not the only gap, which matters for what RL has to learn.** On
+QA, episodes that searched scored 0.000 and episodes that searched nothing
+also scored 0.000. Searching moved the answer *rate* (multi_tool 0.379 →
+0.640) without moving reward at all. So the model cannot yet use what it
+retrieves, and a policy that merely learned "call search more often" would not
+move these numbers. The answers it produces instead are confabulations with a
+real-world shape — `"British Geological Survey (BGS)"`, `"Portsmouth Naval
+Base in England"`, `"Newcastle upon Tyne"` — against a corpus that is
+fictional precisely so that answering it requires retrieval. Module 2 made
+that choice to stop the reward measuring memorisation, and this is the
+evidence it was the right one.
+
+**Nothing ran out of room.** Every episode ended by answering (773) or by
+declining to (411); exactly one of 1184 exhausted the 8-call budget and none
+hit the turn cap. The zeros above are the model failing the task, not the
+harness truncating it — worth establishing, because a loop that quietly
+strangled its own episodes would produce the same table.
+
 **This breaks the `no_tool` control, and the control has to say so.** That
 category scores a 0.062 tool-call rate, which looks like a policy that knows
 when not to reach for a tool. It isn't: the model scarcely reaches for one
@@ -676,6 +705,12 @@ anywhere, so the low rate is a property of the whole arm, not discrimination
 between task types. The measurement only becomes meaningful once an arm uses
 tools at all. Module 9 must report it as a *pair* with the other categories'
 rates, never alone.
+
+Three episodes invented a tool that does not exist (`calc`, `calculation`, and
+— conflating the two contracts — `answer`). At 2.6% of tool-calling episodes
+that is a footnote rather than a finding, but it is the cost of having
+deliberately made `<tool>` and `<answer>` look alike, and it is cheap to watch
+for once a trained policy starts calling tools in earnest.
 
 **Math is 0.021 because of arithmetic, not formatting.** The split over 480
 episodes: 66.9% produced a parseable number that was simply wrong, 24.4%
