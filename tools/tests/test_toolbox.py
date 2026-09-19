@@ -333,3 +333,36 @@ def test_code_tool_runs_through_the_same_sandbox_as_the_verifier():
         "    print('DENIED')\n"
     )
     assert "DENIED" in result.output
+
+
+# --- concurrency ------------------------------------------------------------
+
+
+def test_one_registry_serves_many_threads_with_identical_answers():
+    """Every consumer of this contract shares one registry across a thread pool.
+
+    Module 4 dispatches a whole batch's tool calls at once; module 5 will do
+    the same, far more often. A tool holding mutable state would not usually
+    crash under that - it would return a subtly wrong result to one thread and
+    silently corrupt one rollout's reward.
+
+    The sandbox turned out to have exactly that shape of bug (lazy globals
+    racing on first use, see `test_code_exec.py`), so the other two tools get
+    checked rather than assumed. Concurrent answers must equal serial ones.
+    """
+    from concurrent.futures import ThreadPoolExecutor
+
+    registry = build_registry(include_code=False)
+    calls = [
+        ToolCall(name="calculator", arguments=f"{i} * 7 + 1") for i in range(40)
+    ] + [
+        ToolCall(name="search", arguments=query)
+        for query in ("Ashen Bay Survey", "expedition", "vessel", "nonsense zzz")
+        for _ in range(10)
+    ]
+
+    serial = [registry.invoke(call).output for call in calls]
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        concurrent = [result.output for result in pool.map(registry.invoke, calls)]
+
+    assert concurrent == serial
