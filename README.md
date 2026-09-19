@@ -749,6 +749,43 @@ scored 0.0 anyway. No QA or multi_tool episode scored above zero without a tool
 call. Ten perfect scores had answers under two characters and all were
 `no_tool` tasks whose correct answer really is `3` or `5`.
 
+### Why batch size 32, on a card with room for 48
+
+The first complete held-out run used batch 48 and took 45 minutes. The second
+used batch 32 and did the same work in 18. That is backwards until you measure
+what the card is actually doing (Qwen2.5-0.5B-Instruct, bf16,
+`max_new_tokens=256`):
+
+| batch | prompt tokens | cuda_reserved | tok/s | board W | |
+| --- | --- | --- | --- | --- | --- |
+| 32 | 1517 | 4.09 GB | 432.7 | 88.2 | fits in VRAM |
+| 48 | 1517 | 5.61 GB | 458.1 | 91.5 | fits in VRAM |
+| 48 | 3029 | 9.26 GB | 152.9 | 94.9 | spilled to system RAM |
+| 48 | 4541 | 15.03 GB | 41.0 | 95.7 | spilled to system RAM |
+
+**An 8GB card on Windows does not enforce 8GB.** WDDM backs the overflow with
+system RAM, so exceeding the card never raises `CUDA out of memory` — it
+silently costs up to 11x throughput. Batch 48 is genuinely faster than 32
+while the transcripts are short, and collapses once a few episodes accumulate
+enough tool output to push the batch past the card. Agent rollouts make that
+unavoidable: transcript length is set by how many tools the policy decides to
+call, so the widest batch in a run is not something the batch size alone
+predicts.
+
+Two things worth recording for anyone measuring this themselves. Board power
+is *not* the signal — spilling draws 95 W, slightly more than a healthy run,
+so a slow run looks perfectly busy. The check that works is
+`torch.cuda.memory_reserved()` against the device's `total_memory`. And host
+commit charge tracks the GPU reservation almost exactly, at
+`commit ≈ cuda_reserved + 3.4 GB` across every configuration measured, which
+is how a 0.5B model drove a 16GB machine to 97% of its commit limit.
+
+Two plausible culprits were tested and neither was responsible: `stop_strings`
+costs 0.20 GB rather than the gigabytes guessed, and
+`PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` changes nothing measurable.
+There is no leak — the reservation plateaus within about four calls in every
+configuration.
+
 ### Reproducing
 
 ```bash
