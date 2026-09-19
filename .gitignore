@@ -13,3 +13,13 @@ wandb/
 
 # corpora fetched at runtime by data loaders, not source
 transformer_scratch/data/*.txt
+
+# Baseline/eval run output. The results JSON *is* committed - it is the record
+# every later comparison is made against, and a number in the README that
+# nobody can inspect is not much better than an unsourced one. These two are
+# not: the rollouts checkpoint is raw material for re-scoring a run on the
+# machine that produced it, and the transcripts are a 4MB human-reading
+# artifact. Both regenerate from the committed suite plus the command in the
+# README.
+artifacts/**/*.rollouts.json
+artifacts/**/*_transcripts.txt

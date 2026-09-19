@@ -24,12 +24,16 @@ the corresponding module exists and has been run for real.
 
 ![tests](https://github.com/priyamkuvadiya/Forge/actions/workflows/tests.yml/badge.svg)
 
-Modules 1 (from-scratch transformer), 2 (task suite and verifiers) and 3
-(tools, the sandbox, and the tool-call contract) are complete — 437 tests, run
-on Linux and Windows on every push. Next is the prompted baseline agent, which
-produces the first reward numbers this project can report. Nothing has been
-scored against the task suite yet, so there are no results below beyond module
-1's training curve.
+Modules 1 (from-scratch transformer), 2 (task suite and verifiers), 3 (tools,
+the sandbox, and the tool-call contract) and 4 (the prompted baseline agent)
+are complete — 474 tests, run on Linux and Windows on every push.
+
+The control-group numbers now exist: the prompted Qwen2.5-0.5B-Instruct
+baseline scores a **macro-average reward of 0.1908** across the five held-out
+categories, and calls a tool in under a fifth of episodes in every category —
+including not once in 160 coding episodes. Closing that gap is what module 5's
+GRPO training has to do. Next is that training loop; there is no trained
+policy and no baseline-versus-RL comparison yet.
 
 ## Module 1: from-scratch transformer
 
@@ -534,3 +538,193 @@ Runs are independent and the sandbox is thread-safe: measured on this machine,
 per run rather than 285 ms. Module 5 should execute code rollouts in parallel
 for that reason — with the caveat that each concurrent run may hold up to the
 256 MB memory cap, so the worker count is a RAM budget, not a free lunch.
+
+## Module 4: the prompted baseline agent
+
+`baseline_agent.py` — **Qwen2.5-0.5B-Instruct**, prompted rather than trained,
+using the module 3 tools on the module 2 tasks. This is the control group. It
+is the reason any later claim about RL can be checked, and the numbers below
+are what module 5's trained policy has to beat.
+
+Nothing in this module trains anything. The backbone is an off-the-shelf
+open-weight model, loaded in bf16, and the only thing that changes between
+this arm and the RL arm is the weights: same system prompt, same worked
+examples, same tool contract, same 8-call budget, same verifiers, same
+sampling parameters.
+
+### The loop
+
+An episode is a chat transcript. The policy writes a turn; if it ends in
+`<tool name="...">...</tool>` the call runs and the result comes back as the
+next message; if it contains `<answer>...</answer>` the episode is over and
+`task_suite.verify()` scores it. Three details are worth pulling out:
+
+- **Generation stops at `</tool>` or `</answer>`**, and everything the model
+  writes after its own tool call is discarded. That is not tidiness. A small
+  model routinely writes `<tool name="search">...</tool>` and then invents the
+  `<tool_result>` block it is about to be handed, together with an answer
+  derived from it. Keeping that text would let an episode collect reward off a
+  fabricated retrieval, and would teach module 5's policy to hallucinate tool
+  output as a strategy.
+- **All live episodes step in lockstep**, so each generation call sees a full
+  batch and finished episodes drop out. The tool calls a batch produces are
+  then executed together on a thread pool, which is what makes the sandbox's
+  measured 49 ms-across-8-workers matter. Run one episode at a time and the
+  held-out eval below goes from half an hour to most of a day.
+- **The policy interface is `conversations -> completions` and nothing else.**
+  Chat templating, padding and sampling live in the backbone, so the loop
+  itself is driven by scripted policies in CI, on both platforms, with no
+  torch installed. The truncation rule, the answer/tool-call ordering rule,
+  the budget and the nudge are all text handling, and a GPU adds nothing to
+  testing them.
+
+### What the dry run changed
+
+The suite was frozen only *after* a throwaway probe against the real model, on
+the **train** split, because a task-suite change after the baseline is
+recorded invalidates the baseline. Four things came out of it, and the first
+is the one that matters:
+
+**Prompted from a description alone, the model scored 0.000 in every
+category.** Across a ten-task probe it emitted zero `<answer>` blocks and zero
+tool calls. It solved "What is 5 plus 4?" correctly in prose and scored 0.0;
+asked about a fictional expedition, it apologised for not knowing instead of
+searching for it. A baseline of zero everywhere is arithmetically honest and
+analytically worthless — it measures whether a 0.5B model can infer an
+unfamiliar tag convention from prose, which is not what this project claims RL
+improves, and it would hand module 5 a guaranteed win over a control that
+never attempted the task.
+
+So the control gets the prompt a competent engineer would actually ship: four
+worked examples replayed as real conversation turns — a direct answer, a
+coding answer, a calculator call, a search call. They are invented and
+deliberately unlike anything in the suite, their tool results are produced by
+the real `calculate`, `render_hits` and `ToolResult.render` rather than typed
+out, and module 5's policy is prompted with exactly the same turns.
+`--no-few-shot` exists so their value can be quoted rather than guessed at.
+
+One of them was quietly cheating and a test caught it. The first direct-answer
+example was "What is 3 plus 6?", which is *verbatim* `notool-train-0030` — the
+worked example was handing the policy a solved task from the very category
+that exists to measure it. `test_few_shot_examples_leak_no_task_from_the_suite`
+now checks every exemplar against every task prompt, every corpus document
+title and every coding entry point.
+
+**The recovery nudge went through three wordings, and two of them destroyed
+answers the model had already got right.** If a turn ends with neither a tool
+call nor an answer, the agent asks once for the answer in tags. "Give it now,
+using what you already know" was read as an invitation to start over, and a
+correct fenced `sum_of_evens` came back as `<answer>0</answer>`. Adding "if
+the task was to write a function, put the function in the tags" fixed coding
+and broke arithmetic instead — three math episodes that had reasoned their way
+to a number in prose came back as Python function definitions. Showing the
+shape as a fill-in template, `<answer>YOUR ANSWER</answer>`, got the tags back
+and lost the answer: five episodes answered the literal string "YOUR ANSWER".
+The wording that survived says only where the two literal strings go.
+
+**One task in the suite had no determinate answer, and the base model was
+right to say so.** The `no_tool` counting template read "A box contains
+bottles, folders and chairs. How many items are in the box?" — the pool is
+plural nouns, so the stated answer of 3 was really a count of *kinds*. The
+model refused, correctly. A task whose stated answer is wrong is worse than a
+hard task: it is reward for agreeing with the author. The prompt now asks for
+kinds. This is the whole reason the dry run happens before the freeze.
+
+**The nudge recovers format, not correctness — measured.** Over 200 train
+episodes with and without it, answer rate moves a great deal (QA 0.075 →
+0.300, `no_tool` 0.425 → 0.600) and macro reward does not move at all (0.205 →
+0.200). The answers it rescues were wrong anyway. It stays on by default
+because it separates a format failure from a task failure, which module 9
+needs and the reward curve cannot show; it is now on the record that it costs
+an extra turn and buys no reward.
+
+### Baseline results, held out
+
+All 148 held-out tasks, 8 rollouts each — 1184 episodes in 18.3 minutes on the
+RTX 4060. Qwen2.5-0.5B-Instruct in bf16, temperature 0.7, top-p 0.9, an 8-call
+tool budget, and one recovery nudge. Coding was scored under
+`appcontainer+job (confines: filesystem, network, resources)`; the full record,
+including every per-episode reward and tool trace, is in
+`artifacts/baseline/heldout.json`.
+
+| category | tasks | episodes | mean reward | 95% CI | solved | answer rate | nudged | any tool |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| math | 60 | 480 | 0.021 | [0.006, 0.042] | 0.021 | 0.756 | 0.377 | 0.071 |
+| code | 20 | 160 | 0.439 | [0.342, 0.543] | 0.281 | 0.894 | 0.106 | 0.000 |
+| qa | 33 | 264 | 0.000 | [0.000, 0.000] | 0.000 | 0.379 | 0.875 | 0.178 |
+| multi_tool | 15 | 120 | 0.000 | [0.000, 0.000] | 0.000 | 0.433 | 0.817 | 0.208 |
+| no_tool | 20 | 160 | 0.494 | [0.331, 0.650] | 0.494 | 0.719 | 0.431 | 0.062 |
+
+**Macro-average reward: 0.1908**, the unweighted mean of the five category
+means. That is the number module 5 has to beat. Intervals are percentile
+bootstraps resampled over **tasks**, not episodes — eight rollouts of one
+question are eight draws from one question, and resampling episodes would
+report a confidence the 20-problem coding split does not have.
+
+**The model barely uses tools at all, and that is the headline.** It called a
+tool in 7% of math episodes, 18% of QA, 21% of multi_tool, and — on 160 coding
+episodes with a Python sandbox available and advertised in its prompt —
+**zero times**. Prompted with four worked examples including a calculator call
+and a search call, a 0.5B model still overwhelmingly answers from its own
+weights. That gap is exactly what this project claims RL closes, and it is now
+a measured number rather than an assumption.
+
+**This breaks the `no_tool` control, and the control has to say so.** That
+category scores a 0.062 tool-call rate, which looks like a policy that knows
+when not to reach for a tool. It isn't: the model scarcely reaches for one
+anywhere, so the low rate is a property of the whole arm, not discrimination
+between task types. The measurement only becomes meaningful once an arm uses
+tools at all. Module 9 must report it as a *pair* with the other categories'
+rates, never alone.
+
+**Math is 0.021 because of arithmetic, not formatting.** The split over 480
+episodes: 66.9% produced a parseable number that was simply wrong, 24.4%
+never emitted an `<answer>` block, 6.7% emitted something unparseable, 2.1%
+were correct. So roughly a third is format failure and two thirds is
+arithmetic — the verifier is not the bottleneck. Thirteen answers landed
+within 2% of the target but outside the 0.005 tolerance; that tolerance is
+correct for money rounded to cents, and widening it to collect those would be
+tuning the ruler to flatter the result.
+
+Two of the unparseable answers are worth quoting, because they are failures of
+this repo's own prompt rather than of the model: `"immediately before it and
+the literal text"` is the model parroting the answer-format instruction back,
+and `"That reply cannot be scored because it did not contain the answer
+tags."` is it echoing the recovery nudge. The nudge wording survived three
+rewrites already (above); this is a fourth failure mode it has, and it is on
+the record rather than quietly fixed after the freeze.
+
+**Coding's dense score is doing real work.** Of 160 episodes, 28.1% passed
+every test, 35.0% passed some, and 36.9% passed none. Reported as
+solved/unsolved this category would be 0.281 and would throw away the 35% that
+carry most of the gradient signal GRPO will use. It is 0.439 as a fraction of
+223 test cases, and the ±0.10 interval on 20 problems is why the project's
+eval rules forbid quoting it as a bare percentage.
+
+**`no_tool`'s 0.494 is two different numbers.** Split by task kind, the
+arithmetic half scores 0.646 and the reading-comprehension half 0.266. The
+category mean is a blend of a thing the model can do and a thing it cannot.
+
+**Checked for reward hacking; found none.** The coding answers were scanned
+for `sys.modules` poisoning (the attack that already beat an earlier version
+of this harness), sentinel forgery, reading `suite.json`, `builtins` patching
+and early clean exits. One submission matched on the word `expected` and turned
+out to be writing its own unit tests with an `expected_output` variable, and it
+scored 0.0 anyway. No QA or multi_tool episode scored above zero without a tool
+call. Ten perfect scores had answers under two characters and all were
+`no_tool` tasks whose correct answer really is `3` or `5`.
+
+### Reproducing
+
+```bash
+python -m baseline_agent --split heldout --rollouts 8 \
+    --batch-size 32 --tool-workers 4 \
+    --out artifacts/baseline/heldout.json
+```
+
+Generation is checkpointed to `<out>.rollouts.json` *before* scoring, and
+`--score-rollouts <path>` re-scores that checkpoint with no GPU. That is not a
+convenience: the first complete held-out run was destroyed by a `SandboxError`
+raised during scoring, after all 40 minutes of generation had finished and
+before anything was written. The transcripts and the rollouts checkpoint are
+not committed — only `heldout.json`, which is what module 9 reads.

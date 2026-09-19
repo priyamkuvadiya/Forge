@@ -51,7 +51,11 @@ jobs:
         run: python -m tools.code_exec --setup
 
       - name: Run tests
-        run: python -m pytest task_suite tools -q
+        # `tests/` is the agent loop. It runs here, with no torch and no GPU,
+        # because `baseline_agent` keeps transformers inside `HFPolicy.__init__`
+        # and the loop is driven by scripted policies - which is the whole
+        # reason it was written that way.
+        run: python -m pytest task_suite tools tests -q
 
   transformer:
     name: transformer_scratch (torch, CPU)

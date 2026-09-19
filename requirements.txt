@@ -5,3 +5,8 @@ torch==2.13.0
 pytest
 numpy
 matplotlib
+
+# The agent backbone (module 4 onwards). `transformer_scratch` deliberately
+# does not import these: that module is raw torch.nn and stays that way.
+transformers
+accelerate
