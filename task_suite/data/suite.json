@@ -3382,7 +3382,7 @@
           "template": "counting",
           "tools": []
         },
-        "prompt": "A box contains tickets, keys and brushes. How many items are in the box?",
+        "prompt": "A box contains tickets, keys and brushes. How many different kinds of item does it contain?",
         "split": "heldout",
         "task_id": "notool-heldout-0002"
       },
@@ -3460,7 +3460,7 @@
           "template": "counting",
           "tools": []
         },
-        "prompt": "A box contains brushes, keys, tickets, mugs and candles. How many items are in the box?",
+        "prompt": "A box contains brushes, keys, tickets, mugs and candles. How many different kinds of item does it contain?",
         "split": "heldout",
         "task_id": "notool-heldout-0007"
       },
@@ -3538,7 +3538,7 @@
           "template": "counting",
           "tools": []
         },
-        "prompt": "A box contains keys, tickets and candles. How many items are in the box?",
+        "prompt": "A box contains keys, tickets and candles. How many different kinds of item does it contain?",
         "split": "heldout",
         "task_id": "notool-heldout-0012"
       },
@@ -3616,7 +3616,7 @@
           "template": "counting",
           "tools": []
         },
-        "prompt": "A box contains brushes, keys, tickets, candles and mugs. How many items are in the box?",
+        "prompt": "A box contains brushes, keys, tickets, candles and mugs. How many different kinds of item does it contain?",
         "split": "heldout",
         "task_id": "notool-heldout-0017"
       },
@@ -10665,7 +10665,7 @@
           "template": "counting",
           "tools": []
         },
-        "prompt": "A box contains bottles, folders and chairs. How many items are in the box?",
+        "prompt": "A box contains bottles, folders and chairs. How many different kinds of item does it contain?",
         "split": "train",
         "task_id": "notool-train-0002"
       },
@@ -10743,7 +10743,7 @@
           "template": "counting",
           "tools": []
         },
-        "prompt": "A box contains chairs, bottles, pencils and cushions. How many items are in the box?",
+        "prompt": "A box contains chairs, bottles, pencils and cushions. How many different kinds of item does it contain?",
         "split": "train",
         "task_id": "notool-train-0007"
       },
@@ -10821,7 +10821,7 @@
           "template": "counting",
           "tools": []
         },
-        "prompt": "A box contains pencils, chairs and folders. How many items are in the box?",
+        "prompt": "A box contains pencils, chairs and folders. How many different kinds of item does it contain?",
         "split": "train",
         "task_id": "notool-train-0012"
       },
@@ -10899,7 +10899,7 @@
           "template": "counting",
           "tools": []
         },
-        "prompt": "A box contains bottles, pencils, lamps, apples and chairs. How many items are in the box?",
+        "prompt": "A box contains bottles, pencils, lamps, apples and chairs. How many different kinds of item does it contain?",
         "split": "train",
         "task_id": "notool-train-0017"
       },
@@ -10977,7 +10977,7 @@
           "template": "counting",
           "tools": []
         },
-        "prompt": "A box contains chairs, cushions, apples, folders, lamps and bottles. How many items are in the box?",
+        "prompt": "A box contains chairs, cushions, apples, folders, lamps and bottles. How many different kinds of item does it contain?",
         "split": "train",
         "task_id": "notool-train-0022"
       },
@@ -11055,7 +11055,7 @@
           "template": "counting",
           "tools": []
         },
-        "prompt": "A box contains cushions, apples, folders, pencils and lamps. How many items are in the box?",
+        "prompt": "A box contains cushions, apples, folders, pencils and lamps. How many different kinds of item does it contain?",
         "split": "train",
         "task_id": "notool-train-0027"
       },
@@ -11133,7 +11133,7 @@
           "template": "counting",
           "tools": []
         },
-        "prompt": "A box contains folders, bottles, cushions, apples, lamps and chairs. How many items are in the box?",
+        "prompt": "A box contains folders, bottles, cushions, apples, lamps and chairs. How many different kinds of item does it contain?",
         "split": "train",
         "task_id": "notool-train-0032"
       },
@@ -11211,7 +11211,7 @@
           "template": "counting",
           "tools": []
         },
-        "prompt": "A box contains cushions, lamps, chairs, bottles and folders. How many items are in the box?",
+        "prompt": "A box contains cushions, lamps, chairs, bottles and folders. How many different kinds of item does it contain?",
         "split": "train",
         "task_id": "notool-train-0037"
       },

@@ -94,8 +94,14 @@ def _counting(rng: random.Random, variant: int, pools: "Pools") -> NoToolProblem
     """
     chosen = rng.sample(pools.items, rng.randint(3, min(6, len(pools.items))))
     listed = ", ".join(chosen[:-1]) + f" and {chosen[-1]}"
+    # "How many *kinds*", not "how many items". The pool is plural nouns, so
+    # the first wording ("A box contains bottles, folders and chairs. How many
+    # items are in the box?") had no determinate answer, and the module 4 dry
+    # run caught the base model saying so - correctly. A task whose stated
+    # answer is wrong is worse than a hard task: it is reward for agreeing
+    # with the author.
     return NoToolProblem(
-        prompt=f"A box contains {listed}. How many items are in the box?",
+        prompt=f"A box contains {listed}. How many different kinds of item does it contain?",
         template="counting",
         value=float(len(chosen)),
     )
