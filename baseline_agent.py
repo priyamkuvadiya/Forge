@@ -48,7 +48,7 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Callable, Protocol
 
 from task_suite import Task, extract_answer, verify
 from task_suite.protocol import ANSWER_INSTRUCTIONS
@@ -445,6 +445,7 @@ def run_episodes(
     max_nudges: int = DEFAULT_MAX_NUDGES,
     tool_workers: int = 8,
     progress: bool = False,
+    on_turn: "Callable[[list[Episode], list[str]], None] | None" = None,
 ) -> list[Episode]:
     """Drive every episode to completion, in lockstep.
 
@@ -453,6 +454,14 @@ def run_episodes(
     episode simply drops out of the next batch. The alternative, running
     episodes one at a time, leaves the GPU generating a single sequence and
     turns a twenty-minute eval into a several-hour one.
+
+    `on_turn(pending, completions)` is called after each batch of completions,
+    before they are folded into their episodes. It exists for module 5, which
+    has to pair each episode with the token ids its completion was sampled
+    from - the loop stores decoded strings, and re-encoding one is not reliably
+    the same trajectory. Nothing in the baseline path passes it, and with
+    `on_turn=None` this function does exactly what it did when it produced the
+    committed baseline numbers.
     """
     max_calls = max(episode.session.max_calls for episode in episodes) if episodes else 0
     # Every call, plus the turn that spends the budget-exhausted message, plus
@@ -476,6 +485,9 @@ def run_episodes(
             stop=STOP_STRINGS,
             max_new_tokens=max_new_tokens,
         )
+
+        if on_turn is not None:
+            on_turn(pending, completions)
 
         wanted: list[tuple[Episode, ToolCall]] = []
         for episode, text in zip(pending, completions):

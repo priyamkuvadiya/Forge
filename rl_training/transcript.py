@@ -183,8 +183,24 @@ def align_completion(
     return prefix, overshoot
 
 
-def _assistant_indices(messages: Sequence[dict[str, str]]) -> list[int]:
-    return [i for i, message in enumerate(messages) if message["role"] == "assistant"]
+def _assistant_indices(
+    messages: Sequence[dict[str, str]], first_completion_index: int = 0
+) -> list[int]:
+    """Assistant messages the *policy* wrote, which is not all of them.
+
+    The agent's prompt prefix contains worked examples, and a worked example is
+    an assistant message. Masking those in would train the policy on the
+    few-shot demonstrations - plain supervised fine-tuning on three hand-written
+    turns, smuggled in under a reward signal, on every single rollout. Module 4
+    measured those examples as worth 0.1908 against 0.0125, so they are not a
+    detail: a policy quietly trained to reproduce them would look like RL
+    working.
+    """
+    return [
+        i
+        for i, message in enumerate(messages)
+        if message["role"] == "assistant" and i >= first_completion_index
+    ]
 
 
 def build_transcript(
@@ -193,6 +209,7 @@ def build_transcript(
     *,
     sampled_token_ids: Sequence[Sequence[int]] | None = None,
     max_tokens: int | None = None,
+    first_completion_index: int = 0,
 ) -> MaskedTranscript:
     """Tokenize a conversation and mark exactly the tokens the policy wrote.
 
@@ -201,6 +218,13 @@ def build_transcript(
     stored text - correct enough to exercise the loop, not correct enough to
     publish a gradient from. See the module docstring.
 
+    `first_completion_index` is where the policy's own turns start - the number
+    of messages in the prompt prefix. Assistant messages before it are few-shot
+    demonstrations and stay static. It defaults to 0 because a conversation
+    with no prefix is the simpler case to reason about, but every real episode
+    from `make_episodes` has one and passing the wrong value here is a silent
+    bug, not a crash.
+
     `max_tokens` truncates from the *left* when a transcript will not fit the
     measured 8GB budget. Left, because the tail is where the answer and the
     reward live; dropping the head costs some of the few-shot examples, which
@@ -208,7 +232,7 @@ def build_transcript(
     transcript records where it was cut so the training loop can report how
     many of them there were rather than silently training on fragments.
     """
-    assistants = _assistant_indices(messages)
+    assistants = _assistant_indices(messages, first_completion_index)
     if sampled_token_ids is not None and len(sampled_token_ids) != len(assistants):
         raise ValueError(
             f"{len(sampled_token_ids)} sampled turns for "

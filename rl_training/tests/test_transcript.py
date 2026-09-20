@@ -148,6 +148,70 @@ def test_nudge_and_system_prompt_are_static(tokenizer):
     assert "<s>assistant" not in masked, "template scaffolding is not the policy's"
 
 
+def test_few_shot_demonstrations_are_not_treated_as_the_policys_turns(tokenizer):
+    """The prompt prefix contains assistant messages the policy never wrote.
+
+    Without `first_completion_index` these are masked in, and every rollout
+    quietly becomes supervised fine-tuning on three hand-written examples as
+    well as a policy-gradient step. Module 4 measured the examples as worth
+    0.1908 against 0.0125, so a policy trained to reproduce them would look
+    exactly like RL succeeding.
+    """
+    messages = [
+        {"role": "system", "content": "You may call tools."},
+        {"role": "user", "content": "EXAMPLE QUESTION"},
+        {"role": "assistant", "content": "WORKED EXAMPLE ANSWER"},
+        {"role": "user", "content": "Who wrote the report?"},
+        {"role": "assistant", "content": "<answer>Yuki</answer>"},
+    ]
+
+    transcript = build_transcript(messages, tokenizer, first_completion_index=3)
+
+    masked = tokenizer.decode(
+        transcript.completion_token_ids(), skip_special_tokens=True
+    )
+    assert masked == "<answer>Yuki</answer>"
+    assert "WORKED EXAMPLE" not in masked
+
+
+def test_without_the_prefix_index_the_demonstration_would_be_trained_on(tokenizer):
+    """States the failure explicitly, so the guard cannot be removed silently."""
+    messages = [
+        {"role": "system", "content": "You may call tools."},
+        {"role": "user", "content": "EXAMPLE QUESTION"},
+        {"role": "assistant", "content": "WORKED EXAMPLE ANSWER"},
+        {"role": "user", "content": "Who wrote the report?"},
+        {"role": "assistant", "content": "<answer>Yuki</answer>"},
+    ]
+
+    unguarded = build_transcript(messages, tokenizer)
+
+    assert "WORKED EXAMPLE" in tokenizer.decode(
+        unguarded.completion_token_ids(), skip_special_tokens=True
+    )
+
+
+def test_sampled_ids_count_against_the_policys_turns_only(tokenizer):
+    """One sampled turn for one real turn, even with a demonstration present."""
+    messages = [
+        {"role": "system", "content": "sys"},
+        {"role": "user", "content": "example"},
+        {"role": "assistant", "content": "demo"},
+        {"role": "user", "content": "real question"},
+        {"role": "assistant", "content": "<answer>4</answer>"},
+    ]
+    sampled = [tokenizer.encode("<answer>4</answer> extra", add_special_tokens=False)]
+
+    transcript = build_transcript(
+        messages, tokenizer, sampled_token_ids=sampled, first_completion_index=3
+    )
+
+    assert transcript.source == "sampled"
+    assert tokenizer.decode(
+        transcript.completion_token_ids(), skip_special_tokens=True
+    ) == "<answer>4</answer>"
+
+
 def test_prefix_instability_raises_rather_than_misaligning():
     """Mutation test for the guard: break the assumption, demand a failure.
 

@@ -285,6 +285,82 @@ def test_episodes_finishing_at_different_turns_drop_out_of_the_batch():
     assert all(e.finish_reason == "answer" for e in episodes)
 
 
+def test_the_turn_hook_pairs_each_completion_with_its_own_episode():
+    """Module 5 attaches sampled token ids through this, so the pairing is
+    the whole contract: a hook that reported completions in a different order
+    than the episodes they came from would mask the wrong tokens."""
+
+    class Diverging:
+        def __init__(self) -> None:
+            self._turn = 0
+
+        def generate(self, conversations, *, stop=(), max_new_tokens=0):
+            self._turn += 1
+            if self._turn == 1:
+                return ["<answer>4</answer>", '<tool name="echo">ping</tool>']
+            return ["<answer>done</answer>"] * len(conversations)
+
+    registry = ToolRegistry([EchoTool()])
+    episodes = make_episodes(
+        [make_task(task_id="t-0"), make_task(task_id="t-1")], registry, few_shot=False
+    )
+
+    seen: list[list[tuple[str, str]]] = []
+    run_episodes(
+        episodes,
+        Diverging(),
+        max_nudges=0,
+        tool_workers=1,
+        on_turn=lambda pending, completions: seen.append(
+            [(e.task.task_id, text) for e, text in zip(pending, completions)]
+        ),
+    )
+
+    assert seen == [
+        [("t-0", "<answer>4</answer>"), ("t-1", '<tool name="echo">ping</tool>')],
+        # t-0 finished on turn 1 and must not appear again.
+        [("t-1", "<answer>done</answer>")],
+    ]
+
+
+def test_the_turn_hook_fires_before_the_completion_is_folded_in(registry_and_tool):
+    """It has to see the raw completion, not the truncated stored turn."""
+    registry, _ = registry_and_tool
+    raw = '<tool name="echo">ping</tool> and then it hallucinated the result'
+    seen: list[str] = []
+
+    episodes = make_episodes([make_task()], registry, few_shot=False)
+    run_episodes(
+        episodes,
+        ScriptedPolicy([raw, "<answer>4</answer>"]),
+        max_nudges=0,
+        tool_workers=1,
+        on_turn=lambda pending, completions: seen.extend(completions),
+    )
+
+    assert seen[0] == raw
+    assert episodes[0].assistant_turns[0] == '<tool name="echo">ping</tool>'
+
+
+def test_without_the_hook_nothing_changes(registry_and_tool):
+    """The baseline path is byte-identical with `on_turn` left at its default."""
+    registry, _ = registry_and_tool
+    turns = ['<tool name="echo">ping</tool>', "<answer>4</answer>"]
+
+    plain = drive(ScriptedPolicy(list(turns)), registry)
+    hooked_episodes = make_episodes([make_task()], registry, few_shot=False)
+    run_episodes(
+        hooked_episodes,
+        ScriptedPolicy(list(turns)),
+        max_nudges=1,
+        tool_workers=1,
+        on_turn=lambda pending, completions: None,
+    )
+
+    assert plain.messages == hooked_episodes[0].messages
+    assert plain.finish_reason == hooked_episodes[0].finish_reason
+
+
 # --- scoring and reporting ------------------------------------------------
 
 

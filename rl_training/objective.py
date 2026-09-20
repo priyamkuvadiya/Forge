@@ -198,6 +198,12 @@ def prepare_for_training(model: Any) -> dict[str, Any]:
     """
     model.train()
     model.gradient_checkpointing_enable()
+    config = getattr(model, "config", None)
+    if config is not None:
+        # Checkpointing and the KV cache cannot both be on. Turning the cache
+        # off here rather than letting `transformers` do it with a warning
+        # keeps the two phases' configuration explicit and symmetrical.
+        config.use_cache = False
 
     body, _ = _body_and_head(model)
     layers = list(getattr(body, "layers", []))
@@ -219,6 +225,23 @@ def prepare_for_training(model: Any) -> dict[str, Any]:
         "layers": len(layers),
         "layers_checkpointing": sum(engaged),
     }
+
+
+def prepare_for_generation(model: Any) -> None:
+    """Put the model back in the state sampling wants.
+
+    The mirror of `prepare_for_training`, and not optional: gradient
+    checkpointing and the KV cache are mutually exclusive, so a model left in
+    training configuration regenerates the whole prefix at every step and turns
+    a rollout phase into something several times slower than the baseline's.
+    `generate` warns about the conflict and then silently disables the cache,
+    which is the expensive half of the two.
+    """
+    model.gradient_checkpointing_disable()
+    model.eval()
+    config = getattr(model, "config", None)
+    if config is not None:
+        config.use_cache = True
 
 
 @torch.no_grad()
