@@ -18,6 +18,7 @@ def verify(
     *,
     code_runner: CodeRunner | None = None,
     timeout: float = DEFAULT_TIMEOUT_SECONDS,
+    allow_unconfined: bool = False,
 ) -> float:
     """Score one response against one task. Deterministic, given the same inputs."""
     # multi_tool tasks are arithmetic over retrieved facts, so the answer is a
@@ -53,6 +54,16 @@ def verify(
             raise ValueError(
                 f"task {task.task_id} is a code task and needs a sandboxed code_runner"
             )
-        return verify_code(response, task.ground_truth, code_runner, timeout)
+        # `allow_unconfined` continues the same idea one step further: a
+        # runner that cannot confine the filesystem is not merely missing, it
+        # is *gameable*, and scoring through it silently would produce a
+        # coding number nobody can distinguish from an honest one later.
+        return verify_code(
+            response,
+            task.ground_truth,
+            code_runner,
+            timeout,
+            allow_unconfined=allow_unconfined,
+        )
 
     raise ValueError(f"no verifier for category {task.category!r}")

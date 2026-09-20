@@ -25,7 +25,8 @@
   "sandbox": {
     "backend": "windows",
     "confinement": "appcontainer+job (confines: filesystem, network, resources)",
-    "filesystem_confined": true
+    "filesystem_confined": true,
+    "allow_unconfined": false
   },
   "wall_clock_seconds": 1098.0,
   "summary": {

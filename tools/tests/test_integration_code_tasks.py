@@ -34,6 +34,14 @@ windows_only = pytest.mark.skipif(
 ALL_TASKS = generate_code_tasks("train") + generate_code_tasks("heldout")
 RUNNER = SandboxedCodeRunner()
 
+# `verify` refuses by default to score a coding task on a backend that does not
+# confine the filesystem, so that a Linux eval cannot quietly report a number a
+# submission could have read off disk. These tests are exactly the exception
+# that flag exists for: they assert the sandbox's behaviour and publish no
+# score anywhere, so on POSIX they opt in rather than skipping - the whole
+# point of this file is that the POSIX runner gets exercised somewhere.
+UNCONFINED_OK = {"allow_unconfined": True}
+
 
 def _response(source: str) -> str:
     return f"<answer>\n```python\n{source}\n```\n</answer>"
@@ -41,7 +49,7 @@ def _response(source: str) -> str:
 
 @pytest.mark.parametrize("task", ALL_TASKS, ids=lambda t: t.metadata["name"])
 def test_reference_solution_scores_one_in_the_real_sandbox(task):
-    score = verify(task, _response(REFERENCE[task.metadata["name"]]), code_runner=RUNNER)
+    score = verify(task, _response(REFERENCE[task.metadata["name"]]), code_runner=RUNNER, **UNCONFINED_OK)
     assert score == 1.0, f"{task.metadata['name']} scored {score} under the sandbox"
 
 
@@ -86,7 +94,7 @@ def test_a_submission_cannot_forge_the_report_line(label, attack):
     entry = task.ground_truth["entry_point"]
     source = f"{attack}\ndef {entry}(*args, **kwargs):\n    return 'definitely not the answer'\n"
 
-    assert verify(task, _response(source), code_runner=RUNNER) == 0.0, label
+    assert verify(task, _response(source), code_runner=RUNNER, **UNCONFINED_OK) == 0.0, label
 
 
 def test_the_whole_category_is_covered():
@@ -103,7 +111,7 @@ def test_a_stub_still_fails_under_the_sandbox(task):
     pass everything. Both directions need proving.
     """
     stub = f"def {task.ground_truth['entry_point']}(*args, **kwargs):\n    return None\n"
-    assert verify(task, _response(stub), code_runner=RUNNER) < 1.0
+    assert verify(task, _response(stub), code_runner=RUNNER, **UNCONFINED_OK) < 1.0
 
 
 @windows_only
@@ -138,4 +146,4 @@ def {task.ground_truth['entry_point']}(*args, **kwargs):
             continue
     return None
 """
-    assert verify(task, _response(thief), code_runner=RUNNER) < 1.0
+    assert verify(task, _response(thief), code_runner=RUNNER, **UNCONFINED_OK) < 1.0

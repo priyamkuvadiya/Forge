@@ -15,7 +15,7 @@
     "max_calls": 8,
     "max_nudges": 1,
     "max_new_tokens": 384,
-    "few_shot": false,
+    "few_shot": true,
     "tools": [
       "calculator",
       "python",
@@ -25,7 +25,8 @@
   "sandbox": {
     "backend": "windows",
     "confinement": "appcontainer+job (confines: filesystem, network, resources)",
-    "filesystem_confined": true
+    "filesystem_confined": true,
+    "allow_unconfined": false
   },
   "wall_clock_seconds": 995.5,
   "summary": {

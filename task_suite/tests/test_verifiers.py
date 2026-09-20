@@ -374,3 +374,79 @@ def test_task_round_trips_through_json():
     task = make_task()
     restored = Task.from_dict(json.loads(json.dumps(task.to_dict())))
     assert restored == task
+
+
+# --------------------------------------------------------------------------
+# refusing to score through an unconfined sandbox
+# --------------------------------------------------------------------------
+#
+# These run on every platform on purpose. The behaviour they cover only ever
+# triggers on POSIX, where the backend does not confine the filesystem - which
+# means the machine this project is developed on can never exercise it, and
+# the first execution would otherwise be a CI run or, worse, a real Linux
+# eval quietly reporting a gameable coding score. A declared attribute on a
+# fake runner reproduces it anywhere.
+
+
+def _code_task() -> Task:
+    return make_task(task_id="c1", category="code", prompt="Write add.", ground_truth=CODE_GT)
+
+
+def _runner_declaring(confines: bool | None):
+    run = fake_runner([3, 0, 15])
+    if confines is not None:
+        run.confines_filesystem = confines
+    return run
+
+
+def test_an_unconfined_runner_refuses_to_produce_a_coding_score():
+    """A number a submission could have read off disk is not a measurement.
+
+    On POSIX a submission can open `task_suite/data/suite.json` and return the
+    expected answers for its own task. Scoring 1.0 through that is
+    indistinguishable afterwards from having solved the problem, so `verify`
+    raises rather than returning anything at all - the same stance it already
+    takes when there is no runner, for the same reason.
+    """
+    with pytest.raises(ValueError, match="does not confine the filesystem"):
+        verify(_code_task(), wrap("code"), code_runner=_runner_declaring(False))
+
+
+def test_the_unconfined_refusal_can_be_opted_out_of_explicitly():
+    """The sandbox's own tests have to run on POSIX; they publish no number."""
+    score = verify(
+        _code_task(),
+        wrap("code"),
+        code_runner=_runner_declaring(False),
+        allow_unconfined=True,
+    )
+    assert score == 1.0
+
+
+def test_a_confined_runner_scores_normally():
+    score = verify(_code_task(), wrap("code"), code_runner=_runner_declaring(True))
+    assert score == 1.0
+
+
+def test_a_runner_that_declares_nothing_is_allowed():
+    """Undeclared means "not a real sandbox", not "unsafe".
+
+    Every fake in this file is a plain function that executes nothing and
+    reports canned values. Refusing those would make the flag a tax on test
+    doubles rather than a guard on real backends.
+    """
+    assert verify(_code_task(), wrap("code"), code_runner=_runner_declaring(None)) == 1.0
+
+
+def test_the_refusal_is_not_scoreable_as_a_model_failure():
+    """It must raise, never return 0.0.
+
+    A 0.0 would flatten the whole coding category for a run and look exactly
+    like a model that cannot code - the precise confusion `verify` was built
+    to prevent when a runner is missing entirely.
+    """
+    try:
+        verify(_code_task(), wrap("code"), code_runner=_runner_declaring(False))
+    except ValueError:
+        return
+    raise AssertionError("scored silently instead of refusing")

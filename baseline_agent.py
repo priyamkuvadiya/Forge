@@ -501,7 +501,11 @@ def run_episodes(
 
 
 def score_episodes(
-    episodes: list[Episode], *, code_runner=None, workers: int = 8
+    episodes: list[Episode],
+    *,
+    code_runner=None,
+    workers: int = 8,
+    allow_unconfined: bool = False,
 ) -> list[EpisodeResult]:
     """Reward every episode, then flatten to records.
 
@@ -511,7 +515,12 @@ def score_episodes(
     """
 
     def _score(episode: Episode) -> float:
-        return verify(episode.task, episode.response, code_runner=code_runner)
+        return verify(
+            episode.task,
+            episode.response,
+            code_runner=code_runner,
+            allow_unconfined=allow_unconfined,
+        )
 
     with ThreadPoolExecutor(max_workers=max(1, min(workers, len(episodes) or 1))) as pool:
         rewards = list(pool.map(_score, episodes))
@@ -815,6 +824,7 @@ def run(
     tool_workers: int = 8,
     progress: bool = False,
     checkpoint: Path | None = None,
+    allow_unconfined: bool = False,
 ) -> tuple[list[Episode], list[EpisodeResult]]:
     """Roll out, then score. The whole of module 4 in one call."""
     episodes = make_episodes(
@@ -834,7 +844,12 @@ def run(
         if progress:
             print(f"  checkpointed rollouts to {checkpoint}", file=sys.stderr, flush=True)
 
-    return episodes, score_episodes(episodes, code_runner=code_runner, workers=tool_workers)
+    return episodes, score_episodes(
+        episodes,
+        code_runner=code_runner,
+        workers=tool_workers,
+        allow_unconfined=allow_unconfined,
+    )
 
 
 def save_rollouts(episodes: list[Episode], path: Path) -> Path:
@@ -941,6 +956,14 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         help="re-score a saved rollouts checkpoint instead of generating",
     )
+    parser.add_argument(
+        "--allow-unconfined",
+        action="store_true",
+        help=(
+            "score coding tasks even on a sandbox that does not confine the "
+            "filesystem (POSIX). The results file records that it was used."
+        ),
+    )
     parser.add_argument("--transcripts", type=Path, help="write full transcripts here")
     parser.add_argument("--show-transcripts", action="store_true")
     arguments = parser.parse_args(argv)
@@ -981,6 +1004,27 @@ def main(argv: list[str] | None = None) -> int:
             print(f"sandbox preflight failed: {probe.stderr[-400:]}", file=sys.stderr)
             return 1
 
+        # Same argument, one step earlier: `verify` refuses to score a coding
+        # task on a backend that cannot confine the filesystem, so on POSIX
+        # this run would generate for half an hour and then raise. Say so now.
+        if (
+            wants_code
+            and not arguments.allow_unconfined
+            and not runner.confines_filesystem
+        ):
+            print(
+                f"the {code_exec.sandbox_backend()} sandbox does not confine the "
+                "filesystem, so a submission can read task_suite/data/suite.json "
+                "and lift the expected answers for its own coding task.\n"
+                "Refusing to generate a run whose coding score could not be "
+                "trusted afterwards. Either run on a backend that confines the "
+                "filesystem, select --categories without 'code', or pass "
+                "--allow-unconfined to record the run with that caveat stamped "
+                "into its results file.",
+                file=sys.stderr,
+            )
+            return 1
+
     if arguments.score_rollouts:
         # Re-score a checkpoint without regenerating anything - and before the
         # model is constructed, since recovery must not need a GPU at all.
@@ -988,7 +1032,10 @@ def main(argv: list[str] | None = None) -> int:
             arguments.score_rollouts, {task.task_id: task for task in tasks}
         )
         results = score_episodes(
-            episodes, code_runner=runner, workers=arguments.tool_workers
+            episodes,
+            code_runner=runner,
+            workers=arguments.tool_workers,
+            allow_unconfined=arguments.allow_unconfined,
         )
         summary = summarize(results)
         print(format_summary(summary))
@@ -1045,6 +1092,7 @@ def main(argv: list[str] | None = None) -> int:
         few_shot=not arguments.no_few_shot,
         tool_workers=arguments.tool_workers,
         progress=True,
+        allow_unconfined=arguments.allow_unconfined,
         checkpoint=(
             arguments.out.with_suffix(".rollouts.json") if arguments.out else None
         ),
@@ -1118,6 +1166,11 @@ def write_results(
             "backend": code_exec.sandbox_backend(),
             "confinement": confinement.summary() if confinement else None,
             "filesystem_confined": confinement.filesystem if confinement else None,
+            # Stamped in whether or not it was needed. A coding score produced
+            # through an unconfined sandbox is not comparable with one that
+            # was not, and the difference has to survive in the artefact
+            # rather than in whoever remembers the command line.
+            "allow_unconfined": bool(getattr(arguments, "allow_unconfined", False)),
         },
         "wall_clock_seconds": round(wall_clock, 1),
         "summary": summary,

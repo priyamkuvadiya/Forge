@@ -136,6 +136,18 @@ class SandboxedCodeRunner:
         self.memory_limit = memory_limit
         self.default_timeout = default_timeout
 
+    @property
+    def confines_filesystem(self) -> bool:
+        """Whether this platform's backend bounds what a submission can read.
+
+        Part of the `CodeRunner` contract, and the reason it is a property
+        rather than a constant: the answer is a property of the backend this
+        platform got, not of this class. `verify_code` refuses to score a
+        coding task when it is False, so a Linux run cannot quietly report a
+        number a submission could have obtained by reading the answers.
+        """
+        return confinement().filesystem
+
     def __call__(self, source: str, timeout: float | None = None) -> CodeRunResult:
         return run_code(
             source,

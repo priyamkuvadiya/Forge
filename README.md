@@ -454,8 +454,38 @@ One honest caveat, also stated at the top of `code_exec_posix.py`: **it does
 not confine the filesystem**. Proper confinement needs a mount namespace,
 which needs root or user namespaces, neither of which can be assumed — so on
 POSIX a submission can still read the repo and therefore the expected answers,
-the exact hole the AppContainer closes on Windows. Landlock is the intended
-fix and is not done yet.
+the exact hole the AppContainer closes on Windows. Landlock would close it
+properly and is deliberately not built: it cannot be tested on the machine
+this project is developed on, and a silent no-op on an unsupported kernel
+would be a *worse* failure than the documented gap, because it would look
+closed.
+
+**So the verifier refuses to score through it instead.** A runner declares
+whether it confines the filesystem, and `verify()` raises rather than
+returning a number when it does not — the same stance it already takes when
+there is no runner at all, and for the same reason: a score a submission
+could have obtained by reading `suite.json` is indistinguishable afterwards
+from an honest one, and 0.0 would look like a model that cannot code.
+`--allow-unconfined` overrides it for cases that publish no number (the
+sandbox's own tests, smoke runs), and the results file records that it was
+used, so a caveated number can never be mistaken for a clean one:
+
+```json
+"sandbox": {
+  "backend": "windows",
+  "confinement": "appcontainer+job (confines: filesystem, network, resources)",
+  "filesystem_confined": true,
+  "allow_unconfined": false
+}
+```
+
+The refusal fires in `baseline_agent` as a preflight, before the model loads,
+rather than half an hour into generation. Because this machine can never
+produce the condition, the behaviour is tested by a fake runner that declares
+itself unconfined, and the whole suite was additionally run with
+`confinement()` patched to report an unbounded filesystem — which is how the
+four integration tests that legitimately need the override were found before
+CI did.
 
 That difference is data rather than prose. Each backend declares a
 `Confinement` — what it bounds and what it does not — the eval harness records

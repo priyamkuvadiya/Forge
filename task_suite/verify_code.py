@@ -57,9 +57,25 @@ class CodeRunResult:
 
 
 class CodeRunner(Protocol):
-    """What module 3's sandbox has to provide: run source, return output."""
+    """What module 3's sandbox has to provide: run source, return output.
+
+    A runner may also declare `confines_filesystem`, and a real sandbox
+    should. `verify_code` refuses to score a coding task on a runner that
+    declares `False`, for the same reason `verify` refuses to score one with
+    no runner at all: a number that a submission could have obtained by
+    reading `task_suite/data/suite.json` is not a measurement of anything,
+    and it would be indistinguishable from an honest one after the fact.
+
+    Undeclared (`None`) is allowed and means "not a real sandbox" - the test
+    doubles throughout this suite are plain functions that never execute
+    anything, and they produce no official number. The attribute exists so
+    that a backend which *knows* it cannot confine the filesystem has to say
+    so, not to police callers that were never sandboxing in the first place.
+    """
 
     def __call__(self, source: str, timeout: float) -> CodeRunResult: ...
+
+    confines_filesystem: bool | None
 
 
 def extract_code(answer: str) -> str:
@@ -195,7 +211,23 @@ def verify_code(
     ground_truth: dict,
     runner: CodeRunner,
     timeout: float = DEFAULT_TIMEOUT_SECONDS,
+    *,
+    allow_unconfined: bool = False,
 ) -> float:
+    # Checked before anything is executed, and raising rather than returning
+    # 0.0, on exactly the reasoning in `verifiers.verify`: a broken or
+    # unsuitable harness must never be scoreable as a model failure. The
+    # POSIX backend bounds CPU, memory and processes but not the filesystem,
+    # so a submission there can read the expected answers for its own task.
+    if not allow_unconfined and getattr(runner, "confines_filesystem", None) is False:
+        raise ValueError(
+            "this code runner does not confine the filesystem, so a submission "
+            "can read task_suite/data/suite.json and lift the expected answers "
+            "for its own task. Refusing to produce a coding score. Pass "
+            "allow_unconfined=True only where the number is not being reported "
+            "(tests, smoke runs)."
+        )
+
     answer = extract_answer(response)
     if answer is None:
         return 0.0
