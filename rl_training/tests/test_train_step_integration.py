@@ -206,6 +206,51 @@ def test_keeping_degenerate_groups_still_produces_no_policy_gradient(
     ), "zero advantages with no KL must leave the policy alone"
 
 
+def test_dropping_degenerate_groups_does_not_change_the_gradient(tiny_policy):
+    """Dropping them must be a compute saving and nothing else.
+
+    A degenerate group contributes zero to the numerator, so if it were also
+    left out of the *denominator* the remaining gradient would be scaled up by
+    the reciprocal of the usable fraction - a silent ~3.8x on the effective
+    learning rate at the measured 26.4%, drifting step to step with however
+    many groups happened to be degenerate. This is the test that keeps the
+    normalizer counting every episode the step sampled.
+    """
+    train = load_suite()["train"]
+    no_tool = [t for t in train if t.category == "no_tool"][:2]
+    answers = {t.prompt: str(t.ground_truth["value"]) for t in no_tool[:1]}
+
+    grads = {}
+    for keep in (True, False):
+        policy = tiny_policy(answers)
+        # The fixture builds the model once, so both passes share it and
+        # `train_step` deliberately does not zero gradients - the caller owns
+        # the optimiser. Without this the second pass accumulates onto the
+        # first and the comparison reads a clean 2x that is entirely the
+        # test's own doing.
+        policy.model.zero_grad(set_to_none=True)
+        torch.manual_seed(3)
+        report = train_step(
+            policy, no_tool, build_registry(include_code=False), step=1,
+            group_size=4, max_new_tokens=32, chunk_size=16, kl_beta=0.0,
+            tool_workers=1, keep_degenerate=keep,
+        )
+        grads[keep] = {
+            n: p.grad.clone()
+            for n, p in policy.model.named_parameters()
+            if p.grad is not None and p.grad.abs().sum() > 0
+        }
+        if keep:
+            assert report.dropped_degenerate == 0
+        else:
+            assert report.dropped_degenerate > 0, "the fixture must drop something"
+
+    assert grads[True], "the run must produce some gradient to compare"
+    assert set(grads[True]) == set(grads[False])
+    for name, grad in grads[True].items():
+        assert torch.allclose(grad, grads[False][name], atol=1e-6), name
+
+
 def test_the_sampled_ids_path_is_the_one_taken(tiny_policy, tasks):
     """If the recorder ever falls out of step the run silently switches to
     re-tokenizing, so the count is asserted rather than logged and forgotten."""

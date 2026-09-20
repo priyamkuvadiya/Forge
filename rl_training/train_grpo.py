@@ -296,11 +296,11 @@ def train_step(
         torch.cuda.empty_cache()
 
     # --- build the trainable batch ----------------------------------------
-    kept: list[tuple[Episode, float]] = []
-    for episode, advantage in zip(episodes, advantages):
-        if advantage == 0.0 and not keep_degenerate:
-            continue
-        kept.append((episode, advantage))
+    # Every episode gets a transcript, including the degenerate ones that will
+    # not be back-propagated. Tokenizing them costs milliseconds against ~20s
+    # of generation, and it buys the thing that makes dropping them *safe*:
+    # the normalizer below counts their tokens too.
+    kept: list[tuple[Episode, float]] = list(zip(episodes, advantages))
 
     # How much the shortcut this project declined to take would have cost, on
     # this step's real rollouts. If the loop re-encoded its decoded transcripts
@@ -317,7 +317,7 @@ def train_step(
         policy.tokenizer,
     )
 
-    transcripts = []
+    every: list[tuple[Any, float]] = []
     for episode, advantage in kept:
         transcript = build_transcript(
             episode.messages,
@@ -330,13 +330,31 @@ def train_step(
             # Nothing the policy wrote survived truncation. Training on it
             # would be a backward pass over an all-zero mask.
             continue
-        transcripts.append((transcript, advantage))
+        every.append((transcript, advantage))
+
+    # The normalizer counts *every* episode the step sampled; the backward runs
+    # only over those with a non-zero advantage.
+    #
+    # Keeping those two sets apart is the whole point. GRPO averages over all
+    # the outputs sampled for a group, and a degenerate group's members
+    # contribute exactly zero to the numerator - so leaving them out of the
+    # denominator as well would not be a compute saving, it would quietly
+    # multiply the gradient by the reciprocal of the usable fraction. At the
+    # measured 26.4% that is a silent ~3.8x on the effective learning rate,
+    # varying step to step with how many groups happened to be degenerate.
+    normalizer_tokens = float(
+        sum(sum(transcript.completion_mask[1:]) for transcript, _ in every)
+    ) or 1.0
+
+    transcripts = (
+        every if keep_degenerate else [pair for pair in every if pair[1] != 0.0]
+    )
 
     report_common = dict(
         step=step,
         episodes=len(episodes),
         kept_episodes=len(transcripts),
-        dropped_degenerate=len(episodes) - len(kept),
+        dropped_degenerate=len(every) - len(transcripts),
         groups=stats.n_groups,
         degenerate_groups=stats.n_degenerate,
         mean_reward=round(stats.mean_reward, 4),
@@ -363,15 +381,10 @@ def train_step(
     device = policy.device
     pad_id = policy.tokenizer.pad_token_id
     lengths = [transcript.n_tokens for transcript, _ in transcripts]
-    # Normalizer over the whole step, not per microbatch: gradient accumulation
-    # across microbatches has to sum to the same thing a single large batch
+    # One normalizer for the whole step, not one per microbatch: gradient
+    # accumulation across microbatches has to sum to what a single large batch
     # would have produced.
-    total_completion_tokens = float(
-        sum(
-            sum(transcript.completion_mask[1:])
-            for transcript, _ in transcripts
-        )
-    ) or 1.0
+    total_completion_tokens = normalizer_tokens
 
     batches = pack_microbatches(lengths)
 
