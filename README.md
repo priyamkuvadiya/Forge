@@ -26,7 +26,7 @@ the corresponding module exists and has been run for real.
 
 Modules 1 (from-scratch transformer), 2 (task suite and verifiers), 3 (tools,
 the sandbox, and the tool-call contract) and 4 (the prompted baseline agent)
-are complete — 474 tests, run on Linux and Windows on every push.
+are complete — 567 tests, run on Linux and Windows on every push.
 
 The control-group numbers now exist: the prompted Qwen2.5-0.5B-Instruct
 baseline scores a **macro-average reward of 0.1908** across the five held-out
@@ -34,9 +34,16 @@ categories. It calls a tool in under a fifth of episodes in every category —
 not once in 160 coding episodes — and when it does call one, it never chains:
 of the 72 QA and multi_tool episodes that used a tool, none made a second
 call, on the two categories that structurally require more than one hop.
-Closing that gap is what module 5's GRPO training has to do. Next is that
-training loop; there is no trained policy and no baseline-versus-RL comparison
-yet.
+Closing that gap is what module 5's GRPO training has to do.
+
+Module 5's training loop is built and its memory budget is measured, but **it
+has not been trained yet** — there is no reward curve, no trained policy and
+no baseline-versus-RL comparison. What it does already have is a number that
+bounds what it can claim: at the baseline's skill, **73.6% of held-out prompts
+produce no GRPO gradient at all**, because every rollout in the group scores
+identically — and QA and multi_tool produce none whatsoever. Those are the two
+categories the baseline named as the gap. See
+[Module 5](#module-5-grpo-training).
 
 ## Module 1: from-scratch transformer
 
@@ -877,3 +884,209 @@ convenience: the first complete held-out run was destroyed by a `SandboxError`
 raised during scoring, after all 40 minutes of generation had finished and
 before anything was written. The transcripts and the rollouts checkpoint are
 not committed — only `heldout.json`, which is what module 9 reads.
+
+## Module 5: GRPO training
+
+The RL half. A LoRA-adapted Qwen2.5-0.5B-Instruct is trained with GRPO on the
+module 2 task suite, using the module 2 verifiers as the reward and the module
+3 tools through the module 3 contract. One step is:
+
+```text
+draw a category-balanced set of prompts      rl_training/sampling.py
+roll out `group_size` attempts at each       baseline_agent.run_episodes
+score every attempt                          task_suite.verify
+centre each reward on its group              rl_training/advantages.py
+mask each transcript to the policy's tokens  rl_training/transcript.py
+accumulate a gradient over microbatches      rl_training/objective.py
+one optimiser step
+```
+
+Everything but the optimiser is code the earlier modules already own. The
+rollouts come from the *same* `run_episodes` that produced the baseline,
+scored by the *same* `verify`, through the *same* tool contract — so module
+9's comparison measures two sets of weights and not two different agents.
+
+**8,798,208 trainable parameters of 502,830,976.** LoRA r=16 on every
+attention and MLP projection. That is not a concession to the card, it is what
+makes training possible on it: full fine-tuning needs optimiser state for all
+502.8M. It also buys the KL reference for free — `disable_adapter()` turns the
+resident weights back into the base policy, so there is no second copy of the
+model and no drift, the KL is always measured against the model module 4
+benchmarked.
+
+### Most prompts produce no gradient at all, and the reward curve cannot show it
+
+GRPO's one idea is that you do not need a value network to know whether a
+rollout was good: sample a *group* of rollouts from the same prompt and score
+each against its own group's mean. The group is the baseline, which is why
+there is no critic and why this fits on 8GB.
+
+The consequence is not advertised anywhere: **a group whose rollouts all
+scored the same contributes nothing.** Every advantage in it is zero, the
+prompt is bought and thrown away, and a run where 90% of groups are like that
+looks exactly like a run that is learning slowly.
+
+Run against module 4's committed held-out rewards — 148 tasks, 8 rollouts
+each, the real distribution the policy starts from:
+
+| category | usable groups | all-zero | all-correct |
+| --- | --- | --- | --- |
+| code | 19/20 | 0 | 1 |
+| no_tool | 13/20 | 4 | 3 |
+| math | 7/60 | 53 | 0 |
+| qa | **0/33** | 33 | 0 |
+| multi_tool | **0/15** | 15 | 0 |
+| **total** | **39/148 (26.4%)** | 105 | 4 |
+
+**73.6% of prompts are dead, and QA and multi_tool are entirely dead** — the
+two categories module 4 identified as the gap, the two that structurally
+require chaining. GRPO can only sharpen a distinction the policy already
+sometimes makes, and on those two it never makes it. A bigger group does not
+help: the probability that a group of `k` binary rollouts all agree is
+`p^k + (1-p)^k`, which at `p = 0.05` needs `k = 32` to get the dead fraction
+under 20% and at `p = 0` is 1 for every `k`.
+
+| per-rollout success `p` | k=4 | k=8 | k=16 | k=32 |
+| --- | --- | --- | --- | --- |
+| 0.02 | 0.922 | 0.851 | 0.724 | 0.524 |
+| 0.05 | 0.815 | 0.663 | 0.440 | 0.194 |
+| 0.10 | 0.656 | 0.430 | 0.185 | 0.034 |
+| 0.20 | 0.411 | 0.168 | 0.028 | 0.001 |
+
+This is measured before training rather than discovered after it
+(`rl_training/advantages.py::expected_signal_rate`), it is logged next to the
+reward on every step, and it sets an honest ceiling on what this module can
+claim. Whatever module 9 reports, it cannot be that GRPO taught this policy
+multi-hop retrieval from a standing start of zero.
+
+Degenerate groups are dropped before the backward pass rather than multiplied
+by a zero advantage — at 73.6% that is most of the budget. The caveat is
+stated rather than buried: with `kl_beta > 0` those sequences would still have
+carried a KL penalty, so dropping them slightly changes the objective, and
+`--keep-degenerate` turns it off.
+
+### The mask is the part that has to be exact
+
+An episode interleaves text the policy wrote with text it read. The tool
+output is the latter, and on QA it is a verbatim corpus document — training on
+it would teach the model to predict search results. So every transcript
+carries a mask, and an off-by-one at a message boundary either drops a real
+token from the objective or trains on `<|im_start|>`, with the reward curve
+looking identical either way.
+
+Two properties of Qwen's chat template make an exact mask possible, and both
+are checked against the live tokenizer rather than assumed: rendering a prefix
+of the conversation produces an exact string prefix of the whole render, and
+tokenizing a rendered prefix produces a prefix of the whole tokenization. A
+guard re-checks the first on every call, with a mutation test proving the
+guard fires.
+
+**The policy's turns are spliced in as the ids it actually sampled, not as a
+re-encoding of its decoded text.** The agent loop stores decoded strings, and
+re-encoding a decoded string is only *usually* the identity; where it is not,
+the gradient is on a token sequence the policy never emitted. On the rollouts
+measured so far that shortcut would have cost nothing — **0 of 27 turns
+diverged** — so this is a safeguard whose value is not yet demonstrated, which
+is why the count is reported per step (`divergent_turns` / `measured_turns`)
+rather than asserted to be negligible.
+
+One bug found here is worth recording because nothing would have caught it
+downstream: **the prompt prefix contains assistant messages, because the
+few-shot worked examples are assistant messages.** Masked in, every rollout
+would have been a policy-gradient step *and* a supervised step on three
+hand-written demonstrations. Module 4 measured those demonstrations as worth
+0.1908 against 0.0125, so a policy quietly trained to reproduce them would
+have looked exactly like RL succeeding.
+
+### Fitting a training step in 8GB
+
+Two facts decide the whole design, and both were measured with the code that
+spends the memory (`python -m rl_training.measure_budget`, recorded in
+`artifacts/rl/budget.json`).
+
+**`from_pretrained` returns a model in eval mode, and gradient checkpointing
+is a silent no-op there.** `transformers` 5.x guards it on
+`self.gradient_checkpointing and self.training`; every flag reads `True`, no
+warning is issued, and the memory simply never drops. At batch 2 × 1024 the
+body's forward-and-backward costs 7.90 GiB in eval mode against 1.55 GiB in
+train mode — **5.08x, and that is a lower bound**, because the eval-mode
+measurement itself spilled (8.29 GiB reserved on an 8.00 GiB card) so its true
+cost is higher than the peak recorded. `prepare_for_training` asserts
+checkpointing engaged on every layer rather than reading the flag back, since
+the flag is the thing that lies.
+
+**The vocabulary projection is the big tensor, not the transformer.** Hidden
+size 896 against a vocabulary of 151,936, and the loss upcasts the logits to
+fp32 and needs a gradient of the same shape. Chunking the head is not enough
+on its own — autograd keeps every chunk's graph alive until the single
+backward, so all the chunks stay resident and nothing is saved. So the
+backward runs **per chunk** against a detached copy of the hidden states,
+accumulating into that copy's `.grad`, and only then pushes the accumulated
+gradient through the body once.
+
+| batch × seq | peak | reserved | seconds | |
+| --- | --- | --- | --- | --- |
+| 8 × 1024 | 3.29 GiB | 3.93 GiB | 4.2 | fits |
+| 16 × 1024 | 5.60 GiB | 6.81 GiB | 7.9 | fits |
+| 4 × 2048 | 5.04 GiB | 5.71 GiB | 5.6 | fits |
+| 8 × 2048 | 9.10 GiB | 10.31 GiB | 29.6 | **spilled to system RAM** |
+| 4 × 4096 | — | — | — | CUDA OOM |
+
+**16 × 1024 and 8 × 2048 are both 16,384 tokens and only one of them stays on
+the card**, which is why the microbatch packer uses a budget that halves past
+1024 tokens instead of counting tokens. The spill penalty is a direct
+measurement rather than a citation: the same 16,384 tokens took 7.9 s when
+they fit and 29.6 s when they did not — **3.7x the wall clock, and nothing
+raised**.
+
+The naive path is refused rather than attempted above a projected 6 GiB of
+logits. At these shapes it would need 9.3 to 18.5 GiB of fp32 logits plus
+gradient, and on Windows an allocation the card cannot hold is backed by
+system RAM rather than refused — so it would not have failed fast, it would
+have crawled and then reported a "fits" that meant nothing.
+
+**Chunked and naive compute the same thing, and the 2% that looked like they
+didn't was bf16.** On the real model the two losses agree to 4.7e-10 but their
+gradients differ by 1.9% of the largest gradient, where the CPU fp32 test
+agrees to 1e-6. Tracked down rather than waved at: in fp32 they agree to
+1.2e-5 with checkpointing **on or off**, and in bf16 they disagree by 14%
+either way. So the cause is bf16 alone — the chunked path calls the head on
+64-wide slices and the naive path on the full width, and different GEMM shapes
+accumulate in a different order — and it is neither the chunking nor
+checkpoint recomputation. The adapters themselves are fp32 (peft autocasts
+them over the bf16 base), so optimiser updates do not vanish into bf16
+rounding.
+
+### Generation is the bottleneck, not the backward
+
+Across the smoke runs a step spends 19–32 s rolling out and 1.4–2.8 s on the
+backward. All the memory work above buys the ability to train at all on this
+card; it does not buy speed, and any future speed work belongs in the rollout
+phase.
+
+### Results
+
+**[[RUN TO FILL IN]]** — no full training run has been made yet, so there is
+no reward curve and no baseline-versus-RL comparison. The loop is verified to
+execute end to end: `mean_kl` is exactly `0.00000` on the first step, which is
+what it must be when LoRA's `B` is zero-initialised and the policy and the
+reference are the same function, and rises from there as the weights move.
+That is evidence the gradient is applied, not evidence the policy improves.
+
+### Reproducing
+
+```bash
+# measure the card first; the training defaults come from this table
+python -m rl_training.measure_budget --out artifacts/rl/budget.json
+
+python -m rl_training.train_grpo --steps 200 --prompts-per-step 5 \
+    --group-size 8 --out artifacts/rl/run1
+```
+
+Every step appends a JSON line to `<out>/steps.jsonl`, flushed and `fsync`'d
+as written — a pipe-buffered log was lost entirely when this machine
+power-cycled mid-training during module 1, and the traceback was the only
+surviving evidence of the run. Adapters are checkpointed every
+`--checkpoint-every` steps with a temp-directory-then-replace write, and are
+35 MB rather than 2 GB because only the adapter is saved. Neither the adapters
+nor the smoke runs are committed; `steps.jsonl` is the record.
