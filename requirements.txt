@@ -10,3 +10,10 @@ matplotlib
 # does not import these: that module is raw torch.nn and stays that way.
 transformers
 accelerate
+
+# Module 5. LoRA is not an optimisation here, it is what makes training fit at
+# all: full fine-tuning of even a 0.5B model needs optimiser state for 502.8M
+# parameters, against 8.8M with r=16 on the attention and MLP projections. It
+# also gives the KL reference policy for free - `disable_adapter()` turns the
+# resident weights back into the base model, so there is no second copy.
+peft

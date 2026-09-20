@@ -55,10 +55,16 @@ jobs:
         # because `baseline_agent` keeps transformers inside `HFPolicy.__init__`
         # and the loop is driven by scripted policies - which is the whole
         # reason it was written that way.
-        run: python -m pytest task_suite tools tests -q
+        #
+        # `rl_training` runs here for the same reason and as the same check:
+        # its transcript masking and its advantage arithmetic are the parts
+        # most likely to be quietly wrong, and neither needs a tensor. If a
+        # torch import ever creeps into them, this job is what notices. The
+        # parts that do need torch skip here and run in the job below.
+        run: python -m pytest task_suite tools tests rl_training -q
 
   transformer:
-    name: transformer_scratch (torch, CPU)
+    name: transformer_scratch + GRPO objective (torch, CPU)
     runs-on: ubuntu-latest
 
     steps:
@@ -74,4 +80,10 @@ jobs:
           python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
 
       - name: Run tests
-        run: python -m pytest transformer_scratch -q
+        # `rl_training` again, this time with torch present, so the GRPO
+        # objective is actually exercised: the chunked backward is checked
+        # against a naive reference implementation on a toy model. That
+        # equivalence is the claim the 8GB memory design rests on, and CPU is
+        # enough to check the arithmetic half of it. The memory half needs the
+        # real card and lives in `rl_training/measure_budget.py`.
+        run: python -m pytest transformer_scratch rl_training -q
