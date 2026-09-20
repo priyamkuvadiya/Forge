@@ -231,6 +231,13 @@ def test_one_query_rarely_retrieves_a_whole_chain(index, tasks):
         f"expected 2 single-query chains at k={MAX_TOP_K}, got {len(shortcut)}: {shortcut}"
     )
 
+    # Both of them are held out, which "2 of 118" hides. The bound that
+    # actually matters is the one on the split that produces reported numbers:
+    # 2 of 33 held-out multi-hop QA tasks is 6%, against 0 of 85 in train. A
+    # reader is owed that figure rather than the flattering pooled one, so it
+    # is asserted separately and will fail loudly if the concentration moves.
+    assert sorted(shortcut) == ["qa-heldout-0003", "qa-heldout-0028"], shortcut
+
 
 def test_raising_k_would_erode_the_multi_hop_property(index, tasks, monkeypatch):
     """The reason `MAX_TOP_K` is 5 and not 10, kept as an executable record.

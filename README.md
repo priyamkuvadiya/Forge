@@ -712,6 +712,17 @@ called a tool ever called a second time.** The baseline does not do multi-hop
 retrieval; it does one search and then commits. Sequential tool use is not a
 weak spot in the control, it is absent from it.
 
+One caveat on the QA split, stated here rather than left in a test: **2 of the
+33 held-out multi-hop QA tasks can have their whole supporting set returned by
+a single search** (`qa-heldout-0003` and `qa-heldout-0028`), against 0 of 85
+in train. That is 6% of the split the reported number comes from, and the
+pooled "2 of 118" framing would have hidden the concentration. It is bounded
+rather than fixed: no single *document* answers either question, so a policy
+must still read what came back and work out which retrieved neighbour is the
+answer — what the shortcut saves is the second search *call*, not the
+reasoning. The count is asserted exactly in `tools/tests/test_search.py`, as
+is the fact that raising the retrieval cap from 5 to 10 would double it.
+
 **Retrieval is not the only gap, which matters for what RL has to learn.** On
 QA, episodes that searched scored 0.000 and episodes that searched nothing
 also scored 0.000. Searching moved the answer *rate* (multi_tool 0.379 →
