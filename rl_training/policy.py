@@ -41,6 +41,33 @@ LORA_TARGETS = [
 ]
 
 
+def attach_adapter(base: Any, *, rank: int = 16, lora_alpha: int | None = None,
+                   lora_dropout: float = 0.0, adapter_path: str | None = None) -> Any:
+    """Put LoRA adapters on a base model, new or resumed.
+
+    Split out of `LoRAPolicy.__init__` so it can be tested against a small
+    model without downloading a 0.5B one, because the resume branch has a
+    silent failure in it: `PeftModel.from_pretrained` defaults to
+    `is_trainable=False`, and a run resumed without it loads the adapters,
+    proceeds normally, and produces a zero gradient on every step.
+    """
+    from peft import LoraConfig, PeftModel, get_peft_model
+
+    if adapter_path is not None:
+        return PeftModel.from_pretrained(base, adapter_path, is_trainable=True)
+    return get_peft_model(
+        base,
+        LoraConfig(
+            r=rank,
+            lora_alpha=lora_alpha if lora_alpha is not None else 2 * rank,
+            lora_dropout=lora_dropout,
+            bias="none",
+            task_type="CAUSAL_LM",
+            target_modules=LORA_TARGETS,
+        ),
+    )
+
+
 @dataclass
 class TurnRecorder:
     """Collects, per episode, the ids each of its assistant turns came from.
@@ -95,7 +122,6 @@ class LoRAPolicy:
         adapter_path: str | None = None,
     ) -> None:
         import torch
-        from peft import LoraConfig, PeftModel, get_peft_model
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
         self._torch = torch
@@ -115,23 +141,13 @@ class LoRAPolicy:
             model_name, dtype=torch.bfloat16, attn_implementation="sdpa"
         ).to(self.device)
 
-        if adapter_path is not None:
-            # Resuming. `is_trainable` is not the default and its absence is a
-            # silent one: the adapters load, the run proceeds, and every
-            # gradient is zero because nothing requires grad.
-            self.model = PeftModel.from_pretrained(base, adapter_path, is_trainable=True)
-        else:
-            self.model = get_peft_model(
-                base,
-                LoraConfig(
-                    r=rank,
-                    lora_alpha=lora_alpha if lora_alpha is not None else 2 * rank,
-                    lora_dropout=lora_dropout,
-                    bias="none",
-                    task_type="CAUSAL_LM",
-                    target_modules=LORA_TARGETS,
-                ),
-            )
+        self.model = attach_adapter(
+            base,
+            rank=rank,
+            lora_alpha=lora_alpha,
+            lora_dropout=lora_dropout,
+            adapter_path=adapter_path,
+        )
 
         torch.manual_seed(seed)
         self.last_token_ids: list[list[int]] = []

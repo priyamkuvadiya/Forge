@@ -28,7 +28,8 @@ from collections import Counter  # noqa: E402
 from task_suite.registry import load_suite  # noqa: E402
 from tools import build_registry  # noqa: E402
 
-from rl_training.train_grpo import train_step  # noqa: E402
+from rl_training.policy import attach_adapter  # noqa: E402
+from rl_training.train_grpo import save_checkpoint, train_step  # noqa: E402
 
 MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
 
@@ -96,6 +97,11 @@ def tiny_policy(tokenizer):
                 tokenizer.encode(text, add_special_tokens=False) for text in texts
             ]
             return texts
+
+        def save_adapter(self, path):
+            # Same call `LoRAPolicy` makes, so `save_checkpoint` is exercised
+            # against a real peft model rather than a mock that cannot fail.
+            self.model.save_pretrained(str(path))
 
     return ScriptedPolicy
 
@@ -249,6 +255,51 @@ def test_dropping_degenerate_groups_does_not_change_the_gradient(tiny_policy):
     assert set(grads[True]) == set(grads[False])
     for name, grad in grads[True].items():
         assert torch.allclose(grad, grads[False][name], atol=1e-6), name
+
+
+def test_a_resumed_checkpoint_is_trainable_and_carries_its_values(
+    tiny_policy, tasks, tmp_path
+):
+    """Two silent failures live on the resume path, and neither raises.
+
+    `PeftModel.from_pretrained` defaults to `is_trainable=False`: the adapters
+    load, the run proceeds, every gradient is zero and the reward curve is
+    flat for a reason no hyperparameter explains. And an adapter that loaded
+    as a fresh zero-initialised one is indistinguishable from a resumed one
+    unless you look at `lora_B`, which is zero at init and only becomes
+    non-zero by training.
+    """
+    answers = {task.prompt: str(task.ground_truth["value"]) for task in tasks}
+    policy = tiny_policy(answers)
+    train_step(
+        policy, tasks, build_registry(include_code=False), step=1, group_size=4,
+        max_new_tokens=32, chunk_size=16, kl_beta=0.0, tool_workers=1,
+    )
+    # Move the weights, so lora_B is genuinely non-zero before it is saved.
+    optimizer = torch.optim.AdamW(
+        [p for p in policy.model.parameters() if p.requires_grad], lr=1e-2
+    )
+    optimizer.step()
+
+    saved = save_checkpoint(policy, tmp_path, "adapter-test")
+    assert saved.is_dir()
+
+    # Through `attach_adapter`, which is the code path `LoRAPolicy` resumes
+    # with - not a second copy of it written in the test.
+    fresh = transformers.Qwen2ForCausalLM(policy.model.config)
+    resumed = attach_adapter(fresh, adapter_path=str(saved))
+
+    trainable = [p for p in resumed.parameters() if p.requires_grad]
+    assert trainable, "resumed adapter is frozen; every gradient would be zero"
+
+    lora_b = [
+        p for n, p in resumed.named_parameters() if "lora_B" in n and p.requires_grad
+    ]
+    assert lora_b, "no lora_B found"
+    assert any(p.abs().sum() > 0 for p in lora_b), (
+        "every lora_B is zero, so this is a freshly initialised adapter rather "
+        "than the trained one"
+    )
 
 
 def test_the_sampled_ids_path_is_the_one_taken(tiny_policy, tasks):
