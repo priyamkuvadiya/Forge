@@ -72,7 +72,7 @@ from tools import build_registry, code_exec
 
 from rl_training.advantages import group_advantages
 from rl_training.sampling import CategorySampler, category_counts
-from rl_training.transcript import build_transcript
+from rl_training.transcript import build_transcript, retokenized_divergence
 
 # The measured envelope. See the module docstring and `artifacts/rl/budget.json`:
 # 16x1024 peaks at 6.67 GiB and fits, 4x2048 at 5.59 GiB and fits, 8x2048
@@ -140,6 +140,12 @@ class StepReport:
     truncated: int
     retokenized: int
     overshoot_chars: int
+    # Both numbers, not just the rate: a rate of 0.0 reads identically whether
+    # it is "0 of 40 turns diverged" or "0 turns were measured at all", and
+    # those mean opposite things about how much the result is worth.
+    divergent_turns: int
+    measured_turns: int
+    divergence_rate: float
     seconds_rollout: float
     seconds_backward: float
     peak_gib: float
@@ -296,6 +302,21 @@ def train_step(
             continue
         kept.append((episode, advantage))
 
+    # How much the shortcut this project declined to take would have cost, on
+    # this step's real rollouts. If the loop re-encoded its decoded transcripts
+    # instead of keeping the sampled ids, this many turns would have carried a
+    # gradient on a token sequence the policy never emitted. Measured rather
+    # than assumed to be negligible - it costs one encode per turn.
+    divergence = retokenized_divergence(
+        [turn for episode, _ in kept for turn in episode.assistant_turns],
+        [
+            ids
+            for episode, _ in kept
+            for ids in (recorder.aligned_with(episode) or [])
+        ],
+        policy.tokenizer,
+    )
+
     transcripts = []
     for episode, advantage in kept:
         transcript = build_transcript(
@@ -325,6 +346,9 @@ def train_step(
         truncated=sum(1 for t, _ in transcripts if t.is_truncated),
         retokenized=sum(1 for t, _ in transcripts if t.source != "sampled"),
         overshoot_chars=sum(t.overshoot_chars for t, _ in transcripts),
+        divergent_turns=divergence.differing_turns,
+        measured_turns=divergence.turns,
+        divergence_rate=round(divergence.turn_divergence_rate, 4),
     )
 
     if not transcripts:

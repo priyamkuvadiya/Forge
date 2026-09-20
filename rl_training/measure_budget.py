@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import platform
 import sys
 import time
@@ -109,7 +110,14 @@ def build_model(model_name: str, rank: int = 16):
 
 
 def measure_train_mode_matters(model, batch: int, seq: int) -> dict[str, Any]:
-    """Claim 1: checkpointing does nothing in eval mode, and that costs 18x."""
+    """Claim 1: checkpointing does nothing in eval mode, and that costs 18x.
+
+    Batch 2, not 4. The eval-mode half of this is the *expensive* half by
+    construction - it is what the claim is about - and at batch 4 x 1024 it
+    needs ~14 GiB and takes the whole script down with a CUDA OOM before
+    anything is written. Measuring the pathological configuration means
+    picking one small enough that the pathology still fits.
+    """
     import torch
 
     from rl_training.objective import _body_and_head, prepare_for_training
@@ -118,7 +126,7 @@ def measure_train_mode_matters(model, batch: int, seq: int) -> dict[str, Any]:
     input_ids = torch.randint(0, 1000, (batch, seq), device="cuda")
     attention_mask = torch.ones_like(input_ids)
 
-    results = {}
+    results: dict[str, Any] = {"batch": batch, "seq": seq}
     for mode in ("eval", "train"):
         model.gradient_checkpointing_enable()
         if mode == "eval":
@@ -127,18 +135,46 @@ def measure_train_mode_matters(model, batch: int, seq: int) -> dict[str, Any]:
             prepare_for_training(model)
 
         _reset(torch)
-        hidden = body(input_ids=input_ids, attention_mask=attention_mask)[0]
-        loss = hidden.float().pow(2).mean()
-        loss.backward()
-        results[mode] = _snapshot(torch)
+        try:
+            hidden = body(input_ids=input_ids, attention_mask=attention_mask)[0]
+            loss = hidden.float().pow(2).mean()
+            loss.backward()
+            results[mode] = _snapshot(torch)
+            del hidden, loss
+        except Exception as error:  # noqa: BLE001 - re-raised unless it is an OOM
+            if not _is_oom(error):
+                raise
+            results[mode] = {"outcome": "cuda_oom", "detail": str(error).split("\n")[0][:200]}
         model.zero_grad(set_to_none=True)
-        del hidden, loss
         _reset(torch)
 
-    eval_peak = results["eval"]["peak_allocated_gib"]
-    train_peak = results["train"]["peak_allocated_gib"]
-    results["ratio"] = round(eval_peak / train_peak, 2) if train_peak else None
+    eval_peak = results["eval"].get("peak_allocated_gib")
+    train_peak = results["train"].get("peak_allocated_gib")
+    results["ratio"] = (
+        round(eval_peak / train_peak, 2) if eval_peak and train_peak else None
+    )
     return results
+
+
+# Above this, the naive path is not attempted at all. Not caution for its own
+# sake: on Windows an allocation the card cannot hold is backed by system RAM
+# rather than refused, so the naive row would not fail fast - it would crawl
+# for hours at a fraction of the throughput and report a "fits" that means
+# nothing. Refusing it up front and recording the projection is the honest
+# version of the same measurement.
+NAIVE_LOGIT_CEILING_GIB = 6.0
+
+
+def projected_logit_gib(batch: int, seq: int, vocab: int) -> float:
+    """What the naive path would have to hold: fp32 logits, plus their gradient."""
+    return 2 * batch * (seq - 1) * vocab * 4 / 2**30
+
+
+def _is_oom(error: BaseException) -> bool:
+    oom_type = getattr(__import__("torch"), "OutOfMemoryError", None)
+    if oom_type is not None and isinstance(error, oom_type):
+        return True
+    return isinstance(error, RuntimeError) and "out of memory" in str(error).lower()
 
 
 def measure_step(model, batch: int, seq: int, *, mode: str, chunk_size: int) -> dict[str, Any]:
@@ -146,6 +182,19 @@ def measure_step(model, batch: int, seq: int, *, mode: str, chunk_size: int) -> 
     import torch
 
     from rl_training.objective import grpo_backward, naive_grpo_backward, prepare_for_training
+
+    projected = projected_logit_gib(batch, seq, model.config.vocab_size)
+    if mode == "naive" and projected > NAIVE_LOGIT_CEILING_GIB:
+        return {
+            "batch": batch, "seq": seq, "mode": mode,
+            "outcome": "not attempted",
+            "projected_logit_gib": round(projected, 2),
+            "detail": (
+                f"would need {projected:.1f} GiB of fp32 logits and gradient on an "
+                f"{_capacity(torch) / 2**30:.1f} GiB card; on Windows that is backed "
+                "by system RAM rather than refused, so it would crawl, not fail"
+            ),
+        }
 
     prepare_for_training(model)
     torch.manual_seed(0)
@@ -170,12 +219,16 @@ def measure_step(model, batch: int, seq: int, *, mode: str, chunk_size: int) -> 
                 model, input_ids, attention_mask, completion_mask, advantages,
                 kl_beta=0.0,
             )
-    except torch.OutOfMemoryError as error:
+    except Exception as error:  # noqa: BLE001 - re-raised unless it is an OOM
+        if not _is_oom(error):
+            raise
         model.zero_grad(set_to_none=True)
         _reset(torch)
         return {
             "batch": batch, "seq": seq, "mode": mode,
-            "outcome": "cuda_oom", "detail": str(error).split("\n")[0][:200],
+            "outcome": "cuda_oom",
+            "projected_logit_gib": round(projected, 2),
+            "detail": str(error).split("\n")[0][:200],
         }
 
     elapsed = time.perf_counter() - started
@@ -187,6 +240,7 @@ def measure_step(model, batch: int, seq: int, *, mode: str, chunk_size: int) -> 
         "batch": batch, "seq": seq, "mode": mode,
         "outcome": "spilled" if snapshot["spilled"] else "fits",
         "seconds": round(elapsed, 3),
+        "projected_logit_gib": round(projected, 2),
         **snapshot,
         **report.to_dict(),
     }
@@ -285,27 +339,43 @@ def main(argv: list[str] | None = None) -> int:
         "chunk_size": arguments.chunk_size,
     }
 
+    arguments.out.parent.mkdir(parents=True, exist_ok=True)
+
+    def checkpoint() -> None:
+        """Write after every phase, not once at the end.
+
+        The first run of this script died on a CUDA OOM in its *first*
+        measurement and produced no file at all, which is the same lesson
+        `baseline_agent.save_rollouts` already learned: expensive output that
+        is only written after the last thing that can raise is output you lose.
+        """
+        temporary = arguments.out.with_suffix(arguments.out.suffix + ".tmp")
+        temporary.write_text(json.dumps(record, indent=2), encoding="utf-8")
+        os.replace(temporary, arguments.out)
+
+    record["steps"] = []
+    checkpoint()
+
     _log("measuring whether train mode changes the body's memory")
-    record["train_mode"] = measure_train_mode_matters(model, 4, 1024)
-    _log(f"  eval {record['train_mode']['eval']['peak_allocated_gib']} GiB vs "
-         f"train {record['train_mode']['train']['peak_allocated_gib']} GiB "
+    record["train_mode"] = measure_train_mode_matters(model, 2, 1024)
+    checkpoint()
+    _log(f"  eval {record['train_mode']['eval'].get('peak_allocated_gib', 'OOM')} GiB vs "
+         f"train {record['train_mode']['train'].get('peak_allocated_gib', 'OOM')} GiB "
          f"(ratio {record['train_mode']['ratio']})")
 
     _log("checking chunked and naive agree on the real model")
     record["equivalence"] = measure_equivalence(model, 2, 256, arguments.chunk_size)
+    checkpoint()
     _log(f"  {record['equivalence']}")
 
-    rows = []
     for batch, seq in CONFIGURATIONS:
         for mode in ("chunked",) if arguments.skip_naive else ("chunked", "naive"):
             _log(f"measuring {mode} at batch {batch} x {seq}")
             row = measure_step(model, batch, seq, mode=mode, chunk_size=arguments.chunk_size)
             _log(f"  {row['outcome']}  peak {row.get('peak_allocated_gib', '-')} GiB")
-            rows.append(row)
-    record["steps"] = rows
+            record["steps"].append(row)
+            checkpoint()
 
-    arguments.out.parent.mkdir(parents=True, exist_ok=True)
-    arguments.out.write_text(json.dumps(record, indent=2), encoding="utf-8")
     _log(f"wrote {arguments.out}")
     return 0
 

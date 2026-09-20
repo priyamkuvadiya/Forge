@@ -1,0 +1,171 @@
+{
+  "generated_by": "rl_training.measure_budget",
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "device": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "capacity_gib": 7.996,
+  "platform": "Windows-11-10.0.26200-SP0",
+  "torch": "2.13.0+cu130",
+  "lora": {
+    "rank": 16,
+    "targets": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "trainable": 8798208,
+    "total": 502830976
+  },
+  "chunk_size": 64,
+  "steps": [
+    {
+      "batch": 8,
+      "seq": 1024,
+      "mode": "chunked",
+      "outcome": "fits",
+      "seconds": 4.181,
+      "projected_logit_gib": 9.26,
+      "peak_allocated_gib": 3.29,
+      "reserved_gib": 3.932,
+      "spilled": false,
+      "loss": -0.156756,
+      "tokens": 4096.0,
+      "chunks": 9,
+      "mean_ratio": 1.0,
+      "clip_fraction": 0.0,
+      "mean_kl": 0.0,
+      "peak_gib": 3.29
+    },
+    {
+      "batch": 8,
+      "seq": 1024,
+      "mode": "naive",
+      "outcome": "not attempted",
+      "projected_logit_gib": 9.26,
+      "detail": "would need 9.3 GiB of fp32 logits and gradient on an 8.0 GiB card; on Windows that is backed by system RAM rather than refused, so it would crawl, not fail"
+    },
+    {
+      "batch": 16,
+      "seq": 1024,
+      "mode": "chunked",
+      "outcome": "fits",
+      "seconds": 7.893,
+      "projected_logit_gib": 18.53,
+      "peak_allocated_gib": 5.602,
+      "reserved_gib": 6.805,
+      "spilled": false,
+      "loss": -0.10468,
+      "tokens": 8192.0,
+      "chunks": 9,
+      "mean_ratio": 1.0,
+      "clip_fraction": 0.0,
+      "mean_kl": 0.0,
+      "peak_gib": 5.602
+    },
+    {
+      "batch": 16,
+      "seq": 1024,
+      "mode": "naive",
+      "outcome": "not attempted",
+      "projected_logit_gib": 18.53,
+      "detail": "would need 18.5 GiB of fp32 logits and gradient on an 8.0 GiB card; on Windows that is backed by system RAM rather than refused, so it would crawl, not fail"
+    },
+    {
+      "batch": 4,
+      "seq": 2048,
+      "mode": "chunked",
+      "outcome": "fits",
+      "seconds": 5.599,
+      "projected_logit_gib": 9.27,
+      "peak_allocated_gib": 5.04,
+      "reserved_gib": 5.709,
+      "spilled": false,
+      "loss": 0.045649,
+      "tokens": 4096.0,
+      "chunks": 17,
+      "mean_ratio": 1.0,
+      "clip_fraction": 0.0,
+      "mean_kl": 0.0,
+      "peak_gib": 5.04
+    },
+    {
+      "batch": 4,
+      "seq": 2048,
+      "mode": "naive",
+      "outcome": "not attempted",
+      "projected_logit_gib": 9.27,
+      "detail": "would need 9.3 GiB of fp32 logits and gradient on an 8.0 GiB card; on Windows that is backed by system RAM rather than refused, so it would crawl, not fail"
+    },
+    {
+      "batch": 8,
+      "seq": 2048,
+      "mode": "chunked",
+      "outcome": "spilled",
+      "seconds": 29.565,
+      "projected_logit_gib": 18.54,
+      "peak_allocated_gib": 9.103,
+      "reserved_gib": 10.305,
+      "spilled": true,
+      "loss": -0.156756,
+      "tokens": 8192.0,
+      "chunks": 17,
+      "mean_ratio": 1.0,
+      "clip_fraction": 0.0,
+      "mean_kl": 0.0,
+      "peak_gib": 9.103
+    },
+    {
+      "batch": 8,
+      "seq": 2048,
+      "mode": "naive",
+      "outcome": "not attempted",
+      "projected_logit_gib": 18.54,
+      "detail": "would need 18.5 GiB of fp32 logits and gradient on an 8.0 GiB card; on Windows that is backed by system RAM rather than refused, so it would crawl, not fail"
+    },
+    {
+      "batch": 4,
+      "seq": 4096,
+      "mode": "chunked",
+      "outcome": "cuda_oom",
+      "projected_logit_gib": 18.54,
+      "detail": "CUDA out of memory. Tried to allocate 3.50 GiB. GPU 0 has a total capacity of 8.00 GiB of which 0 bytes is free. Of the allocated memory 12.60 GiB is allocated by PyTorch, and 1.23 GiB is reserved by "
+    },
+    {
+      "batch": 4,
+      "seq": 4096,
+      "mode": "naive",
+      "outcome": "not attempted",
+      "projected_logit_gib": 18.54,
+      "detail": "would need 18.5 GiB of fp32 logits and gradient on an 8.0 GiB card; on Windows that is backed by system RAM rather than refused, so it would crawl, not fail"
+    }
+  ],
+  "train_mode": {
+    "batch": 2,
+    "seq": 1024,
+    "eval": {
+      "peak_allocated_gib": 7.896,
+      "reserved_gib": 8.293,
+      "spilled": true
+    },
+    "train": {
+      "peak_allocated_gib": 1.553,
+      "reserved_gib": 1.771,
+      "spilled": false
+    },
+    "ratio": 5.08
+  },
+  "equivalence": {
+    "outcome": "compared",
+    "n_parameters_with_grad": 336,
+    "loss_chunked": 0.18571848,
+    "loss_naive": 0.18571848,
+    "loss_abs_difference": 4.656612873077393e-10,
+    "max_abs_grad_difference": 0.0015585646033287048,
+    "max_abs_grad_difference_at": "base_model.model.model.layers.0.self_attn.v_proj.lora_B.default.weight",
+    "largest_gradient_magnitude": 0.08230238407850266,
+    "relative": 0.018937052927192194
+  }
+}

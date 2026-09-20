@@ -23,3 +23,13 @@ transformer_scratch/data/*.txt
 # README.
 artifacts/**/*.rollouts.json
 artifacts/**/*_transcripts.txt
+
+# Trained LoRA adapters. 35MB each and written every `--checkpoint-every`
+# steps, so a single run would add a gigabyte of binaries that regenerate
+# from the committed suite plus the command in the README. The step log next
+# to them is the part worth keeping.
+artifacts/**/adapter-*/
+
+# Smoke runs. These exist to prove the loop executes, not to record a result,
+# and their reward numbers are drawn from a handful of prompts.
+artifacts/rl/smoke*/
