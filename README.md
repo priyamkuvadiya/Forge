@@ -960,10 +960,16 @@ claim. Whatever module 9 reports, it cannot be that GRPO taught this policy
 multi-hop retrieval from a standing start of zero.
 
 Degenerate groups are dropped before the backward pass rather than multiplied
-by a zero advantage — at 73.6% that is most of the budget. The caveat is
-stated rather than buried: with `kl_beta > 0` those sequences would still have
-carried a KL penalty, so dropping them slightly changes the objective, and
-`--keep-degenerate` turns it off.
+by a zero advantage — at 73.6% that is most of the budget. Dropping them has
+to be a *compute* saving and nothing else, which is subtler than it sounds:
+they contribute zero to the numerator, so leaving them out of the
+**denominator** as well would scale the surviving gradient by the reciprocal
+of the usable fraction — a silent ~3.8x on the effective learning rate,
+drifting step to step with however many groups happened to be degenerate. So
+every episode contributes its tokens to the normalizer and only the non-zero
+ones reach a microbatch, with a test asserting the gradients are identical
+either way. The one real caveat: with `kl_beta > 0` the dropped sequences
+would also have carried a KL penalty, so `--keep-degenerate` exists.
 
 ### The mask is the part that has to be exact
 
