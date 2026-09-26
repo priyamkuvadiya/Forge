@@ -39,9 +39,10 @@ Closing that gap is what module 5's GRPO training has to do.
 Module 5's training loop is built and its memory budget is measured, but **it
 has not been trained yet** — there is no reward curve, no trained policy and
 no baseline-versus-RL comparison. What it does already have is a number that
-bounds what it can claim: at the baseline's skill, **73.6% of held-out prompts
-produce no GRPO gradient at all**, because every rollout in the group scores
-identically — and QA and multi_tool produce none whatsoever. Those are the two
+bounds what it can claim: at the baseline's skill, **78.2% of training prompts
+(73.6% of held-out) produce no GRPO gradient at all**, because every rollout
+in the group scores identically — and QA and multi_tool produce none
+whatsoever, on either split. Those are the two
 categories the baseline named as the gap. See
 [Module 5](#module-5-grpo-training).
 
@@ -926,21 +927,38 @@ scored the same contributes nothing.** Every advantage in it is zero, the
 prompt is bought and thrown away, and a run where 90% of groups are like that
 looks exactly like a run that is learning slowly.
 
-Run against module 4's committed held-out rewards — 148 tasks, 8 rollouts
-each, the real distribution the policy starts from:
+Run against module 4's per-episode rewards, 8 rollouts per task. The train
+split is the distribution GRPO actually samples from; held-out was measured
+first and served as a proxy until the train-split baseline existed
+(`artifacts/baseline/train.json`, 2720 episodes, 57.9 min, same
+configuration as the held-out run, macro reward 0.2137):
 
-| category | usable groups | all-zero | all-correct |
-| --- | --- | --- | --- |
-| code | 19/20 | 0 | 1 |
-| no_tool | 13/20 | 4 | 3 |
-| math | 7/60 | 53 | 0 |
-| qa | **0/33** | 33 | 0 |
-| multi_tool | **0/15** | 15 | 0 |
-| **total** | **39/148 (26.4%)** | 105 | 4 |
+| category | usable groups, train | usable groups, held-out |
+| --- | --- | --- |
+| code | 25/30 (0.833) | 19/20 (0.950) |
+| no_tool | 34/40 (0.850) | 13/20 (0.650) |
+| math | 15/150 (0.100) | 7/60 (0.117) |
+| qa | **0/85** | **0/33** |
+| multi_tool | **0/35** | **0/15** |
+| **pooled** | **74/340 (21.8%)** | **39/148 (26.4%)** |
+| **category-balanced** | **35.7%** | **34.3%** |
 
-**73.6% of prompts are dead, and QA and multi_tool are entirely dead** — the
-two categories module 4 identified as the gap, the two that structurally
-require chaining. GRPO can only sharpen a distinction the policy already
+**78.2% of train prompts are dead, and QA and multi_tool are entirely dead on
+both splits** — the two categories module 4 identified as the gap, the two
+that structurally require chaining. The proxy was slightly optimistic. The
+chaining gap reproduces too: of 259 train-split qa/multi_tool episodes that
+called a tool, 3 called more than once (held-out: 0 of 72). The rollouts were
+audited for the known reward hacks (`sys.modules`, `suite.json`, `open(`,
+`__import__`, `builtins`) and none appear.
+
+The pooled figure is not quite what training sees. The sampler is
+category-balanced (below), so a step draws from each category equally and the
+fraction that matters is the unweighted mean of the per-category rates:
+**64.3% dead on train**. Math's share of the pool is what pushes the pooled
+figure higher. Both are reported because both are true; neither is small. At
+the default four prompts per step that is **1.43 usable groups per step on
+average, and 7.1% of steps with no gradient at all** (assuming independent
+draws — `P(dead step)` is 30% at two prompts per step and 0.3% at eight). GRPO can only sharpen a distinction the policy already
 sometimes makes, and on those two it never makes it. A bigger group does not
 help: the probability that a group of `k` binary rollouts all agree is
 `p^k + (1-p)^k`, which at `p = 0.05` needs `k = 32` to get the dead fraction
@@ -960,11 +978,11 @@ claim. Whatever module 9 reports, it cannot be that GRPO taught this policy
 multi-hop retrieval from a standing start of zero.
 
 Degenerate groups are dropped before the backward pass rather than multiplied
-by a zero advantage — at 73.6% that is most of the budget. Dropping them has
+by a zero advantage — at 64–78% dead that is most of the budget. Dropping them has
 to be a *compute* saving and nothing else, which is subtler than it sounds:
 they contribute zero to the numerator, so leaving them out of the
 **denominator** as well would scale the surviving gradient by the reciprocal
-of the usable fraction — a silent ~3.8x on the effective learning rate,
+of the usable fraction — a silent ~3–4.6x on the effective learning rate,
 drifting step to step with however many groups happened to be degenerate. So
 every episode contributes its tokens to the normalizer and only the non-zero
 ones reach a microbatch, with a test asserting the gradients are identical
@@ -1069,6 +1087,38 @@ Across the smoke runs a step spends 19–32 s rolling out and 1.4–2.8 s on the
 backward. All the memory work above buys the ability to train at all on this
 card; it does not buy speed, and any future speed work belongs in the rollout
 phase.
+
+So the rollout phase was measured before anything in it was changed
+(`python -m rl_training.measure_rollout`, recorded in
+`artifacts/rl/rollout_profile.json`): turn-1 generation on 320 train-split
+prompts, 40 tasks x 8 rollouts, sorted as the policy sorts them. The run was
+repeated and every figure below reproduced within 1%.
+
+| batch | stop strings | seconds | ms / decode step | useful-token fraction | max reserved |
+| --- | --- | --- | --- | --- | --- |
+| 16 | on | 161.4 | 35.2 | 0.323 | 6.83 GiB |
+| 32 | on | 125.9 | 51.5 | 0.260 | 4.18 GiB |
+| 16 | off | 136.2 | 29.2 | 0.346 | 6.83 GiB |
+| 32 | off | 123.5 | 48.8 | 0.257 | 4.18 GiB |
+
+- **Most decode work is padding.** A batch decodes until its *longest*
+  member stops, so only 26–35% of the (sequence, step) slots computed produce
+  a token for a sequence still running. One rollout that runs to the 384-token
+  cap holds fifteen finished ones on the GPU with it. This, not any single
+  kernel, is where rollout time goes.
+- **Stop strings cost 20% per step at batch 16 and 5% at batch 32.** Real,
+  and not the dominant cost. The earlier guess that their per-step string
+  matching was stalling the GPU does not survive this.
+- **Batch 32 is 1.28x faster than batch 16 here**, with no spill. An earlier
+  train-split run at batch 32 that stalled for 28 minutes on turn 1 is
+  therefore not reproduced by turn-1 generation itself, and remains
+  unexplained.
+- **At batch 16 the allocator's reservation ratchets** 2.63 → 6.83 GiB in
+  ~1 GiB steps while peak *allocated* memory never exceeds 2.63 GiB: the
+  cache fragments as batch shapes vary, and each step up coincides with a
+  batch that runs ~2x slower. It levelled off within these 20 batches. The
+  training loop empties the cache every step so it cannot accumulate there;
+  a long evaluation pass over `run_episodes` does not.
 
 ### Results
 
