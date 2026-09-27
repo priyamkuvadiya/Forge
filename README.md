@@ -26,7 +26,7 @@ the corresponding module exists and has been run for real.
 
 Modules 1 (from-scratch transformer), 2 (task suite and verifiers), 3 (tools,
 the sandbox, and the tool-call contract) and 4 (the prompted baseline agent)
-are complete — 569 tests, run on Linux and Windows on every push.
+are complete — 591 tests, run on Linux and Windows on every push.
 
 The control-group numbers now exist: the prompted Qwen2.5-0.5B-Instruct
 baseline scores a **macro-average reward of 0.1908** across the five held-out
@@ -1008,11 +1008,12 @@ guard fires.
 **The policy's turns are spliced in as the ids it actually sampled, not as a
 re-encoding of its decoded text.** The agent loop stores decoded strings, and
 re-encoding a decoded string is only *usually* the identity; where it is not,
-the gradient is on a token sequence the policy never emitted. On the rollouts
-measured so far that shortcut would have cost nothing — **0 of 27 turns
-diverged** — so this is a safeguard whose value is not yet demonstrated, which
-is why the count is reported per step (`divergent_turns` / `measured_turns`)
-rather than asserted to be negligible.
+the gradient is on a token sequence the policy never emitted. On the early
+smoke runs that shortcut would have cost nothing — 0 of 27 turns diverged —
+and the count was reported per step (`divergent_turns` / `measured_turns`)
+rather than asserted to be negligible for exactly that reason. The pilot runs
+below measured it properly: **3.6–6.0% of turns diverge** once the policy
+starts moving, so the safeguard is doing real work.
 
 One bug found here is worth recording because nothing would have caught it
 downstream: **the prompt prefix contains assistant messages, because the
@@ -1109,16 +1110,107 @@ repeated and every figure below reproduced within 1%.
 - **Stop strings cost 20% per step at batch 16 and 5% at batch 32.** Real,
   and not the dominant cost. The earlier guess that their per-step string
   matching was stalling the GPU does not survive this.
-- **Batch 32 is 1.28x faster than batch 16 here**, with no spill. An earlier
-  train-split run at batch 32 that stalled for 28 minutes on turn 1 is
-  therefore not reproduced by turn-1 generation itself, and remains
-  unexplained.
+- **Batch 32 is 1.28x faster than batch 16 on turn 1 — and spills on turn
+  2.** Turn 1 alone was the wrong test. Run through the full multi-turn agent
+  loop on 40 train tasks x 8 rollouts with memory read in-process at every
+  generation call (`artifacts/rl/batch_check/`), batch 32's reservation
+  reached **9.17 GiB on an 8.00 GiB card at turn 2** — the turn whose prompts
+  carry tool output — while peak *allocated* memory was 2.79 GiB. The whole
+  run took 4.4 min against 3.5 at batch 16, turn 2 alone 98 s against 59.
+  Nothing raised; only the in-process check saw it. That is also the most
+  likely explanation for an earlier batch-32 train-split run that stalled for
+  28 minutes. **Generation stays at batch 16**, which is also the exact
+  configuration the baseline was measured in, so the training arm's rollouts
+  differ from the baseline's in weights and nothing else.
 - **At batch 16 the allocator's reservation ratchets** 2.63 → 6.83 GiB in
   ~1 GiB steps while peak *allocated* memory never exceeds 2.63 GiB: the
   cache fragments as batch shapes vary, and each step up coincides with a
   batch that runs ~2x slower. It levelled off within these 20 batches. The
   training loop empties the cache every step so it cannot accumulate there;
   a long evaluation pass over `run_episodes` does not.
+
+### Did training cost the model anything it had before?
+
+GRPO optimises reward on the task suite and nothing else. The KL term holds
+the policy near the base model *on the prompts it trains on*, which says
+nothing about everything else it knew — a run can raise reward while quietly
+forgetting who wrote *Romeo and Juliet* or how to follow a one-word
+instruction, and neither the reward curve nor module 9 would see it.
+
+`python -m rl_training.measure_drift` checks that directly, against material
+training never touches: plain chat with the model's default system prompt, no
+tools, no few-shot prefix. 55 self-authored probes with programmatic checks —
+30 well-known facts, 15 small no-tool reasoning problems, 10 instructions with
+an exactly checkable format (one word, all capitals, valid JSON, ...).
+Decoding is greedy, so for a fixed prompt an answer changes only if the
+weights did, and the report counts flips in *both* directions per probe
+rather than net accuracy, because "lost 3, gained 3" and "no change" are
+different findings with the same total. Beside the flips it measures
+**drift**: the base model's own responses are teacher-forced through base and
+adapter, and KL(adapter ‖ base) is averaged per response token. That is
+continuous, so it shows movement before any answer changes.
+
+A probe that cannot fail proves nothing, so it was first run against adapters
+with random LoRA weights (`artifacts/rl/drift_selftest.json`):
+
+| random adapter, B ~ N(0, s) | KL / token | answers reworded | right → wrong | wrong → right |
+| --- | --- | --- | --- | --- |
+| s = 0 (identity) | 0.00000 | 0 / 55 | 0 | 0 |
+| s = 0.002 | 0.0039 | 15 / 55 | 0 | 0 |
+| s = 0.02 | 0.5432 | 43 / 55 | 13 | 2 |
+
+Zero noise reproduces the base exactly; small noise moves the KL and the
+wording without costing a single answer; large noise costs 13. The base model
+itself scores knowledge 28/30, reasoning 13/15, instruction 7/10 — every
+remaining miss was read and is a genuine model error ("5 continents",
+"Goodbye." for *two words*). Reading them is how two probe bugs were found
+first: a last-number rule that scored "There are 120 minutes in 2 hours" as
+2, and a 128-token limit that cut off two correct answers mid-working. Both
+were fixed before any adapter was measured.
+
+### Choosing the learning rate: a 30-step pilot at two settings
+
+Two 30-step pilots, identical except for learning rate: 8 prompts x 8
+rollouts per step, generation batch 16, `kl_beta` 0.04, same sampler seed so
+both saw the same prompt stream (`artifacts/rl/pilot-lr1e-5/`,
+`artifacts/rl/pilot-lr5e-5/`, step logs committed, adapters not). The drift
+probe was run on each pilot's adapter at steps 10, 20 and 30
+(`artifacts/rl/drift_pilots.json`):
+
+| learning rate | KL / token, steps 10 → 20 → 30 | right → wrong | wrong → right | answers reworded |
+| --- | --- | --- | --- | --- |
+| 1e-5 | 0.0009 → 0.0014 → 0.0027 | 0 | 0 | 9 / 55 |
+| 5e-5 | 0.0106 → 0.0201 → 0.0218 | 1 | 2 | 24 / 55 |
+
+At 1e-5 no probe answer changed at any checkpoint, and the drift stayed below
+what the self-test's harmless s = 0.002 adapter produced. The nine
+rewordings are cosmetic, though they lean one way — "Mercury is the planet
+closest to the Sun." became "Mercury." — which is worth watching over a
+longer run. At 5e-5 general chat turns terse: two answers improved because
+the model stopped rambling before reaching them, and one broke — "Who is the
+youngest?" went from a correct worked answer (Jim) to "Tom is the youngest."
+
+On the training prompts themselves the two diverge in the direction that
+matters. First 15 steps against last 15:
+
+| learning rate | math reward | tool calls per episode | code reward |
+| --- | --- | --- | --- |
+| 1e-5 | 0.021 → 0.225 | 0.19 → 0.42 | 0.68 → 0.75 |
+| 5e-5 | 0.004 → 0.000 | 0.15 → 0.06 | 0.57 → 0.70 |
+
+1e-5 is starting to reach for the calculator on math; 5e-5 is learning to
+*stop* calling tools, which is the opposite of what this project trains for,
+and its usable groups per step fell to ~2.2 against ~3.1 — fewer prompts on
+which its rollouts still disagree. These are training-prompt rewards over 30
+noisy steps, roughly 24 math prompts per half, so they are a reason to choose
+a setting and not a result; held-out was not touched, so choosing on them
+cannot leak into module 9. **The first real run uses 1e-5.**
+
+The pilots also settled the sampled-token-ids question that the smoke runs
+could not (0 divergences in 27 turns): **3.6% of turns at 1e-5 (115 / 3174)
+and 6.0% at 5e-5 (135 / 2241) re-encode to a different token sequence than
+the one sampled**. Re-tokenizing decoded text would have put a gradient on
+that many trajectories the policy never took.
 
 ### Results
 
@@ -1135,8 +1227,12 @@ That is evidence the gradient is applied, not evidence the policy improves.
 # measure the card first; the training defaults come from this table
 python -m rl_training.measure_budget --out artifacts/rl/budget.json
 
-python -m rl_training.train_grpo --steps 200 --prompts-per-step 5 \
-    --group-size 8 --out artifacts/rl/run1
+# the configuration the pilots chose (see above)
+python -m rl_training.train_grpo --steps 200 --prompts-per-step 8 \
+    --group-size 8 --batch-size 16 --learning-rate 1e-5 --out artifacts/rl/run1
+
+# did it cost anything outside the task suite?
+python -m rl_training.measure_drift --adapter artifacts/rl/run1/adapter-final
 ```
 
 Every step appends a JSON line to `<out>/steps.jsonl`, flushed and `fsync`'d

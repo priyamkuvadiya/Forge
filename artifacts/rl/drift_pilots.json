@@ -1,0 +1,2576 @@
+{
+ "generated_by": "rl_training.measure_drift",
+ "model": "Qwen/Qwen2.5-0.5B-Instruct",
+ "decoding": {
+  "greedy": true,
+  "max_new_tokens": 256
+ },
+ "probes": {
+  "knowledge": 30,
+  "reasoning": 15,
+  "instruction": 10
+ },
+ "created": "2026-09-27 11:14:48",
+ "reports": [
+  {
+   "source": "artifacts\\rl\\pilot-lr1e-5\\adapter-step10",
+   "label": "artifacts\\rl\\pilot-lr1e-5\\adapter-step10",
+   "by_kind": {
+    "knowledge": {
+     "probes": 30,
+     "base": 28,
+     "adapter": 28,
+     "lost": [],
+     "gained": [],
+     "changed": 4
+    },
+    "reasoning": {
+     "probes": 15,
+     "base": 13,
+     "adapter": 13,
+     "lost": [],
+     "gained": [],
+     "changed": 1
+    },
+    "instruction": {
+     "probes": 10,
+     "base": 7,
+     "adapter": 7,
+     "lost": [],
+     "gained": [],
+     "changed": 3
+    }
+   },
+   "lost": 0,
+   "gained": 0,
+   "drift": {
+    "mean_kl_per_token": 0.0009024504634981605,
+    "max_probe_kl": 0.048070311546325684,
+    "tokens": 1351
+   },
+   "responses": [
+    {
+     "id": "knowledge-00",
+     "base": "The capital of France is Paris.",
+     "adapter": "The capital of France is Paris.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-01",
+     "base": "The capital of Japan is Tokyo.",
+     "adapter": "The capital of Japan is Tokyo.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-02",
+     "base": "The chemical symbol for gold is Au.",
+     "adapter": "The chemical symbol for gold is Au.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-03",
+     "base": "The largest planet in our solar system is Jupiter. It is known as the \"Jupiter\" because it has been named after the Roman god of thunder and rain. Jupiter is the fifth planet from the Sun and the second-largest planet in the solar system, following only the Sun. It is also one of the four major planets that make up the Solar System.",
+     "adapter": "The largest planet in our solar system is Jupiter. It is known as the \"Jupiter\" because it has a distinctive name that refers to its size and mass relative to other planets in the solar system.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-04",
+     "base": "The play \"Romeo and Juliet\" was written by William Shakespeare.",
+     "adapter": "The play \"Romeo and Juliet\" was written by William Shakespeare.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-05",
+     "base": "At sea level, the boiling point of water is 100 degrees Celsius.",
+     "adapter": "At sea level, the boiling point of water is 100 degrees Celsius.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-06",
+     "base": "There are 5 major continents: Asia, Africa, North America, South America, and Europe.",
+     "adapter": "There are 5 major continents: Asia, Africa, North America, South America, and Europe.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "knowledge-07",
+     "base": "The planet known as the \"Red Planet\" is Mars.",
+     "adapter": "The planet known as the \"Red Planet\" is Mars.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-08",
+     "base": "The chemical formula for water is H\u2082O.",
+     "adapter": "The chemical formula for water is H\u2082O.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-09",
+     "base": "Brazilian Portuguese is the predominant language in Brazil. It is widely used across the country and is also spoken by some indigenous communities. However, English is also widely understood and used as a second language.",
+     "adapter": "Brazilian Portuguese is the predominant language in Brazil. It is widely used across the country and is also spoken by some indigenous communities.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-10",
+     "base": "The largest ocean on Earth is the Pacific Ocean. It covers about 71% of the Earth's surface and spans across Asia, Australia, and North America.",
+     "adapter": "The largest ocean on Earth is the Pacific Ocean. It covers about 71% of the Earth's surface and spans across Asia, Australia, and North America.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-11",
+     "base": "The Mona Lisa was painted by Leonardo da Vinci.",
+     "adapter": "The Mona Lisa was painted by Leonardo da Vinci.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-12",
+     "base": "A spider has eight legs.",
+     "adapter": "A spider has eight legs.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-13",
+     "base": "The freezing point of water at standard atmospheric pressure (1 atmosphere) and 4\u00b0C (39\u00b0F) is -0.588 degrees Celsius or -17.76 degrees Fahrenheit.",
+     "adapter": "The freezing point of water at standard atmospheric pressure (1 atmosphere) and 4\u00b0C (39\u00b0F) is -0.588 degrees Celsius or -17.672 degrees Fahrenheit.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "knowledge-14",
+     "base": "The capital of Italy is Rome.",
+     "adapter": "The capital of Italy is Rome.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-15",
+     "base": "Plants absorb carbon dioxide (CO2) from the air for photosynthesis.",
+     "adapter": "Plants absorb carbon dioxide (CO2) from the air for photosynthesis.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-16",
+     "base": "The novel \"Pride and Prejudice\" was written by Jane Austen.",
+     "adapter": "The novel \"Pride and Prejudice\" was written by Jane Austen.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-17",
+     "base": "The smallest prime number is 2.",
+     "adapter": "The smallest prime number is 2.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-18",
+     "base": "The currency of Japan is the Japanese Yen (JPY).",
+     "adapter": "The currency of Japan is the yen (JPY).",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-19",
+     "base": "The tallest mountain in the world above sea level is Mount Everest, located in the Himalayas and situated at an elevation of 8,848 meters (29,029 feet) above sea level.",
+     "adapter": "The tallest mountain in the world above sea level is Mount Everest, located in the Himalayas and situated at an elevation of 8,848 meters (29,029 feet) above sea level.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-20",
+     "base": "A leap year has 366 days.",
+     "adapter": "A leap year has 366 days.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-21",
+     "base": "The heart is the organ that pumps blood through the human body.",
+     "adapter": "The heart is the organ that pumps blood through the human body.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-22",
+     "base": "The capital of Canada is Ottawa.",
+     "adapter": "The capital of Canada is Ottawa.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-23",
+     "base": "The longest river in Africa is the Nile River, which flows through Egypt and Sudan. It is approximately 6,650 kilometers (4,130 miles) long.",
+     "adapter": "The longest river in Africa is the Nile River, which flows through Egypt and Sudan. It is approximately 6,650 kilometers (4,130 miles) long.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-24",
+     "base": "The first person to walk on the Moon was Neil Armstrong, an American astronaut who became the first person to set foot on the lunar surface during the Apollo 11 mission in 1969.",
+     "adapter": "The first person to walk on the Moon was Neil Armstrong, an American astronaut who became the first person to set foot on the lunar surface during the Apollo 11 mission in 1969.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-25",
+     "base": "The hardest natural substance is diamond, which has an atomic structure that allows it to achieve the highest hardness among all known materials.",
+     "adapter": "The hardest natural substance is diamond, which has an atomic structure that allows it to achieve the highest hardness among all known materials.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-26",
+     "base": "The chemical symbol for hydrogen is H.",
+     "adapter": "The chemical symbol for hydrogen is H.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-27",
+     "base": "The capital of Australia is Canberra.",
+     "adapter": "The capital of Australia is Canberra.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-28",
+     "base": "A hexagon has 6 sides.",
+     "adapter": "A hexagon has 6 sides.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-29",
+     "base": "Mercury is the planet closest to the Sun.",
+     "adapter": "Mercury is the planet closest to the Sun.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-00",
+     "base": "The sum of 7 and 5 is 12.",
+     "adapter": "The sum of 7 and 5 is 12.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-01",
+     "base": "9 times 6 equals 54.",
+     "adapter": "9 times 6 equals 54.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-02",
+     "base": "93",
+     "adapter": "93",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "reasoning-03",
+     "base": "Tom now has 7 apples.",
+     "adapter": "Tom now has 7 apples.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-04",
+     "base": "A train travels 60 km every hour, so in 3 hours it would travel:\n\n\\( 60 \\text{ km/h} \\times 3 \\text{ h} = 180 \\text{ km} \\)",
+     "adapter": "A train travels 60 km every hour, so in 3 hours it would travel:\n\n\\( 60 \\text{ km/h} \\times 3 \\text{ h} = 180 \\text{ km} \\)",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-05",
+     "base": "Half of 50 is 25.",
+     "adapter": "Half of 50 is 25.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-06",
+     "base": "15 divided by 3 equals 5.",
+     "adapter": "15 divided by 3 equals 5.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-07",
+     "base": "To determine the total number of eggs in 3 boxes, you simply multiply the number of eggs in one box by the number of boxes:\n\n\\[ \\text{Total number of eggs} = \\text{Number of eggs per box} \\times \\text{Number of boxes} \\]\n\nSo,\n\n\\[ \\text{Total number of eggs} = 12 \\times 3 = 36 \\]\n\nTherefore, there are 36 eggs in 3 boxes.",
+     "adapter": "To determine the total number of eggs in 3 boxes, you simply multiply the number of eggs in one box by the number of boxes:\n\n\\[ \\text{Total number of eggs} = \\text{Number of eggs per box} \\times \\text{Number of boxes} \\]\n\nSo,\n\n\\[ \\text{Total number of eggs} = 12 \\times 3 = 36 \\]\n\nTherefore, there are 36 eggs in 3 boxes.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-08",
+     "base": "2 to the power of 5 equals 32.",
+     "adapter": "2 to the power of 5 equals 32.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-09",
+     "base": "The sequence you provided is an arithmetic sequence where each term increases by 2 from the previous one. The first term \\(a_1\\) is 2 and the common difference \\(d\\) is 2.\n\nTo find the next term (\\(a_n\\)) in the sequence, we use the formula for the \\(n\\)-th term of an arithmetic sequence:\n\n\\[ a_n = a_1 + (n - 1)d \\]\n\nSubstituting the values for \\(a_1\\), \\(d\\), and \\(n = n+1\\):\n\n\\[ a_{n+1} = 2 + (n+1-1) \\cdot 2 \\]\n\\[ a_{n+1} = 2 + 2(n) \\]\n\\[ a_{n+1} = 2 + 2n \\]\n\\[ a_{n+1} = 2n + 2 \\]\n\nSo, the next term in the sequence is \\(2n + 2\\).",
+     "adapter": "The sequence you provided is an arithmetic sequence where each term increases by 2 from the previous one. The first term \\(a_1\\) is 2 and the common difference \\(d\\) is 2.\n\nTo find the next term (\\(a_n\\)) in the sequence, we use the formula for the \\(n\\)-th term of an arithmetic sequence:\n\n\\[ a_n = a_1 + (n - 1)d \\]\n\nSubstituting the values for \\(a_1\\), \\(d\\), and \\(n = n+1\\):\n\n\\[ a_{n+1} = 2 + (n+1-1) \\cdot 2 \\]\n\\[ a_{n+1} = 2 + 2(n) \\]\n\\[ a_{n+1} = 2 + 2n \\]\n\\[ a_{n+1} = 2n + 2 \\]\n\nSo, the next term in the sequence is \\(2n + 2\\).",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "reasoning-10",
+     "base": "To calculate the sale price of the shirt after a 50% discount:\n\n1. First, determine what 50% of $20 is:\n   \\( 50\\% \\text{ of } \\$20 = 0.50 \\times \\$20 = \\$10 \\)\n\n2. Subtract this discount from the original price to find the sale price:\n   \\( \\$20 - \\$10 = \\$10 \\)\n\nSo, the sale price of the shirt is $10.",
+     "adapter": "To calculate the sale price of the shirt after a 50% discount:\n\n1. First, determine what 50% of the original price is:\n   \\( \\text{Discount amount} = 20 \\times 0.50 = 10 \\) dollars\n\n2. Subtract the discount amount from the original price to find the sale price:\n   \\( \\text{Sale price} = 20 - 10 = 10 \\) dollars\n\nSo, the sale price for the shirt is $10.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-11",
+     "base": "There are 120 minutes in 2 hours.",
+     "adapter": "There are 120 minutes in 2 hours.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-12",
+     "base": "If today is Monday and it's already been two days, then the day of the week will be Wednesday.",
+     "adapter": "If today is Monday and it's already been two days, then the day of the week will be Wednesday.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-13",
+     "base": "Based on the information provided:\n\n- Sarah is older than Tom.\n- Tom is older than Jim.\n\nTherefore, Sarah is the youngest among them.",
+     "adapter": "Based on the information provided:\n\n- Sarah is older than Tom.\n- Tom is older than Jim.\n\nTherefore, Sarah is the youngest among them.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-14",
+     "base": "0.5",
+     "adapter": "0.5",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-00",
+     "base": "Red",
+     "adapter": "Red",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-01",
+     "base": "HELLO",
+     "adapter": "HELLO",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-02",
+     "base": "apple, banana, orange",
+     "adapter": "apple, banana, orange",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-03",
+     "base": "Yes, the sky is typically described as being blue on a clear day due to the scattering of sunlight by Earth's atmosphere. This phenomenon causes colors from the sun to scatter through various layers of air and particles in the atmosphere, resulting in the appearance of different shades of blue.",
+     "adapter": "Yes, the sky is typically described as being blue on a clear day due to the scattering of sunlight through Earth's atmosphere. This phenomenon causes colors from the sun to scatter and be scattered in all directions, resulting in the appearance of a uniform color like blue.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-04",
+     "base": "The ocean is vast and deep, filled with life and energy, constantly changing with the tides and currents. It's a place of beauty and wonder, where nature and humans coexist harmoniously.",
+     "adapter": "The ocean is vast and deep, filled with life and energy, creating an endless expanse of blue and white. It's a place where waves crash against the shore, and currents swirl around us, carrying everything from sand to fish to marine life. The ocean is a source of inspiration for artists, poets, and scientists alike, offering a canvas for creativity and exploration.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-05",
+     "base": "```json\n{\n  \"name\": \"Ada\"\n}\n```",
+     "adapter": "```json\n{\n  \"name\": \"Ada\"\n}\n```",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-06",
+     "base": "42",
+     "adapter": "42",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-07",
+     "base": "Goodbye.",
+     "adapter": "Goodbye.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-08",
+     "base": "\"Whiskers twitch as I pet her fur, making a joyful noise of excitement.\"",
+     "adapter": "\"Whiskers twitch as I pet her fur, and she purrs joyfully.\"",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-09",
+     "base": "Cat",
+     "adapter": "Cat",
+     "base_pass": true,
+     "adapter_pass": true
+    }
+   ]
+  },
+  {
+   "source": "artifacts\\rl\\pilot-lr1e-5\\adapter-step20",
+   "label": "artifacts\\rl\\pilot-lr1e-5\\adapter-step20",
+   "by_kind": {
+    "knowledge": {
+     "probes": 30,
+     "base": 28,
+     "adapter": 28,
+     "lost": [],
+     "gained": [],
+     "changed": 6
+    },
+    "reasoning": {
+     "probes": 15,
+     "base": 13,
+     "adapter": 13,
+     "lost": [],
+     "gained": [],
+     "changed": 3
+    },
+    "instruction": {
+     "probes": 10,
+     "base": 7,
+     "adapter": 7,
+     "lost": [],
+     "gained": [],
+     "changed": 0
+    }
+   },
+   "lost": 0,
+   "gained": 0,
+   "drift": {
+    "mean_kl_per_token": 0.0014146642675731118,
+    "max_probe_kl": 0.06121507287025452,
+    "tokens": 1351
+   },
+   "responses": [
+    {
+     "id": "knowledge-00",
+     "base": "The capital of France is Paris.",
+     "adapter": "The capital of France is Paris.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-01",
+     "base": "The capital of Japan is Tokyo.",
+     "adapter": "The capital of Japan is Tokyo.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-02",
+     "base": "The chemical symbol for gold is Au.",
+     "adapter": "The chemical symbol for gold is Au.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-03",
+     "base": "The largest planet in our solar system is Jupiter. It is known as the \"Jupiter\" because it has been named after the Roman god of thunder and rain. Jupiter is the fifth planet from the Sun and the second-largest planet in the solar system, following only the Sun. It is also one of the four major planets that make up the Solar System.",
+     "adapter": "The largest planet in our solar system is Jupiter. It is known as the \"Jupiter\" because it has a distinctive name that refers to its size and mass relative to other planets in the solar system.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-04",
+     "base": "The play \"Romeo and Juliet\" was written by William Shakespeare.",
+     "adapter": "The play \"Romeo and Juliet\" was written by William Shakespeare.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-05",
+     "base": "At sea level, the boiling point of water is 100 degrees Celsius.",
+     "adapter": "At sea level, the boiling point of water is 100 degrees Celsius.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-06",
+     "base": "There are 5 major continents: Asia, Africa, North America, South America, and Europe.",
+     "adapter": "There are 5 major continents: Asia, Africa, North America, South America, and Europe.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "knowledge-07",
+     "base": "The planet known as the \"Red Planet\" is Mars.",
+     "adapter": "The planet known as the \"Red Planet\" is Mars.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-08",
+     "base": "The chemical formula for water is H\u2082O.",
+     "adapter": "The chemical formula for water is H\u2082O.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-09",
+     "base": "Brazilian Portuguese is the predominant language in Brazil. It is widely used across the country and is also spoken by some indigenous communities. However, English is also widely understood and used as a second language.",
+     "adapter": "Brazilian Portuguese is the predominant language in Brazil.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-10",
+     "base": "The largest ocean on Earth is the Pacific Ocean. It covers about 71% of the Earth's surface and spans across Asia, Australia, and North America.",
+     "adapter": "The largest ocean on Earth is the Pacific Ocean. It covers about 71% of the Earth's surface and spans across Asia, Australia, and North America.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-11",
+     "base": "The Mona Lisa was painted by Leonardo da Vinci.",
+     "adapter": "The Mona Lisa was painted by Leonardo da Vinci.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-12",
+     "base": "A spider has eight legs.",
+     "adapter": "A spider has eight legs.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-13",
+     "base": "The freezing point of water at standard atmospheric pressure (1 atmosphere) and 4\u00b0C (39\u00b0F) is -0.588 degrees Celsius or -17.76 degrees Fahrenheit.",
+     "adapter": "The freezing point of water at standard atmospheric pressure (1 atmosphere) and 4\u00b0C (39\u00b0F) is -0.588 degrees Celsius or -17.76 degrees Fahrenheit.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "knowledge-14",
+     "base": "The capital of Italy is Rome.",
+     "adapter": "The capital of Italy is Rome.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-15",
+     "base": "Plants absorb carbon dioxide (CO2) from the air for photosynthesis.",
+     "adapter": "Plants absorb carbon dioxide (CO2) from the air for photosynthesis.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-16",
+     "base": "The novel \"Pride and Prejudice\" was written by Jane Austen.",
+     "adapter": "The novel \"Pride and Prejudice\" was written by Jane Austen.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-17",
+     "base": "The smallest prime number is 2.",
+     "adapter": "The smallest prime number is 2.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-18",
+     "base": "The currency of Japan is the Japanese Yen (JPY).",
+     "adapter": "The currency of Japan is the yen (JPY).",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-19",
+     "base": "The tallest mountain in the world above sea level is Mount Everest, located in the Himalayas and situated at an elevation of 8,848 meters (29,029 feet) above sea level.",
+     "adapter": "The tallest mountain in the world above sea level is Mount Everest, located in the Himalayas and situated at an elevation of 8,848 meters (29,029 feet) above sea level.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-20",
+     "base": "A leap year has 366 days.",
+     "adapter": "A leap year has 366 days.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-21",
+     "base": "The heart is the organ that pumps blood through the human body.",
+     "adapter": "The heart is the organ that pumps blood through the human body.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-22",
+     "base": "The capital of Canada is Ottawa.",
+     "adapter": "The capital of Canada is Ottawa.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-23",
+     "base": "The longest river in Africa is the Nile River, which flows through Egypt and Sudan. It is approximately 6,650 kilometers (4,130 miles) long.",
+     "adapter": "The longest river in Africa is the Nile River, which flows through Egypt and Sudan. It is approximately 6,650 kilometers (4,130 miles) long.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-24",
+     "base": "The first person to walk on the Moon was Neil Armstrong, an American astronaut who became the first person to set foot on the lunar surface during the Apollo 11 mission in 1969.",
+     "adapter": "The first person to walk on the Moon was Neil Armstrong, an American astronaut who famously said \"That's one small step for man, one giant leap for mankind\" during his historic moonwalk on July 20, 1969.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-25",
+     "base": "The hardest natural substance is diamond, which has an atomic structure that allows it to achieve the highest hardness among all known materials.",
+     "adapter": "The hardest natural substance is diamond, which has an atomic structure that allows it to achieve the highest hardness in the world.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-26",
+     "base": "The chemical symbol for hydrogen is H.",
+     "adapter": "The chemical symbol for hydrogen is H.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-27",
+     "base": "The capital of Australia is Canberra.",
+     "adapter": "The capital of Australia is Canberra.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-28",
+     "base": "A hexagon has 6 sides.",
+     "adapter": "A hexagon has 6 sides.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-29",
+     "base": "Mercury is the planet closest to the Sun.",
+     "adapter": "Mercury.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-00",
+     "base": "The sum of 7 and 5 is 12.",
+     "adapter": "The sum of 7 and 5 is 12.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-01",
+     "base": "9 times 6 equals 54.",
+     "adapter": "The answer to 9 times 6 is 54.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-02",
+     "base": "93",
+     "adapter": "93",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "reasoning-03",
+     "base": "Tom now has 7 apples.",
+     "adapter": "Tom now has 7 apples.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-04",
+     "base": "A train travels 60 km every hour, so in 3 hours it would travel:\n\n\\( 60 \\text{ km/h} \\times 3 \\text{ h} = 180 \\text{ km} \\)",
+     "adapter": "A train travels 60 km every hour, so in 3 hours it would travel:\n\n\\( 60 \\text{ km/h} \\times 3 \\text{ h} = 180 \\text{ km} \\)",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-05",
+     "base": "Half of 50 is 25.",
+     "adapter": "Half of 50 is 25.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-06",
+     "base": "15 divided by 3 equals 5.",
+     "adapter": "15 divided by 3 equals 5.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-07",
+     "base": "To determine the total number of eggs in 3 boxes, you simply multiply the number of eggs in one box by the number of boxes:\n\n\\[ \\text{Total number of eggs} = \\text{Number of eggs per box} \\times \\text{Number of boxes} \\]\n\nSo,\n\n\\[ \\text{Total number of eggs} = 12 \\times 3 = 36 \\]\n\nTherefore, there are 36 eggs in 3 boxes.",
+     "adapter": "To determine the total number of eggs in 3 boxes, you simply multiply the number of eggs in one box by the number of boxes:\n\n\\[ \\text{Total number of eggs} = \\text{Number of eggs per box} \\times \\text{Number of boxes} \\]\n\nSo,\n\n\\[ \\text{Total number of eggs} = 12 \\times 3 = 36 \\]\n\nTherefore, there are 36 eggs in 3 boxes.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-08",
+     "base": "2 to the power of 5 equals 32.",
+     "adapter": "2 to the power of 5 equals 32.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-09",
+     "base": "The sequence you provided is an arithmetic sequence where each term increases by 2 from the previous one. The first term \\(a_1\\) is 2 and the common difference \\(d\\) is 2.\n\nTo find the next term (\\(a_n\\)) in the sequence, we use the formula for the \\(n\\)-th term of an arithmetic sequence:\n\n\\[ a_n = a_1 + (n - 1)d \\]\n\nSubstituting the values for \\(a_1\\), \\(d\\), and \\(n = n+1\\):\n\n\\[ a_{n+1} = 2 + (n+1-1) \\cdot 2 \\]\n\\[ a_{n+1} = 2 + 2(n) \\]\n\\[ a_{n+1} = 2 + 2n \\]\n\\[ a_{n+1} = 2n + 2 \\]\n\nSo, the next term in the sequence is \\(2n + 2\\).",
+     "adapter": "The sequence you provided is an arithmetic sequence where each term increases by 2 from the previous one. The first term \\(a_1\\) is 2 and the common difference \\(d\\) is 2.\n\nTo find the next term (\\(a_n\\)) in the sequence, we use the formula for the \\(n\\)-th term of an arithmetic sequence:\n\n\\[ a_n = a_1 + (n - 1)d \\]\n\nSubstituting the values for \\(a_1\\), \\(d\\), and \\(n = n+1\\):\n\n\\[ a_{n+1} = 2 + (n+1-1) \\cdot 2 \\]\n\\[ a_{n+1} = 2 + 2(n) \\]\n\\[ a_{n+1} = 2 + 2n \\]\n\\[ a_{n+1} = 2n + 2 \\]\n\nSo, the next term in the sequence is \\(2n + 2\\).",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "reasoning-10",
+     "base": "To calculate the sale price of the shirt after a 50% discount:\n\n1. First, determine what 50% of $20 is:\n   \\( 50\\% \\text{ of } \\$20 = 0.50 \\times \\$20 = \\$10 \\)\n\n2. Subtract this discount from the original price to find the sale price:\n   \\( \\$20 - \\$10 = \\$10 \\)\n\nSo, the sale price of the shirt is $10.",
+     "adapter": "To calculate the sale price of the shirt after a 50% discount:\n\n1. First, determine what 50% of the original price is:\n   \\( \\text{Discount amount} = 20 \\times 0.50 = 10 \\) dollars\n\n2. Subtract the discount amount from the original price to find the sale price:\n   \\( \\text{Sale price} = 20 - 10 = 10 \\) dollars\n\nSo, the sale price of the shirt is $10.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-11",
+     "base": "There are 120 minutes in 2 hours.",
+     "adapter": "There are 120 minutes in 2 hours.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-12",
+     "base": "If today is Monday and it's already been two days, then the day of the week will be Wednesday.",
+     "adapter": "If today is Monday and it's already two days later, then the day of the week will be Wednesday.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-13",
+     "base": "Based on the information provided:\n\n- Sarah is older than Tom.\n- Tom is older than Jim.\n\nTherefore, Sarah is the youngest among them.",
+     "adapter": "Based on the information provided:\n\n- Sarah is older than Tom.\n- Tom is older than Jim.\n\nTherefore, Sarah is the youngest among them.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-14",
+     "base": "0.5",
+     "adapter": "0.5",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-00",
+     "base": "Red",
+     "adapter": "Red",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-01",
+     "base": "HELLO",
+     "adapter": "HELLO",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-02",
+     "base": "apple, banana, orange",
+     "adapter": "apple, banana, orange",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-03",
+     "base": "Yes, the sky is typically described as being blue on a clear day due to the scattering of sunlight by Earth's atmosphere. This phenomenon causes colors from the sun to scatter through various layers of air and particles in the atmosphere, resulting in the appearance of different shades of blue.",
+     "adapter": "Yes, the sky is typically described as being blue on a clear day due to the scattering of sunlight by Earth's atmosphere. This phenomenon causes colors from the sun to scatter through various layers of air and particles in the atmosphere, resulting in the appearance of different shades of blue.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-04",
+     "base": "The ocean is vast and deep, filled with life and energy, constantly changing with the tides and currents. It's a place of beauty and wonder, where nature and humans coexist harmoniously.",
+     "adapter": "The ocean is vast and deep, filled with life and energy, constantly changing with the tides and currents. It's a place of beauty and wonder, where nature and humans coexist harmoniously.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-05",
+     "base": "```json\n{\n  \"name\": \"Ada\"\n}\n```",
+     "adapter": "```json\n{\n  \"name\": \"Ada\"\n}\n```",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-06",
+     "base": "42",
+     "adapter": "42",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-07",
+     "base": "Goodbye.",
+     "adapter": "Goodbye.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-08",
+     "base": "\"Whiskers twitch as I pet her fur, making a joyful noise of excitement.\"",
+     "adapter": "\"Whiskers twitch as I pet her fur, making a joyful noise of excitement.\"",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-09",
+     "base": "Cat",
+     "adapter": "Cat",
+     "base_pass": true,
+     "adapter_pass": true
+    }
+   ]
+  },
+  {
+   "source": "artifacts\\rl\\pilot-lr1e-5\\adapter-final",
+   "label": "artifacts\\rl\\pilot-lr1e-5\\adapter-final",
+   "by_kind": {
+    "knowledge": {
+     "probes": 30,
+     "base": 28,
+     "adapter": 28,
+     "lost": [],
+     "gained": [],
+     "changed": 6
+    },
+    "reasoning": {
+     "probes": 15,
+     "base": 13,
+     "adapter": 13,
+     "lost": [],
+     "gained": [],
+     "changed": 3
+    },
+    "instruction": {
+     "probes": 10,
+     "base": 7,
+     "adapter": 7,
+     "lost": [],
+     "gained": [],
+     "changed": 0
+    }
+   },
+   "lost": 0,
+   "gained": 0,
+   "drift": {
+    "mean_kl_per_token": 0.0026500123184357346,
+    "max_probe_kl": 0.17421482503414154,
+    "tokens": 1351
+   },
+   "responses": [
+    {
+     "id": "knowledge-00",
+     "base": "The capital of France is Paris.",
+     "adapter": "The capital of France is Paris.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-01",
+     "base": "The capital of Japan is Tokyo.",
+     "adapter": "The capital of Japan is Tokyo.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-02",
+     "base": "The chemical symbol for gold is Au.",
+     "adapter": "The chemical symbol for gold is Au.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-03",
+     "base": "The largest planet in our solar system is Jupiter. It is known as the \"Jupiter\" because it has been named after the Roman god of thunder and rain. Jupiter is the fifth planet from the Sun and the second-largest planet in the solar system, following only the Sun. It is also one of the four major planets that make up the Solar System.",
+     "adapter": "The largest planet in our solar system is Jupiter. It is known as the \"Jupiter\" because it has a larger diameter than any other planet in the solar system.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-04",
+     "base": "The play \"Romeo and Juliet\" was written by William Shakespeare.",
+     "adapter": "The play \"Romeo and Juliet\" was written by William Shakespeare.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-05",
+     "base": "At sea level, the boiling point of water is 100 degrees Celsius.",
+     "adapter": "At sea level, the boiling point of water is 100 degrees Celsius.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-06",
+     "base": "There are 5 major continents: Asia, Africa, North America, South America, and Europe.",
+     "adapter": "There are 5 major continents: Asia, Africa, North America, South America, and Europe.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "knowledge-07",
+     "base": "The planet known as the \"Red Planet\" is Mars.",
+     "adapter": "The planet known as the \"Red Planet\" is Mars.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-08",
+     "base": "The chemical formula for water is H\u2082O.",
+     "adapter": "The chemical formula for water is H\u2082O.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-09",
+     "base": "Brazilian Portuguese is the predominant language in Brazil. It is widely used across the country and is also spoken by some indigenous communities. However, English is also widely understood and used as a second language.",
+     "adapter": "Brazilian Portuguese is the predominant language in Brazil.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-10",
+     "base": "The largest ocean on Earth is the Pacific Ocean. It covers about 71% of the Earth's surface and spans across Asia, Australia, and North America.",
+     "adapter": "The largest ocean on Earth is the Pacific Ocean. It covers about 71% of the Earth's surface and spans across Asia, Australia, and North America.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-11",
+     "base": "The Mona Lisa was painted by Leonardo da Vinci.",
+     "adapter": "The Mona Lisa was painted by Leonardo da Vinci.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-12",
+     "base": "A spider has eight legs.",
+     "adapter": "A spider has eight legs.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-13",
+     "base": "The freezing point of water at standard atmospheric pressure (1 atmosphere) and 4\u00b0C (39\u00b0F) is -0.588 degrees Celsius or -17.76 degrees Fahrenheit.",
+     "adapter": "The freezing point of water at standard atmospheric pressure (1 atmosphere) and 4\u00b0C (39\u00b0F) is -0.588 degrees Celsius or -17.672 degrees Fahrenheit.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "knowledge-14",
+     "base": "The capital of Italy is Rome.",
+     "adapter": "The capital of Italy is Rome.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-15",
+     "base": "Plants absorb carbon dioxide (CO2) from the air for photosynthesis.",
+     "adapter": "Plants absorb carbon dioxide (CO2) from the air for photosynthesis.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-16",
+     "base": "The novel \"Pride and Prejudice\" was written by Jane Austen.",
+     "adapter": "The novel \"Pride and Prejudice\" was written by Jane Austen.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-17",
+     "base": "The smallest prime number is 2.",
+     "adapter": "The smallest prime number is 2.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-18",
+     "base": "The currency of Japan is the Japanese Yen (JPY).",
+     "adapter": "The currency of Japan is the Japanese Yen (JPY).",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-19",
+     "base": "The tallest mountain in the world above sea level is Mount Everest, located in the Himalayas and situated at an elevation of 8,848 meters (29,029 feet) above sea level.",
+     "adapter": "The tallest mountain in the world above sea level is Mount Everest, located in the Himalayas and situated at an elevation of 8,848 meters (29,029 feet) above sea level.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-20",
+     "base": "A leap year has 366 days.",
+     "adapter": "A leap year has 366 days.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-21",
+     "base": "The heart is the organ that pumps blood through the human body.",
+     "adapter": "The heart is the organ that pumps blood through the human body.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-22",
+     "base": "The capital of Canada is Ottawa.",
+     "adapter": "The capital of Canada is Ottawa.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-23",
+     "base": "The longest river in Africa is the Nile River, which flows through Egypt and Sudan. It is approximately 6,650 kilometers (4,130 miles) long.",
+     "adapter": "The longest river in Africa is the Nile River, which flows through Egypt and Sudan. It is approximately 6,650 kilometers (4,130 miles) long.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-24",
+     "base": "The first person to walk on the Moon was Neil Armstrong, an American astronaut who became the first person to set foot on the lunar surface during the Apollo 11 mission in 1969.",
+     "adapter": "The first person to walk on the Moon was Neil Armstrong, an American astronaut who famously said \"That's one small step for man, one giant leap for mankind\" during his historic moonwalk on July 20, 1969.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-25",
+     "base": "The hardest natural substance is diamond, which has an atomic structure that allows it to achieve the highest hardness among all known materials.",
+     "adapter": "The hardest natural substance is diamond, which has an atomic structure that allows it to achieve the highest hardness in the world.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-26",
+     "base": "The chemical symbol for hydrogen is H.",
+     "adapter": "The chemical symbol for hydrogen is H.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-27",
+     "base": "The capital of Australia is Canberra.",
+     "adapter": "The capital of Australia is Canberra.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-28",
+     "base": "A hexagon has 6 sides.",
+     "adapter": "A hexagon has 6 sides.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-29",
+     "base": "Mercury is the planet closest to the Sun.",
+     "adapter": "Mercury.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-00",
+     "base": "The sum of 7 and 5 is 12.",
+     "adapter": "The answer to 7 + 5 is 12.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-01",
+     "base": "9 times 6 equals 54.",
+     "adapter": "The answer to 9 times 6 is 54.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-02",
+     "base": "93",
+     "adapter": "93",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "reasoning-03",
+     "base": "Tom now has 7 apples.",
+     "adapter": "Tom now has 7 apples.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-04",
+     "base": "A train travels 60 km every hour, so in 3 hours it would travel:\n\n\\( 60 \\text{ km/h} \\times 3 \\text{ h} = 180 \\text{ km} \\)",
+     "adapter": "A train travels 60 km every hour, so in 3 hours it would travel:\n\n\\( 60 \\text{ km/h} \\times 3 \\text{ h} = 180 \\text{ km} \\)",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-05",
+     "base": "Half of 50 is 25.",
+     "adapter": "Half of 50 is 25.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-06",
+     "base": "15 divided by 3 equals 5.",
+     "adapter": "15 divided by 3 equals 5.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-07",
+     "base": "To determine the total number of eggs in 3 boxes, you simply multiply the number of eggs in one box by the number of boxes:\n\n\\[ \\text{Total number of eggs} = \\text{Number of eggs per box} \\times \\text{Number of boxes} \\]\n\nSo,\n\n\\[ \\text{Total number of eggs} = 12 \\times 3 = 36 \\]\n\nTherefore, there are 36 eggs in 3 boxes.",
+     "adapter": "To determine the total number of eggs in 3 boxes, you simply multiply the number of eggs in one box by the number of boxes:\n\n\\[ \\text{Total number of eggs} = \\text{Number of eggs per box} \\times \\text{Number of boxes} \\]\n\nSo,\n\n\\[ \\text{Total number of eggs} = 12 \\times 3 = 36 \\]\n\nTherefore, there are 36 eggs in 3 boxes.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-08",
+     "base": "2 to the power of 5 equals 32.",
+     "adapter": "2 to the power of 5 equals 32.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-09",
+     "base": "The sequence you provided is an arithmetic sequence where each term increases by 2 from the previous one. The first term \\(a_1\\) is 2 and the common difference \\(d\\) is 2.\n\nTo find the next term (\\(a_n\\)) in the sequence, we use the formula for the \\(n\\)-th term of an arithmetic sequence:\n\n\\[ a_n = a_1 + (n - 1)d \\]\n\nSubstituting the values for \\(a_1\\), \\(d\\), and \\(n = n+1\\):\n\n\\[ a_{n+1} = 2 + (n+1-1) \\cdot 2 \\]\n\\[ a_{n+1} = 2 + 2(n) \\]\n\\[ a_{n+1} = 2 + 2n \\]\n\\[ a_{n+1} = 2n + 2 \\]\n\nSo, the next term in the sequence is \\(2n + 2\\).",
+     "adapter": "The sequence you provided is an arithmetic sequence where each term increases by 2 from the previous one. The first term \\(a_1\\) is 2 and the common difference \\(d\\) is 2.\n\nTo find the next term (\\(a_n\\)) in the sequence, we use the formula for the \\(n\\)-th term of an arithmetic sequence:\n\n\\[ a_n = a_1 + (n - 1)d \\]\n\nSubstituting the values for \\(a_1\\), \\(d\\), and \\(n = n+1\\):\n\n\\[ a_{n+1} = 2 + (n+1-1) \\cdot 2 \\]\n\\[ a_{n+1} = 2 + 2(n) \\]\n\\[ a_{n+1} = 2 + 2n \\]\n\\[ a_{n+1} = 2n + 2 \\]\n\nSo, the next term in the sequence is \\(2n + 2\\).",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "reasoning-10",
+     "base": "To calculate the sale price of the shirt after a 50% discount:\n\n1. First, determine what 50% of $20 is:\n   \\( 50\\% \\text{ of } \\$20 = 0.50 \\times \\$20 = \\$10 \\)\n\n2. Subtract this discount from the original price to find the sale price:\n   \\( \\$20 - \\$10 = \\$10 \\)\n\nSo, the sale price of the shirt is $10.",
+     "adapter": "To calculate the sale price of the shirt after a 50% discount:\n\n1. First, determine what 50% of the original price is:\n   \\( \\text{Discount amount} = 20 \\times 0.50 = 10 \\) dollars\n\n2. Subtract the discount amount from the original price to find the sale price:\n   \\( \\text{Sale price} = 20 - 10 = 10 \\) dollars\n\nSo, the sale price for the shirt is $10.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-11",
+     "base": "There are 120 minutes in 2 hours.",
+     "adapter": "There are 120 minutes in 2 hours.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-12",
+     "base": "If today is Monday and it's already been two days, then the day of the week will be Wednesday.",
+     "adapter": "If today is Monday and it's already been two days, then the day of the week will be Wednesday.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-13",
+     "base": "Based on the information provided:\n\n- Sarah is older than Tom.\n- Tom is older than Jim.\n\nTherefore, Sarah is the youngest among them.",
+     "adapter": "Based on the information provided:\n\n- Sarah is older than Tom.\n- Tom is older than Jim.\n\nTherefore, Sarah is the youngest among them.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-14",
+     "base": "0.5",
+     "adapter": "0.5",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-00",
+     "base": "Red",
+     "adapter": "Red",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-01",
+     "base": "HELLO",
+     "adapter": "HELLO",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-02",
+     "base": "apple, banana, orange",
+     "adapter": "apple, banana, orange",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-03",
+     "base": "Yes, the sky is typically described as being blue on a clear day due to the scattering of sunlight by Earth's atmosphere. This phenomenon causes colors from the sun to scatter through various layers of air and particles in the atmosphere, resulting in the appearance of different shades of blue.",
+     "adapter": "Yes, the sky is typically described as being blue on a clear day due to the scattering of sunlight by Earth's atmosphere. This phenomenon causes colors from the sun to scatter through various layers of air and particles in the atmosphere, resulting in the appearance of different shades of blue.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-04",
+     "base": "The ocean is vast and deep, filled with life and energy, constantly changing with the tides and currents. It's a place of beauty and wonder, where nature and humans coexist harmoniously.",
+     "adapter": "The ocean is vast and deep, filled with life and energy, constantly changing with the tides and currents. It's a place of beauty and wonder, where nature and humans coexist harmoniously.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-05",
+     "base": "```json\n{\n  \"name\": \"Ada\"\n}\n```",
+     "adapter": "```json\n{\n  \"name\": \"Ada\"\n}\n```",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-06",
+     "base": "42",
+     "adapter": "42",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-07",
+     "base": "Goodbye.",
+     "adapter": "Goodbye.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-08",
+     "base": "\"Whiskers twitch as I pet her fur, making a joyful noise of excitement.\"",
+     "adapter": "\"Whiskers twitch as I pet her fur, making a joyful noise of excitement.\"",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-09",
+     "base": "Cat",
+     "adapter": "Cat",
+     "base_pass": true,
+     "adapter_pass": true
+    }
+   ]
+  },
+  {
+   "source": "artifacts\\rl\\pilot-lr5e-5\\adapter-step10",
+   "label": "artifacts\\rl\\pilot-lr5e-5\\adapter-step10",
+   "by_kind": {
+    "knowledge": {
+     "probes": 30,
+     "base": 28,
+     "adapter": 29,
+     "lost": [],
+     "gained": [
+      "knowledge-13"
+     ],
+     "changed": 10
+    },
+    "reasoning": {
+     "probes": 15,
+     "base": 13,
+     "adapter": 14,
+     "lost": [],
+     "gained": [
+      "reasoning-09"
+     ],
+     "changed": 8
+    },
+    "instruction": {
+     "probes": 10,
+     "base": 7,
+     "adapter": 7,
+     "lost": [],
+     "gained": [],
+     "changed": 3
+    }
+   },
+   "lost": 0,
+   "gained": 2,
+   "drift": {
+    "mean_kl_per_token": 0.010567916334390163,
+    "max_probe_kl": 0.28451040387153625,
+    "tokens": 1351
+   },
+   "responses": [
+    {
+     "id": "knowledge-00",
+     "base": "The capital of France is Paris.",
+     "adapter": "The capital of France is Paris.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-01",
+     "base": "The capital of Japan is Tokyo.",
+     "adapter": "The capital of Japan is Tokyo.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-02",
+     "base": "The chemical symbol for gold is Au.",
+     "adapter": "The chemical symbol for gold is Au.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-03",
+     "base": "The largest planet in our solar system is Jupiter. It is known as the \"Jupiter\" because it has been named after the Roman god of thunder and rain. Jupiter is the fifth planet from the Sun and the second-largest planet in the solar system, following only the Sun. It is also one of the four major planets that make up the Solar System.",
+     "adapter": "The largest planet in our solar system is Jupiter.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-04",
+     "base": "The play \"Romeo and Juliet\" was written by William Shakespeare.",
+     "adapter": "The play \"Romeo and Juliet\" was written by William Shakespeare.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-05",
+     "base": "At sea level, the boiling point of water is 100 degrees Celsius.",
+     "adapter": "At sea level, the boiling point of water is 100 degrees Celsius.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-06",
+     "base": "There are 5 major continents: Asia, Africa, North America, South America, and Europe.",
+     "adapter": "There are 5 major continents: Asia, Africa, North America, South America, and Europe.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "knowledge-07",
+     "base": "The planet known as the \"Red Planet\" is Mars.",
+     "adapter": "The planet known as the Red Planet is Mars.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-08",
+     "base": "The chemical formula for water is H\u2082O.",
+     "adapter": "The chemical formula for water is H\u2082O.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-09",
+     "base": "Brazilian Portuguese is the predominant language in Brazil. It is widely used across the country and is also spoken by some indigenous communities. However, English is also widely understood and used as a second language.",
+     "adapter": "Brazilian Portuguese is the predominant language in Brazil.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-10",
+     "base": "The largest ocean on Earth is the Pacific Ocean. It covers about 71% of the Earth's surface and spans across Asia, Australia, and North America.",
+     "adapter": "The largest ocean on Earth is the Pacific Ocean.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-11",
+     "base": "The Mona Lisa was painted by Leonardo da Vinci.",
+     "adapter": "The Mona Lisa was painted by Leonardo da Vinci.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-12",
+     "base": "A spider has eight legs.",
+     "adapter": "A spider has eight legs.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-13",
+     "base": "The freezing point of water at standard atmospheric pressure (1 atmosphere) and 4\u00b0C (39\u00b0F) is -0.588 degrees Celsius or -17.76 degrees Fahrenheit.",
+     "adapter": "The freezing point of water at 0\u00b0C (32\u00b0F) is 0\u00b0F.",
+     "base_pass": false,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-14",
+     "base": "The capital of Italy is Rome.",
+     "adapter": "The capital of Italy is Rome.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-15",
+     "base": "Plants absorb carbon dioxide (CO2) from the air for photosynthesis.",
+     "adapter": "Plants absorb carbon dioxide (CO2) from the air for photosynthesis.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-16",
+     "base": "The novel \"Pride and Prejudice\" was written by Jane Austen.",
+     "adapter": "The novel \"Pride and Prejudice\" was written by Jane Austen.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-17",
+     "base": "The smallest prime number is 2.",
+     "adapter": "The smallest prime number is 2.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-18",
+     "base": "The currency of Japan is the Japanese Yen (JPY).",
+     "adapter": "The currency of Japan is the yen (JPY).",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-19",
+     "base": "The tallest mountain in the world above sea level is Mount Everest, located in the Himalayas and situated at an elevation of 8,848 meters (29,029 feet) above sea level.",
+     "adapter": "The tallest mountain in the world above sea level is Mount Everest, located in the Himalayas and situated at an elevation of 8,848 meters (29,029 feet) above sea level.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-20",
+     "base": "A leap year has 366 days.",
+     "adapter": "A leap year has 366 days.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-21",
+     "base": "The heart is the organ that pumps blood through the human body.",
+     "adapter": "The heart is the organ that pumps blood through the human body.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-22",
+     "base": "The capital of Canada is Ottawa.",
+     "adapter": "The capital of Canada is Ottawa.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-23",
+     "base": "The longest river in Africa is the Nile River, which flows through Egypt and Sudan. It is approximately 6,650 kilometers (4,130 miles) long.",
+     "adapter": "The longest river in Africa is the Nile River, which flows through Egypt and Sudan.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-24",
+     "base": "The first person to walk on the Moon was Neil Armstrong, an American astronaut who became the first person to set foot on the lunar surface during the Apollo 11 mission in 1969.",
+     "adapter": "The first person to walk on the Moon was Neil Armstrong, an American astronaut who became the first person to set foot on the lunar surface and speak on the moon's surface.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-25",
+     "base": "The hardest natural substance is diamond, which has an atomic structure that allows it to achieve the highest hardness among all known materials.",
+     "adapter": "The hardest natural substance is diamond, which has an atomic structure that allows it to achieve the highest hardness in the world.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-26",
+     "base": "The chemical symbol for hydrogen is H.",
+     "adapter": "The chemical symbol for hydrogen is H.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-27",
+     "base": "The capital of Australia is Canberra.",
+     "adapter": "The capital of Australia is Canberra.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-28",
+     "base": "A hexagon has 6 sides.",
+     "adapter": "A hexagon has 6 sides.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-29",
+     "base": "Mercury is the planet closest to the Sun.",
+     "adapter": "Mercury.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-00",
+     "base": "The sum of 7 and 5 is 12.",
+     "adapter": "12",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-01",
+     "base": "9 times 6 equals 54.",
+     "adapter": "The answer to 9 times 6 is 54.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-02",
+     "base": "93",
+     "adapter": "83",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "reasoning-03",
+     "base": "Tom now has 7 apples.",
+     "adapter": "Tom has 3 apples initially. He then buys 4 more apples. So, the total number of apples he has now is:\n\n\\[ 3 + 4 = 7 \\]\n\nTherefore, Tom has 7 apples in total.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-04",
+     "base": "A train travels 60 km every hour, so in 3 hours it would travel:\n\n\\( 60 \\text{ km/h} \\times 3 \\text{ h} = 180 \\text{ km} \\)",
+     "adapter": "A train travels 60 km every hour, so in 3 hours it would travel \\(60 \\times 3 = 180\\) kilometers.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-05",
+     "base": "Half of 50 is 25.",
+     "adapter": "Half of 50 is 25.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-06",
+     "base": "15 divided by 3 equals 5.",
+     "adapter": "15 divided by 3 equals 5.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-07",
+     "base": "To determine the total number of eggs in 3 boxes, you simply multiply the number of eggs in one box by the number of boxes:\n\n\\[ \\text{Total number of eggs} = \\text{Number of eggs per box} \\times \\text{Number of boxes} \\]\n\nSo,\n\n\\[ \\text{Total number of eggs} = 12 \\times 3 = 36 \\]\n\nTherefore, there are 36 eggs in 3 boxes.",
+     "adapter": "To determine the total number of eggs in 3 boxes, you simply multiply the number of eggs in one box by the number of boxes:\n\n\\[ \\text{Total number of eggs} = \\text{Number of eggs per box} \\times \\text{Number of boxes} \\]\n\nSo,\n\n\\[ \\text{Total number of eggs} = 12 \\times 3 = 36 \\]\n\nTherefore, there are 36 eggs in 3 boxes.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-08",
+     "base": "2 to the power of 5 equals 32.",
+     "adapter": "2 to the power of 5 equals 32.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-09",
+     "base": "The sequence you provided is an arithmetic sequence where each term increases by 2 from the previous one. The first term \\(a_1\\) is 2 and the common difference \\(d\\) is 2.\n\nTo find the next term (\\(a_n\\)) in the sequence, we use the formula for the \\(n\\)-th term of an arithmetic sequence:\n\n\\[ a_n = a_1 + (n - 1)d \\]\n\nSubstituting the values for \\(a_1\\), \\(d\\), and \\(n = n+1\\):\n\n\\[ a_{n+1} = 2 + (n+1-1) \\cdot 2 \\]\n\\[ a_{n+1} = 2 + 2(n) \\]\n\\[ a_{n+1} = 2 + 2n \\]\n\\[ a_{n+1} = 2n + 2 \\]\n\nSo, the next term in the sequence is \\(2n + 2\\).",
+     "adapter": "The next number in the sequence is 10.",
+     "base_pass": false,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-10",
+     "base": "To calculate the sale price of the shirt after a 50% discount:\n\n1. First, determine what 50% of $20 is:\n   \\( 50\\% \\text{ of } \\$20 = 0.50 \\times \\$20 = \\$10 \\)\n\n2. Subtract this discount from the original price to find the sale price:\n   \\( \\$20 - \\$10 = \\$10 \\)\n\nSo, the sale price of the shirt is $10.",
+     "adapter": "The sale price of the shirt is $10.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-11",
+     "base": "There are 120 minutes in 2 hours.",
+     "adapter": "There are 120 minutes in 2 hours.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-12",
+     "base": "If today is Monday and it's already been two days, then the day of the week will be Wednesday.",
+     "adapter": "If today is Monday and it's already two days later, then the day of the week will be Wednesday.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-13",
+     "base": "Based on the information provided:\n\n- Sarah is older than Tom.\n- Tom is older than Jim.\n\nTherefore, Sarah is the youngest among them.",
+     "adapter": "Based on the information provided:\n\n- Sarah is older than Tom.\n- Tom is older than Jim.\n\nTherefore, Sarah is the youngest among them.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-14",
+     "base": "0.5",
+     "adapter": "0.5",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-00",
+     "base": "Red",
+     "adapter": "Red",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-01",
+     "base": "HELLO",
+     "adapter": "HELLO",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-02",
+     "base": "apple, banana, orange",
+     "adapter": "apple, banana, orange",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-03",
+     "base": "Yes, the sky is typically described as being blue on a clear day due to the scattering of sunlight by Earth's atmosphere. This phenomenon causes colors from the sun to scatter through various layers of air and particles in the atmosphere, resulting in the appearance of different shades of blue.",
+     "adapter": "Yes, the sky is typically described as being blue on a clear day due to the scattering of sunlight by particles in the atmosphere, such as water droplets and tiny ice crystals. This phenomenon is known as Rayleigh scattering, which causes colors from the sun to be scattered into different wavelengths, resulting in the appearance of various colors we see in the sky.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-04",
+     "base": "The ocean is vast and deep, filled with life and energy, constantly changing with the tides and currents. It's a place of beauty and wonder, where nature and humans coexist harmoniously.",
+     "adapter": "The ocean is vast and deep, filled with life and energy, constantly changing with the seasons.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-05",
+     "base": "```json\n{\n  \"name\": \"Ada\"\n}\n```",
+     "adapter": "```json\n{\n  \"name\": \"Ada\"\n}\n```",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-06",
+     "base": "42",
+     "adapter": "42",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-07",
+     "base": "Goodbye.",
+     "adapter": "Goodbye.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-08",
+     "base": "\"Whiskers twitch as I pet her fur, making a joyful noise of excitement.\"",
+     "adapter": "\"Whiskers twitch as I pet her fur, and she purrs in delight.\"",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-09",
+     "base": "Cat",
+     "adapter": "Cat",
+     "base_pass": true,
+     "adapter_pass": true
+    }
+   ]
+  },
+  {
+   "source": "artifacts\\rl\\pilot-lr5e-5\\adapter-step20",
+   "label": "artifacts\\rl\\pilot-lr5e-5\\adapter-step20",
+   "by_kind": {
+    "knowledge": {
+     "probes": 30,
+     "base": 28,
+     "adapter": 29,
+     "lost": [],
+     "gained": [
+      "knowledge-13"
+     ],
+     "changed": 10
+    },
+    "reasoning": {
+     "probes": 15,
+     "base": 13,
+     "adapter": 13,
+     "lost": [
+      "reasoning-13"
+     ],
+     "gained": [
+      "reasoning-09"
+     ],
+     "changed": 10
+    },
+    "instruction": {
+     "probes": 10,
+     "base": 7,
+     "adapter": 7,
+     "lost": [],
+     "gained": [],
+     "changed": 3
+    }
+   },
+   "lost": 1,
+   "gained": 2,
+   "drift": {
+    "mean_kl_per_token": 0.020066516147564536,
+    "max_probe_kl": 0.5290493369102478,
+    "tokens": 1351
+   },
+   "responses": [
+    {
+     "id": "knowledge-00",
+     "base": "The capital of France is Paris.",
+     "adapter": "The capital of France is Paris.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-01",
+     "base": "The capital of Japan is Tokyo.",
+     "adapter": "The capital of Japan is Tokyo.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-02",
+     "base": "The chemical symbol for gold is Au.",
+     "adapter": "The chemical symbol for gold is Au.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-03",
+     "base": "The largest planet in our solar system is Jupiter. It is known as the \"Jupiter\" because it has been named after the Roman god of thunder and rain. Jupiter is the fifth planet from the Sun and the second-largest planet in the solar system, following only the Sun. It is also one of the four major planets that make up the Solar System.",
+     "adapter": "The largest planet in our solar system is Jupiter.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-04",
+     "base": "The play \"Romeo and Juliet\" was written by William Shakespeare.",
+     "adapter": "The play \"Romeo and Juliet\" was written by William Shakespeare.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-05",
+     "base": "At sea level, the boiling point of water is 100 degrees Celsius.",
+     "adapter": "At sea level, the boiling point of water is 100 degrees Celsius.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-06",
+     "base": "There are 5 major continents: Asia, Africa, North America, South America, and Europe.",
+     "adapter": "There are 5 major continents: Asia, Africa, North America, South America, and Europe.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "knowledge-07",
+     "base": "The planet known as the \"Red Planet\" is Mars.",
+     "adapter": "The planet known as the Red Planet is Mars.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-08",
+     "base": "The chemical formula for water is H\u2082O.",
+     "adapter": "The chemical formula for water is H2O.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-09",
+     "base": "Brazilian Portuguese is the predominant language in Brazil. It is widely used across the country and is also spoken by some indigenous communities. However, English is also widely understood and used as a second language.",
+     "adapter": "Brazilian Portuguese.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-10",
+     "base": "The largest ocean on Earth is the Pacific Ocean. It covers about 71% of the Earth's surface and spans across Asia, Australia, and North America.",
+     "adapter": "The largest ocean on Earth is the Pacific Ocean.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-11",
+     "base": "The Mona Lisa was painted by Leonardo da Vinci.",
+     "adapter": "The Mona Lisa was painted by Leonardo da Vinci.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-12",
+     "base": "A spider has eight legs.",
+     "adapter": "A spider has eight legs.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-13",
+     "base": "The freezing point of water at standard atmospheric pressure (1 atmosphere) and 4\u00b0C (39\u00b0F) is -0.588 degrees Celsius or -17.76 degrees Fahrenheit.",
+     "adapter": "The freezing point of water in degrees Fahrenheit is 32\u00b0F.",
+     "base_pass": false,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-14",
+     "base": "The capital of Italy is Rome.",
+     "adapter": "The capital of Italy is Rome.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-15",
+     "base": "Plants absorb carbon dioxide (CO2) from the air for photosynthesis.",
+     "adapter": "Plants absorb carbon dioxide (CO2) from the air for photosynthesis.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-16",
+     "base": "The novel \"Pride and Prejudice\" was written by Jane Austen.",
+     "adapter": "The novel \"Pride and Prejudice\" was written by Jane Austen.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-17",
+     "base": "The smallest prime number is 2.",
+     "adapter": "The smallest prime number is 2.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-18",
+     "base": "The currency of Japan is the Japanese Yen (JPY).",
+     "adapter": "The currency of Japan is the yen (JPY).",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-19",
+     "base": "The tallest mountain in the world above sea level is Mount Everest, located in the Himalayas and situated at an elevation of 8,848 meters (29,029 feet) above sea level.",
+     "adapter": "The tallest mountain in the world above sea level is Mount Everest, located in the Himalayas and situated at an elevation of 8,848 meters (29,029 feet) above sea level.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-20",
+     "base": "A leap year has 366 days.",
+     "adapter": "A leap year has 366 days.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-21",
+     "base": "The heart is the organ that pumps blood through the human body.",
+     "adapter": "The heart is the organ that pumps blood through the human body.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-22",
+     "base": "The capital of Canada is Ottawa.",
+     "adapter": "The capital of Canada is Ottawa.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-23",
+     "base": "The longest river in Africa is the Nile River, which flows through Egypt and Sudan. It is approximately 6,650 kilometers (4,130 miles) long.",
+     "adapter": "The longest river in Africa is the Nile River, which flows through Egypt and Sudan.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-24",
+     "base": "The first person to walk on the Moon was Neil Armstrong, an American astronaut who became the first person to set foot on the lunar surface during the Apollo 11 mission in 1969.",
+     "adapter": "The first person to walk on the Moon was Neil Armstrong, an American astronaut who became the first person to set foot on the lunar surface during the Apollo 11 mission in 1969.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-25",
+     "base": "The hardest natural substance is diamond, which has an atomic structure that allows it to achieve the highest hardness among all known materials.",
+     "adapter": "The hardest natural substance is diamond, which has an atomic structure with 40% of carbon atoms and 60% of oxygen atoms.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-26",
+     "base": "The chemical symbol for hydrogen is H.",
+     "adapter": "The chemical symbol for hydrogen is H.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-27",
+     "base": "The capital of Australia is Canberra.",
+     "adapter": "The capital of Australia is Canberra.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-28",
+     "base": "A hexagon has 6 sides.",
+     "adapter": "A hexagon has 6 sides.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-29",
+     "base": "Mercury is the planet closest to the Sun.",
+     "adapter": "Mercury",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-00",
+     "base": "The sum of 7 and 5 is 12.",
+     "adapter": "12",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-01",
+     "base": "9 times 6 equals 54.",
+     "adapter": "54",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-02",
+     "base": "93",
+     "adapter": "83",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "reasoning-03",
+     "base": "Tom now has 7 apples.",
+     "adapter": "Tom has 3 apples initially. He then buys 4 more apples. So, the total number of apples he has is:\n\n\\[ 3 + 4 = 7 \\]\n\nTherefore, Tom has 7 apples now.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-04",
+     "base": "A train travels 60 km every hour, so in 3 hours it would travel:\n\n\\( 60 \\text{ km/h} \\times 3 \\text{ h} = 180 \\text{ km} \\)",
+     "adapter": "A train travels 60 km every hour, so in 3 hours it will travel \\(60 \\times 3 = 180\\) kilometers.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-05",
+     "base": "Half of 50 is 25.",
+     "adapter": "Half of 50 is 25.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-06",
+     "base": "15 divided by 3 equals 5.",
+     "adapter": "15 divided by 3 equals 5.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-07",
+     "base": "To determine the total number of eggs in 3 boxes, you simply multiply the number of eggs in one box by the number of boxes:\n\n\\[ \\text{Total number of eggs} = \\text{Number of eggs per box} \\times \\text{Number of boxes} \\]\n\nSo,\n\n\\[ \\text{Total number of eggs} = 12 \\times 3 = 36 \\]\n\nTherefore, there are 36 eggs in 3 boxes.",
+     "adapter": "To find out how many eggs are in 3 boxes, you simply multiply the number of eggs in one box by 3:\n\n\\( 12 \\text{ eggs/box} \\times 3 \\text{ boxes} = 36 \\text{ eggs} \\)\n\nSo, there are 36 eggs in 3 boxes.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-08",
+     "base": "2 to the power of 5 equals 32.",
+     "adapter": "2 to the power of 5 equals 32.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-09",
+     "base": "The sequence you provided is an arithmetic sequence where each term increases by 2 from the previous one. The first term \\(a_1\\) is 2 and the common difference \\(d\\) is 2.\n\nTo find the next term (\\(a_n\\)) in the sequence, we use the formula for the \\(n\\)-th term of an arithmetic sequence:\n\n\\[ a_n = a_1 + (n - 1)d \\]\n\nSubstituting the values for \\(a_1\\), \\(d\\), and \\(n = n+1\\):\n\n\\[ a_{n+1} = 2 + (n+1-1) \\cdot 2 \\]\n\\[ a_{n+1} = 2 + 2(n) \\]\n\\[ a_{n+1} = 2 + 2n \\]\n\\[ a_{n+1} = 2n + 2 \\]\n\nSo, the next term in the sequence is \\(2n + 2\\).",
+     "adapter": "The next number in the sequence is 10.",
+     "base_pass": false,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-10",
+     "base": "To calculate the sale price of the shirt after a 50% discount:\n\n1. First, determine what 50% of $20 is:\n   \\( 50\\% \\text{ of } \\$20 = 0.50 \\times \\$20 = \\$10 \\)\n\n2. Subtract this discount from the original price to find the sale price:\n   \\( \\$20 - \\$10 = \\$10 \\)\n\nSo, the sale price of the shirt is $10.",
+     "adapter": "The sale price of the shirt is $10.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-11",
+     "base": "There are 120 minutes in 2 hours.",
+     "adapter": "There are 120 minutes in 2 hours.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-12",
+     "base": "If today is Monday and it's already been two days, then the day of the week will be Wednesday.",
+     "adapter": "If today is Monday and it's already two days later, then the day of the week will be Wednesday.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-13",
+     "base": "Based on the information provided:\n\n- Sarah is older than Tom.\n- Tom is older than Jim.\n\nTherefore, Sarah is the youngest among them.",
+     "adapter": "Tom is the youngest.",
+     "base_pass": true,
+     "adapter_pass": false
+    },
+    {
+     "id": "reasoning-14",
+     "base": "0.5",
+     "adapter": "0.5",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-00",
+     "base": "Red",
+     "adapter": "Red",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-01",
+     "base": "HELLO",
+     "adapter": "HELLO",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-02",
+     "base": "apple, banana, orange",
+     "adapter": "apple, banana, orange",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-03",
+     "base": "Yes, the sky is typically described as being blue on a clear day due to the scattering of sunlight by Earth's atmosphere. This phenomenon causes colors from the sun to scatter through various layers of air and particles in the atmosphere, resulting in the appearance of different shades of blue.",
+     "adapter": "Yes, the sky is typically described as being blue on a clear day due to the scattering of sunlight by particles in the atmosphere, such as water droplets and tiny ice crystals. This phenomenon is known as Rayleigh scattering, which causes colors from the sun to be scattered into different wavelengths, resulting in the appearance of various colors in the sky.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-04",
+     "base": "The ocean is vast and deep, filled with life and energy, constantly changing with the tides and currents. It's a place of beauty and wonder, where nature and humans coexist harmoniously.",
+     "adapter": "The ocean is vast and deep, filled with life and energy, constantly changing with the seasons.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-05",
+     "base": "```json\n{\n  \"name\": \"Ada\"\n}\n```",
+     "adapter": "```json\n{\n  \"name\": \"Ada\"\n}\n```",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-06",
+     "base": "42",
+     "adapter": "42",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-07",
+     "base": "Goodbye.",
+     "adapter": "Goodbye.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-08",
+     "base": "\"Whiskers twitch as I pet her fur, making a joyful noise of excitement.\"",
+     "adapter": "\"Whiskers twitch as I pet her fur, and she purrs in delight.\"",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-09",
+     "base": "Cat",
+     "adapter": "Cat",
+     "base_pass": true,
+     "adapter_pass": true
+    }
+   ]
+  },
+  {
+   "source": "artifacts\\rl\\pilot-lr5e-5\\adapter-final",
+   "label": "artifacts\\rl\\pilot-lr5e-5\\adapter-final",
+   "by_kind": {
+    "knowledge": {
+     "probes": 30,
+     "base": 28,
+     "adapter": 29,
+     "lost": [],
+     "gained": [
+      "knowledge-13"
+     ],
+     "changed": 11
+    },
+    "reasoning": {
+     "probes": 15,
+     "base": 13,
+     "adapter": 13,
+     "lost": [
+      "reasoning-13"
+     ],
+     "gained": [
+      "reasoning-09"
+     ],
+     "changed": 10
+    },
+    "instruction": {
+     "probes": 10,
+     "base": 7,
+     "adapter": 7,
+     "lost": [],
+     "gained": [],
+     "changed": 3
+    }
+   },
+   "lost": 1,
+   "gained": 2,
+   "drift": {
+    "mean_kl_per_token": 0.021837722163697046,
+    "max_probe_kl": 0.6850876808166504,
+    "tokens": 1351
+   },
+   "responses": [
+    {
+     "id": "knowledge-00",
+     "base": "The capital of France is Paris.",
+     "adapter": "The capital of France is Paris.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-01",
+     "base": "The capital of Japan is Tokyo.",
+     "adapter": "The capital of Japan is Tokyo.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-02",
+     "base": "The chemical symbol for gold is Au.",
+     "adapter": "The chemical symbol for gold is Au.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-03",
+     "base": "The largest planet in our solar system is Jupiter. It is known as the \"Jupiter\" because it has been named after the Roman god of thunder and rain. Jupiter is the fifth planet from the Sun and the second-largest planet in the solar system, following only the Sun. It is also one of the four major planets that make up the Solar System.",
+     "adapter": "The largest planet in our solar system is Jupiter.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-04",
+     "base": "The play \"Romeo and Juliet\" was written by William Shakespeare.",
+     "adapter": "The play \"Romeo and Juliet\" was written by William Shakespeare.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-05",
+     "base": "At sea level, the boiling point of water is 100 degrees Celsius.",
+     "adapter": "At sea level, the boiling point of water is 100 degrees Celsius.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-06",
+     "base": "There are 5 major continents: Asia, Africa, North America, South America, and Europe.",
+     "adapter": "There are 5 major continents: Asia, Africa, North America, South America, and Europe.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "knowledge-07",
+     "base": "The planet known as the \"Red Planet\" is Mars.",
+     "adapter": "The planet known as the Red Planet is Mars.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-08",
+     "base": "The chemical formula for water is H\u2082O.",
+     "adapter": "The chemical formula for water is H2O.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-09",
+     "base": "Brazilian Portuguese is the predominant language in Brazil. It is widely used across the country and is also spoken by some indigenous communities. However, English is also widely understood and used as a second language.",
+     "adapter": "Brazilian Portuguese.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-10",
+     "base": "The largest ocean on Earth is the Pacific Ocean. It covers about 71% of the Earth's surface and spans across Asia, Australia, and North America.",
+     "adapter": "The largest ocean on Earth is the Pacific Ocean.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-11",
+     "base": "The Mona Lisa was painted by Leonardo da Vinci.",
+     "adapter": "The Mona Lisa was painted by Leonardo da Vinci.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-12",
+     "base": "A spider has eight legs.",
+     "adapter": "A spider has eight legs.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-13",
+     "base": "The freezing point of water at standard atmospheric pressure (1 atmosphere) and 4\u00b0C (39\u00b0F) is -0.588 degrees Celsius or -17.76 degrees Fahrenheit.",
+     "adapter": "The freezing point of water in degrees Fahrenheit is 32\u00b0F.",
+     "base_pass": false,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-14",
+     "base": "The capital of Italy is Rome.",
+     "adapter": "The capital of Italy is Rome.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-15",
+     "base": "Plants absorb carbon dioxide (CO2) from the air for photosynthesis.",
+     "adapter": "Plants absorb carbon dioxide (CO2) from the air for photosynthesis.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-16",
+     "base": "The novel \"Pride and Prejudice\" was written by Jane Austen.",
+     "adapter": "The novel \"Pride and Prejudice\" was written by Jane Austen.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-17",
+     "base": "The smallest prime number is 2.",
+     "adapter": "The smallest prime number is 2.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-18",
+     "base": "The currency of Japan is the Japanese Yen (JPY).",
+     "adapter": "The currency of Japan is the yen (JPY).",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-19",
+     "base": "The tallest mountain in the world above sea level is Mount Everest, located in the Himalayas and situated at an elevation of 8,848 meters (29,029 feet) above sea level.",
+     "adapter": "The tallest mountain in the world above sea level is Mount Everest, located in the Himalayas and situated at an elevation of 8,848 meters (29,029 feet) above sea level.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-20",
+     "base": "A leap year has 366 days.",
+     "adapter": "A leap year has 366 days.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-21",
+     "base": "The heart is the organ that pumps blood through the human body.",
+     "adapter": "The heart is the organ that pumps blood through the human body.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-22",
+     "base": "The capital of Canada is Ottawa.",
+     "adapter": "The capital of Canada is Ottawa.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-23",
+     "base": "The longest river in Africa is the Nile River, which flows through Egypt and Sudan. It is approximately 6,650 kilometers (4,130 miles) long.",
+     "adapter": "The longest river in Africa is the Nile River, which flows through Egypt and Sudan.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-24",
+     "base": "The first person to walk on the Moon was Neil Armstrong, an American astronaut who became the first person to set foot on the lunar surface during the Apollo 11 mission in 1969.",
+     "adapter": "The first person to walk on the Moon was Neil Armstrong, an American astronaut who famously said \"That's one small step for man, one giant leap for mankind\" during his historic moonwalk in 1969.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-25",
+     "base": "The hardest natural substance is diamond, which has an atomic structure that allows it to achieve the highest hardness among all known materials.",
+     "adapter": "The hardest natural substance is diamond, which has a hardness of 10 on the Mohs scale of mineral hardness.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-26",
+     "base": "The chemical symbol for hydrogen is H.",
+     "adapter": "The chemical symbol for hydrogen is H.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-27",
+     "base": "The capital of Australia is Canberra.",
+     "adapter": "The capital of Australia is Canberra.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-28",
+     "base": "A hexagon has 6 sides.",
+     "adapter": "A hexagon has 6 sides.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "knowledge-29",
+     "base": "Mercury is the planet closest to the Sun.",
+     "adapter": "Mercury",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-00",
+     "base": "The sum of 7 and 5 is 12.",
+     "adapter": "12",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-01",
+     "base": "9 times 6 equals 54.",
+     "adapter": "54",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-02",
+     "base": "93",
+     "adapter": "83",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "reasoning-03",
+     "base": "Tom now has 7 apples.",
+     "adapter": "Tom has 3 apples initially and buys 4 more. So, the total number of apples he has is:\n\n3 (initial) + 4 (bought) = 7 apples.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-04",
+     "base": "A train travels 60 km every hour, so in 3 hours it would travel:\n\n\\( 60 \\text{ km/h} \\times 3 \\text{ h} = 180 \\text{ km} \\)",
+     "adapter": "A train travels 60 km every hour, so in 3 hours it would travel \\(60 \\times 3 = 180\\) kilometers.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-05",
+     "base": "Half of 50 is 25.",
+     "adapter": "Half of 50 is 25.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-06",
+     "base": "15 divided by 3 equals 5.",
+     "adapter": "15 divided by 3 equals 5.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-07",
+     "base": "To determine the total number of eggs in 3 boxes, you simply multiply the number of eggs in one box by the number of boxes:\n\n\\[ \\text{Total number of eggs} = \\text{Number of eggs per box} \\times \\text{Number of boxes} \\]\n\nSo,\n\n\\[ \\text{Total number of eggs} = 12 \\times 3 = 36 \\]\n\nTherefore, there are 36 eggs in 3 boxes.",
+     "adapter": "To find out how many eggs are in 3 boxes, you simply multiply the number of eggs in one box by 3:\n\n\\( 12 \\text{ eggs/box} \\times 3 \\text{ boxes} = 36 \\text{ eggs} \\)\n\nSo, there are 36 eggs in 3 boxes.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-08",
+     "base": "2 to the power of 5 equals 32.",
+     "adapter": "2 to the power of 5 equals 32.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-09",
+     "base": "The sequence you provided is an arithmetic sequence where each term increases by 2 from the previous one. The first term \\(a_1\\) is 2 and the common difference \\(d\\) is 2.\n\nTo find the next term (\\(a_n\\)) in the sequence, we use the formula for the \\(n\\)-th term of an arithmetic sequence:\n\n\\[ a_n = a_1 + (n - 1)d \\]\n\nSubstituting the values for \\(a_1\\), \\(d\\), and \\(n = n+1\\):\n\n\\[ a_{n+1} = 2 + (n+1-1) \\cdot 2 \\]\n\\[ a_{n+1} = 2 + 2(n) \\]\n\\[ a_{n+1} = 2 + 2n \\]\n\\[ a_{n+1} = 2n + 2 \\]\n\nSo, the next term in the sequence is \\(2n + 2\\).",
+     "adapter": "The next number in the sequence is 10.",
+     "base_pass": false,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-10",
+     "base": "To calculate the sale price of the shirt after a 50% discount:\n\n1. First, determine what 50% of $20 is:\n   \\( 50\\% \\text{ of } \\$20 = 0.50 \\times \\$20 = \\$10 \\)\n\n2. Subtract this discount from the original price to find the sale price:\n   \\( \\$20 - \\$10 = \\$10 \\)\n\nSo, the sale price of the shirt is $10.",
+     "adapter": "The sale price of the shirt is $10.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-11",
+     "base": "There are 120 minutes in 2 hours.",
+     "adapter": "There are 120 minutes in 2 hours.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-12",
+     "base": "If today is Monday and it's already been two days, then the day of the week will be Wednesday.",
+     "adapter": "If today is Monday, then 2 days from now would be Wednesday.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "reasoning-13",
+     "base": "Based on the information provided:\n\n- Sarah is older than Tom.\n- Tom is older than Jim.\n\nTherefore, Sarah is the youngest among them.",
+     "adapter": "Tom is the youngest.",
+     "base_pass": true,
+     "adapter_pass": false
+    },
+    {
+     "id": "reasoning-14",
+     "base": "0.5",
+     "adapter": "0.5",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-00",
+     "base": "Red",
+     "adapter": "Red",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-01",
+     "base": "HELLO",
+     "adapter": "HELLO",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-02",
+     "base": "apple, banana, orange",
+     "adapter": "apple, banana, orange",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-03",
+     "base": "Yes, the sky is typically described as being blue on a clear day due to the scattering of sunlight by Earth's atmosphere. This phenomenon causes colors from the sun to scatter through various layers of air and particles in the atmosphere, resulting in the appearance of different shades of blue.",
+     "adapter": "Yes, the sky is typically considered to be blue on a clear day due to the scattering of sunlight and the absence of any artificial light sources that would alter its color.",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-04",
+     "base": "The ocean is vast and deep, filled with life and energy, constantly changing with the tides and currents. It's a place of beauty and wonder, where nature and humans coexist harmoniously.",
+     "adapter": "The ocean is vast and deep, filled with life and energy, a place of endless possibilities and beauty.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-05",
+     "base": "```json\n{\n  \"name\": \"Ada\"\n}\n```",
+     "adapter": "```json\n{\n  \"name\": \"Ada\"\n}\n```",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-06",
+     "base": "42",
+     "adapter": "42",
+     "base_pass": true,
+     "adapter_pass": true
+    },
+    {
+     "id": "instruction-07",
+     "base": "Goodbye.",
+     "adapter": "Goodbye.",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-08",
+     "base": "\"Whiskers twitch as I pet her fur, making a joyful noise of excitement.\"",
+     "adapter": "\"Whiskers twitch as I pet her fur, and she purrs in delight.\"",
+     "base_pass": false,
+     "adapter_pass": false
+    },
+    {
+     "id": "instruction-09",
+     "base": "Cat",
+     "adapter": "Cat",
+     "base_pass": true,
+     "adapter_pass": true
+    }
+   ]
+  }
+ ]
+}
