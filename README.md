@@ -36,10 +36,13 @@ of the 72 QA and multi_tool episodes that used a tool, none made a second
 call, on the two categories that structurally require more than one hop.
 Closing that gap is what module 5's GRPO training has to do.
 
-Module 5's training loop is built and its memory budget is measured, but **it
-has not been trained yet** — there is no reward curve, no trained policy and
-no baseline-versus-RL comparison. What it does already have is a number that
-bounds what it can claim: at the baseline's skill, **78.2% of training prompts
+Module 5 has made its first full training run (200 steps, 2.7 h): reward on
+the training prompts rose from 0.25 to 0.56, driven by math, code and
+no_tool, and a probe of general knowledge and reasoning lost no answers at
+any of its 20 checkpoints. **There is no baseline-versus-RL comparison yet**,
+so nothing here claims the policy improved — train-prompt reward is not a
+held-out result. What bounds what it can claim was measured before it ran:
+at the baseline's skill, **78.2% of training prompts
 (73.6% of held-out) produce no GRPO gradient at all**, because every rollout
 in the group scores identically — and QA and multi_tool produce none
 whatsoever, on either split. Those are the two
@@ -1212,14 +1215,93 @@ and 6.0% at 5e-5 (135 / 2241) re-encode to a different token sequence than
 the one sampled**. Re-tokenizing decoded text would have put a gradient on
 that many trajectories the policy never took.
 
+### The first full run: 200 steps at 1e-5
+
+The configuration the pilots chose, run for 200 steps (12,800 episodes, 2.7 h
+of GPU time, step log in `artifacts/rl/run1/steps.jsonl`). Nothing spilled
+(peak reservation 4.45 GiB), nothing was truncated, and 6.7% of turns
+(1345 / 20138) re-encoded differently from what was sampled — so the
+sampled-ids safeguard mattered on every step. **Everything in this table is
+reward on the prompts the policy was trained on.** Train-prompt reward is the
+quantity the optimiser maximises, and it is not the result; the held-out
+comparison below is.
+
+| steps | math | code | qa | multi_tool | no_tool | tool calls / episode | usable groups / step | KL / token |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1–20 | 0.022 | 0.694 | 0.000 | 0.000 | 0.519 | 0.25 | 2.85 | 0.003 |
+| 21–40 | 0.356 | 0.703 | 0.000 | 0.000 | 0.728 | 0.57 | 3.35 | 0.017 |
+| 41–60 | 0.466 | 0.800 | 0.000 | 0.000 | 0.838 | 0.54 | 3.00 | 0.024 |
+| 61–80 | 0.553 | 0.785 | 0.000 | 0.000 | 0.953 | 0.46 | 2.55 | 0.019 |
+| 81–100 | 0.709 | 0.817 | 0.000 | 0.003 | 0.953 | 0.49 | 2.15 | 0.028 |
+| 101–120 | 0.844 | 0.863 | 0.000 | 0.000 | 0.984 | 0.44 | 1.50 | 0.026 |
+| 121–140 | 0.881 | 0.876 | 0.000 | 0.003 | 0.963 | 0.50 | 1.50 | 0.026 |
+| 141–160 | 0.759 | 0.891 | 0.000 | 0.000 | 0.988 | 0.48 | 1.40 | 0.035 |
+| 161–180 | 0.716 | 0.924 | 0.000 | 0.009 | 0.994 | 0.50 | 1.15 | 0.027 |
+| 181–200 | 0.897 | 0.921 | 0.000 | 0.003 | 1.000 | 0.45 | 1.15 | 0.030 |
+
+What this does and does not say:
+
+- **Math went from 0.02 to ~0.9, on prompts it had seen.** The train split has
+  150 math tasks and the run drew roughly 320 math prompts, so each was seen
+  about twice. That is enough exposure for memorising answers to explain part
+  of this, and the step log cannot tell the two apart. Held-out math (60 tasks
+  the run never saw) is the test.
+- **qa and multi_tool stayed at zero, as module 5 predicted before training.**
+  A group in which every rollout scores 0 has no advantage to amplify, so GRPO
+  never received a single gradient from QA; multi_tool's handful of non-zero
+  steps did not move it. The categories the baseline named as the gap are
+  exactly the ones this run could not touch.
+- **The run starves itself.** Usable groups per step fell from ~3 to 1.15,
+  and 21 of 200 steps had no gradient at all, because math, code and
+  no_tool saturated toward all-correct groups — as uninformative as
+  all-wrong ones. More steps at this configuration buy progressively less.
+- **Tool calls per episode roughly doubled (0.25 → ~0.5) and then
+  plateaued.** The step log counts calls per step, not per category, so
+  whether the math gain came through the calculator is not answerable from
+  it; the held-out transcripts will show it.
+- **Invented tool names stayed rare and did not grow.** 59 calls across the
+  run went to tools that do not exist (`calc` 35, `calculation` 12, and
+  eight other one- or two-off names), a flat ~0.004 per episode. The
+  toolbox answers each with an error naming the real tools and executes
+  nothing, so they waste a turn and the call budget, nothing more.
+- **No rollout transcripts were saved by the training loop,** so the
+  reward-hacking audit that module 4 ran on its rollouts cannot be run on
+  these. It belongs on the held-out evaluation's transcripts instead.
+
+**Did it cost anything outside the task suite?** The drift probe was run on
+all 20 checkpoints (`artifacts/rl/drift_run1.json`, 8 minutes):
+
+| checkpoint | KL / token | right → wrong | wrong → right | answers reworded |
+| --- | --- | --- | --- | --- |
+| step 10 | 0.0009 | 0 | 0 | 6 / 55 |
+| step 50 | 0.0028 | 0 | 0 | 13 / 55 |
+| step 100 | 0.0035 | 0 | 0 | 12 / 55 |
+| step 150 | 0.0045 | 0 | 2 | 14 / 55 |
+| step 200 | 0.0042 | 0 | 1 | 17 / 55 |
+
+**No probe answer the base model got right was wrong at any of the 20
+checkpoints.** KL on the base model's own responses levels off near 0.004
+from step ~90 — the level of the self-test's harmless s = 0.002 adapter
+(0.0039, no flips), and a fifth of what the rejected 5e-5 pilot reached in 30
+steps. The training-side KL (~0.03) is measured on the policy's own
+task-suite trajectories, where it is supposed to move; the probe KL is
+measured on general chat, where it should not, and mostly does not.
+
+The rewording is real and has a direction: at step 200, 12 of the 17
+reworded answers are shorter (median 146 → 90 characters). Mostly that
+trims padding, and in places a fabrication — the base model's claim that
+Jupiter was "named after the Roman god of thunder and rain" is gone — but
+"Mercury is the planet closest to the Sun." still becomes "Mercury.", the
+pattern the pilot first showed. Terser, not wrong; noted rather than
+dismissed.
+
 ### Results
 
-**[[RUN TO FILL IN]]** — no full training run has been made yet, so there is
-no reward curve and no baseline-versus-RL comparison. The loop is verified to
-execute end to end: `mean_kl` is exactly `0.00000` on the first step, which is
-what it must be when LoRA's `B` is zero-initialised and the policy and the
-reference are the same function, and rises from there as the weights move.
-That is evidence the gradient is applied, not evidence the policy improves.
+**[[RUN TO FILL IN]]** — a trained policy now exists (above), but the
+headline result is the paired held-out comparison against module 4's
+baseline, and that has not been run. Until it has, nothing in this section
+says training helped: the reward table above is on prompts the policy
+trained on.
 
 ### Reproducing
 
