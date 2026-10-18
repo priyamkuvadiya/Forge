@@ -1,0 +1,310 @@
+{
+  "generated_by": "eval.compare",
+  "split": "heldout",
+  "rollouts_per_task": 8,
+  "caveats": [],
+  "arms": {
+    "baseline": {
+      "policy": {
+        "model": "Qwen/Qwen2.5-0.5B-Instruct",
+        "dtype": "bfloat16",
+        "device": "cuda",
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "batch_size": 16,
+        "seed": 0
+      },
+      "sandbox": {
+        "backend": "windows",
+        "confinement": "appcontainer+job (confines: filesystem, network, resources)",
+        "filesystem_confined": true,
+        "allow_unconfined": false
+      }
+    },
+    "trained": {
+      "policy": {
+        "model": "Qwen/Qwen2.5-0.5B-Instruct",
+        "dtype": "bfloat16",
+        "device": "cuda",
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "batch_size": 16,
+        "seed": 0,
+        "adapter": {
+          "path": "artifacts/rl/run1/adapter-final",
+          "sha256": "19a8197b3dcbffbd7cc5d5544e994d9cf30681550eeb07d8b7c59d06e5ce3192"
+        }
+      },
+      "sandbox": {
+        "backend": "windows",
+        "confinement": "appcontainer+job (confines: filesystem, network, resources)",
+        "filesystem_confined": true,
+        "allow_unconfined": false
+      }
+    }
+  },
+  "macro": {
+    "baseline": 0.18275000000000002,
+    "trained": 0.46743750000000006,
+    "delta": 0.2846875,
+    "delta_ci95": [
+      0.24760416666666668,
+      0.32237499999999997
+    ]
+  },
+  "by_category": {
+    "math": {
+      "tasks": 60,
+      "baseline": {
+        "episodes": 480,
+        "tasks": 60,
+        "mean_reward": 0.01875,
+        "reward_ci95": [
+          0.008333333333333333,
+          0.03125
+        ],
+        "solved_rate": 0.01875,
+        "answer_rate": 0.7708333333333334,
+        "nudge_rate": 0.3333333333333333,
+        "mean_tool_calls": 0.0875,
+        "any_tool_rate": 0.07291666666666667
+      },
+      "trained": {
+        "episodes": 480,
+        "tasks": 60,
+        "mean_reward": 0.8395833333333333,
+        "reward_ci95": [
+          0.7479166666666667,
+          0.91875
+        ],
+        "solved_rate": 0.8395833333333333,
+        "answer_rate": 0.9979166666666667,
+        "nudge_rate": 0.010416666666666666,
+        "mean_tool_calls": 0.9916666666666667,
+        "any_tool_rate": 0.9916666666666667
+      },
+      "delta": 0.8208333333333333,
+      "delta_ci95": [
+        0.7270833333333333,
+        0.9041666666666667
+      ],
+      "tasks_better": 52,
+      "tasks_worse": 2,
+      "tasks_same": 6
+    },
+    "code": {
+      "tasks": 20,
+      "baseline": {
+        "episodes": 160,
+        "tasks": 20,
+        "mean_reward": 0.40750000000000003,
+        "reward_ci95": [
+          0.3053125,
+          0.5172916666666667
+        ],
+        "solved_rate": 0.2625,
+        "answer_rate": 0.88125,
+        "nudge_rate": 0.11875,
+        "mean_tool_calls": 0.0,
+        "any_tool_rate": 0.0
+      },
+      "trained": {
+        "episodes": 160,
+        "tasks": 20,
+        "mean_reward": 0.5642708333333333,
+        "reward_ci95": [
+          0.4572916666666667,
+          0.6695833333333333
+        ],
+        "solved_rate": 0.3375,
+        "answer_rate": 0.99375,
+        "nudge_rate": 0.00625,
+        "mean_tool_calls": 0.0,
+        "any_tool_rate": 0.0
+      },
+      "delta": 0.15677083333333333,
+      "delta_ci95": [
+        0.05864583333333333,
+        0.256875
+      ],
+      "tasks_better": 14,
+      "tasks_worse": 6,
+      "tasks_same": 0
+    },
+    "qa": {
+      "tasks": 33,
+      "baseline": {
+        "episodes": 264,
+        "tasks": 33,
+        "mean_reward": 0.0,
+        "reward_ci95": [
+          0.0,
+          0.0
+        ],
+        "solved_rate": 0.0,
+        "answer_rate": 0.4356060606060606,
+        "nudge_rate": 0.821969696969697,
+        "mean_tool_calls": 0.19696969696969696,
+        "any_tool_rate": 0.19696969696969696
+      },
+      "trained": {
+        "episodes": 264,
+        "tasks": 33,
+        "mean_reward": 0.0,
+        "reward_ci95": [
+          0.0,
+          0.0
+        ],
+        "solved_rate": 0.0,
+        "answer_rate": 0.9166666666666666,
+        "nudge_rate": 0.14772727272727273,
+        "mean_tool_calls": 0.2196969696969697,
+        "any_tool_rate": 0.2196969696969697
+      },
+      "delta": 0.0,
+      "delta_ci95": [
+        0.0,
+        0.0
+      ],
+      "tasks_better": 0,
+      "tasks_worse": 0,
+      "tasks_same": 33
+    },
+    "multi_tool": {
+      "tasks": 15,
+      "baseline": {
+        "episodes": 120,
+        "tasks": 15,
+        "mean_reward": 0.0,
+        "reward_ci95": [
+          0.0,
+          0.0
+        ],
+        "solved_rate": 0.0,
+        "answer_rate": 0.4083333333333333,
+        "nudge_rate": 0.8333333333333334,
+        "mean_tool_calls": 0.2916666666666667,
+        "any_tool_rate": 0.2833333333333333
+      },
+      "trained": {
+        "episodes": 120,
+        "tasks": 15,
+        "mean_reward": 0.008333333333333333,
+        "reward_ci95": [
+          0.0,
+          0.025
+        ],
+        "solved_rate": 0.008333333333333333,
+        "answer_rate": 0.9416666666666667,
+        "nudge_rate": 0.15833333333333333,
+        "mean_tool_calls": 0.575,
+        "any_tool_rate": 0.5666666666666667
+      },
+      "delta": 0.008333333333333333,
+      "delta_ci95": [
+        0.0,
+        0.025
+      ],
+      "tasks_better": 1,
+      "tasks_worse": 0,
+      "tasks_same": 14
+    },
+    "no_tool": {
+      "tasks": 20,
+      "baseline": {
+        "episodes": 160,
+        "tasks": 20,
+        "mean_reward": 0.4875,
+        "reward_ci95": [
+          0.3375,
+          0.6375
+        ],
+        "solved_rate": 0.4875,
+        "answer_rate": 0.70625,
+        "nudge_rate": 0.475,
+        "mean_tool_calls": 0.05,
+        "any_tool_rate": 0.05
+      },
+      "trained": {
+        "episodes": 160,
+        "tasks": 20,
+        "mean_reward": 0.925,
+        "reward_ci95": [
+          0.8125,
+          0.9875
+        ],
+        "solved_rate": 0.925,
+        "answer_rate": 1.0,
+        "nudge_rate": 0.00625,
+        "mean_tool_calls": 0.35,
+        "any_tool_rate": 0.35
+      },
+      "delta": 0.4375,
+      "delta_ci95": [
+        0.30625,
+        0.575
+      ],
+      "tasks_better": 18,
+      "tasks_worse": 0,
+      "tasks_same": 2
+    }
+  },
+  "tool_use": {
+    "baseline": {
+      "episodes": 1184,
+      "calls": 137,
+      "invented_tool_calls": 1,
+      "invented_tool_names": [
+        "calculated_value"
+      ],
+      "failed_calls": 33,
+      "multi_hop_chain_rate": 0.0026041666666666665,
+      "math": {
+        "calculator_rate": 0.07291666666666667,
+        "reward_with_calculator": 0.17142857142857143,
+        "reward_without_calculator": 0.006741573033707865,
+        "episodes_with_calculator": 35
+      }
+    },
+    "trained": {
+      "episodes": 1184,
+      "calls": 659,
+      "invented_tool_calls": 1,
+      "invented_tool_names": [
+        "calculated_time"
+      ],
+      "failed_calls": 49,
+      "multi_hop_chain_rate": 0.0026041666666666665,
+      "math": {
+        "calculator_rate": 0.9916666666666667,
+        "reward_with_calculator": 0.8466386554621849,
+        "reward_without_calculator": 0.0,
+        "episodes_with_calculator": 476
+      }
+    }
+  },
+  "drift": {
+    "matched_by": "sha256",
+    "source": "adapter-step200",
+    "lost": 0,
+    "gained": 1,
+    "by_kind": {
+      "knowledge": {
+        "probes": 30,
+        "base": 28,
+        "adapter": 29
+      },
+      "reasoning": {
+        "probes": 15,
+        "base": 13,
+        "adapter": 13
+      },
+      "instruction": {
+        "probes": 10,
+        "base": 7,
+        "adapter": 7
+      }
+    },
+    "mean_kl_per_token": 0.004189402416696497
+  }
+}

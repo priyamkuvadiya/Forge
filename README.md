@@ -26,7 +26,8 @@ the corresponding module exists and has been run for real.
 
 Modules 1 (from-scratch transformer), 2 (task suite and verifiers), 3 (tools,
 the sandbox, and the tool-call contract) and 4 (the prompted baseline agent)
-are complete — 591 tests, run on Linux and Windows on every push.
+are complete, as are 5 (GRPO training) and 9 (the held-out evaluation) —
+613 tests, run on Linux and Windows on every push.
 
 The control-group numbers now exist: the prompted Qwen2.5-0.5B-Instruct
 baseline scores a **macro-average reward of 0.1908** across the five held-out
@@ -36,18 +37,24 @@ of the 72 QA and multi_tool episodes that used a tool, none made a second
 call, on the two categories that structurally require more than one hop.
 Closing that gap is what module 5's GRPO training has to do.
 
-Module 5 has made its first full training run (200 steps, 2.7 h): reward on
-the training prompts rose from 0.25 to 0.56, driven by math, code and
-no_tool, and a probe of general knowledge and reasoning lost no answers at
-any of its 20 checkpoints. **There is no baseline-versus-RL comparison yet**,
-so nothing here claims the policy improved — train-prompt reward is not a
-held-out result. What bounds what it can claim was measured before it ran:
-at the baseline's skill, **78.2% of training prompts
-(73.6% of held-out) produce no GRPO gradient at all**, because every rollout
-in the group scores identically — and QA and multi_tool produce none
-whatsoever, on either split. Those are the two
-categories the baseline named as the gap. See
-[Module 5](#module-5-grpo-training).
+Module 5 trained the policy with GRPO (200 steps, 2.7 h), and module 9's
+paired held-out comparison is the headline result. **Macro-average reward
+went from 0.183 to 0.467 (+0.285, 95% CI [+0.248, +0.322])**:
+
+- **Math: 0.02 → 0.84**, through the calculator, which the policy now calls
+  in 99% of math episodes instead of 7%.
+- **Code: +0.16, and no_tool: +0.44**, mostly from consistently writing the
+  answer tags.
+- **QA and multi_tool did not move.** At the baseline's skill they produce
+  no GRPO gradient at all, which was measured before training. The policy
+  still never chains tool calls.
+- **Two regressions the reward does not show.** On fictional-corpus QA it
+  now guesses without searching instead of declining, and it calls the
+  calculator on 35% of the no-tool control tasks.
+- **Nothing else measurably lost.** No reward hacking was found, and a probe
+  of general knowledge and reasoning lost no answers.
+
+See [the held-out results](#held-out-results-baseline-vs-trained).
 
 ## Module 1: from-scratch transformer
 
@@ -1258,7 +1265,8 @@ What this does and does not say:
 - **Tool calls per episode roughly doubled (0.25 → ~0.5) and then
   plateaued.** The step log counts calls per step, not per category, so
   whether the math gain came through the calculator is not answerable from
-  it; the held-out transcripts will show it.
+  it. The held-out transcripts answer it: yes (see
+  [the held-out results](#held-out-results-baseline-vs-trained)).
 - **Invented tool names stayed rare and did not grow.** 59 calls across the
   run went to tools that do not exist (`calc` 35, `calculation` 12, and
   eight other one- or two-off names), a flat ~0.004 per episode. The
@@ -1295,13 +1303,102 @@ Jupiter was "named after the Roman god of thunder and rain" is gone — but
 pattern the pilot first showed. Terser, not wrong; noted rather than
 dismissed.
 
-### Results
+### Held-out results: baseline vs trained
 
-**[[RUN TO FILL IN]]** — a trained policy now exists (above), but the
-headline result is the paired held-out comparison against module 4's
-baseline, and that has not been run. Until it has, nothing in this section
-says training helped: the reward table above is on prompts the policy
-trained on.
+**On the 148 held-out tasks, the trained policy's macro-average reward is
+0.467 against the baseline's 0.183: +0.285, 95% CI [+0.248, +0.322].** Three
+categories improved, and the two the baseline named as the gap did not move.
+
+Both arms ran through the same agent loop (`python -m baseline_agent`, the
+trained arm with `--adapter`): same prompt, worked examples, tools, call
+budget, verifiers and sampler (T = 0.7, top-p 0.9, batch 16), 8 rollouts per
+task, 1184 episodes each. They differ only in weights, and `eval.compare`
+refuses to compare two results files that differ in anything else. The
+baseline was re-run at batch 16 for this, because the committed module 4 run
+used batch 32. It scored 0.183 against that run's 0.191, inside the noise.
+Coding was scored in the Windows sandbox for both arms (AppContainer + Job
+Object; filesystem, network and resources confined).
+
+| category | tasks | baseline | trained | paired delta [95% CI] | tasks better / worse / same | tool rate, baseline → trained |
+| --- | --- | --- | --- | --- | --- | --- |
+| math | 60 | 0.019 | **0.840** | **+0.821** [+0.727, +0.904] | 52 / 2 / 6 | 0.07 → 0.99 |
+| code | 20 | 0.408 | **0.564** | **+0.157** [+0.059, +0.257] | 14 / 6 / 0 | 0.00 → 0.00 |
+| qa | 33 | 0.000 | 0.000 | 0.000 | 0 / 0 / 33 | 0.20 → 0.22 |
+| multi_tool | 15 | 0.000 | 0.008 | +0.008 [0.000, +0.025] | 1 / 0 / 14 | 0.28 → 0.57 |
+| no_tool | 20 | 0.487 | **0.925** | **+0.438** [+0.306, +0.575] | 18 / 0 / 2 | 0.05 → 0.35 |
+| **macro** | | **0.183** | **0.467** | **+0.285** [+0.248, +0.322] | | |
+
+The deltas are paired: each task is compared with itself, and the intervals
+resample tasks, not episodes (`baseline_agent.bootstrap_ci`). The macro
+interval is a stratified bootstrap that resamples within each category, so
+it keeps the five-way weighting fixed. Code is the fraction of tests passed,
+over 223 held-out test cases. Its fully-solved rate went from 0.263 to 0.338.
+
+**What the gain is made of.** Part of it is better answers, and part is just
+answering more often in the required format:
+
+| category | answer rate, baseline → trained | reward per answered episode, baseline → trained |
+| --- | --- | --- |
+| math | 0.771 → 0.998 | 0.024 → **0.841** |
+| code | 0.881 → 0.994 | 0.462 → 0.568 |
+| no_tool | 0.706 → 1.000 | 0.690 → 0.925 |
+| qa | 0.436 → 0.917 | 0.000 → 0.000 |
+
+- **Math is a real skill gain, and it comes through the calculator.** The
+  policy called the calculator in 476 of 480 held-out math episodes. All 403
+  solved episodes used it, and 377 of them answered with exactly the number
+  the calculator returned. The other 26 rounded it to the precision asked for
+  (154.807… given as 154.81%). Without the calculator, math scored 0.000. The
+  77 failures are spread over 13 tasks, and every one is a wrong expression,
+  not a wrong number. On work-rate problems it computes 1/19 + 1/3 and
+  forgets to invert it; on percentage change it divides by the wrong base;
+  in one case it drops the cents from a unit price. These are 60 tasks the
+  run never saw, which settles the worry raised above that the training-prompt
+  gain could be memorisation.
+- **Code and no_tool are mostly format compliance.** The baseline needed the
+  one-time nudge ("put your answer in the tags") on 33–83% of episodes,
+  depending on the category. The trained policy needs it on 1–16%. Being
+  consistent about the answer contract is a real improvement, but it is not
+  better reasoning, and much of the code gain is this.
+- **qa and multi_tool did not move**, as module 5 predicted before training:
+  every group scored 0, so neither category ever produced a gradient. The
+  policy still does not chain calls. 1 of 384 qa/multi_tool episodes made a
+  second call in each arm. As before, 2 of the 33 held-out QA chains can be
+  answered with a single search (`qa-heldout-0003`, `qa-heldout-0028`).
+  Neither was solved by either arm.
+
+**Two regressions the reward does not show.**
+
+- **The policy now makes up QA answers instead of declining.** It answers
+  242 of 264 QA episodes (baseline 115), and 198 of those 242 never
+  searched. The corpus is fictional, so those answers cannot be right. A
+  wrong answer and no answer both score 0, so nothing in the reward pushed
+  against confident guessing, and training made "always answer" the default.
+- **It over-calls on the control category.** On no_tool, 35% of episodes now
+  call a tool (baseline 5%). Of the 56 calls, 54 are the calculator, and
+  they cluster on the numeric controls. On "What is 8 plus 12?" it calls
+  `8 + 12`. On "how many kinds of item does the box contain" it calls
+  `len([...])`, which the calculator rejects (32 of the 56 calls failed this
+  way), and then answers correctly anyway. Reward is unaffected: 0.964 when
+  it calls, 0.904 when it does not. But the policy learned "a numeric
+  question means the calculator", not "a tool only when needed". This is the
+  case the no_tool category was built to expose.
+
+**Reward hacking: none found.** Both arms' held-out responses and tool
+arguments were searched for module 4's patterns: `sys.modules`, the harness
+result sentinel, `suite.json`/`corpus.json`, `open(`, `os.`, `subprocess`,
+`__import__`, `builtins`, `ctypes`, `importlib`, `inspect`, `exit()`. There
+were no hits in either arm. Invented tool names stayed at 1 call per 1184
+episodes in each.
+
+**General ability is intact.** This adapter is byte-identical to
+`adapter-step200` (matched by sha256, not name). The drift probe on it lost
+0 of the base model's correct answers out of 55, gained 1, and moved KL by
+0.0042 per token. See [the drift table](#the-first-full-run-200-steps-at-1e-5).
+
+Records: `artifacts/eval/heldout_comparison.json`, `baseline_bs16.json` and
+`trained_run1.json` (the trained file records the adapter's sha256). Rollouts
+and transcripts are gitignored and regenerate from the commands below.
 
 ### Reproducing
 
@@ -1315,6 +1412,15 @@ python -m rl_training.train_grpo --steps 200 --prompts-per-step 8 \
 
 # did it cost anything outside the task suite?
 python -m rl_training.measure_drift --adapter artifacts/rl/run1/adapter-final
+
+# the held-out comparison: both arms through the same loop, then paired
+python -m baseline_agent --split heldout --rollouts 8 --batch-size 16 \
+    --out artifacts/eval/baseline_bs16.json
+python -m baseline_agent --split heldout --rollouts 8 --batch-size 16 \
+    --adapter artifacts/rl/run1/adapter-final --out artifacts/eval/trained_run1.json
+python -m eval.compare --baseline artifacts/eval/baseline_bs16.json \
+    --trained artifacts/eval/trained_run1.json --drift artifacts/rl/drift_run1.json \
+    --out artifacts/eval/heldout_comparison.json
 ```
 
 Every step appends a JSON line to `<out>/steps.jsonl`, flushed and `fsync`'d
