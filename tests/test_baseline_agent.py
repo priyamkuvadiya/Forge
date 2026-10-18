@@ -816,6 +816,17 @@ def test_an_adapter_is_loaded_unmerged_on_the_same_base(fake_backbone, tmp_path)
     assert adapter["sha256"] == hashlib.sha256(b"weights").hexdigest()
 
 
+def test_hfpolicy_still_satisfies_the_policy_protocol():
+    """The fakes above never generate, so check the method is still on the class.
+
+    Inserting the adapter helpers mid-class once left `generate` nested inside
+    a module-level function: every other test passed and the first GPU run
+    died on its first batch.
+    """
+    assert callable(getattr(baseline_agent.HFPolicy, "generate", None))
+    assert callable(getattr(baseline_agent.HFPolicy, "describe", None))
+
+
 def test_the_arm_is_read_off_the_policy_record():
     assert baseline_agent.arm_of(_committed_baseline()["policy"]) == "baseline-prompted"
     assert baseline_agent.arm_of(None) == "baseline-prompted"

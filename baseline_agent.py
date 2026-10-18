@@ -792,28 +792,6 @@ class HFPolicy:
             description["adapter"] = describe_adapter(self.adapter)
         return description
 
-
-def describe_adapter(path: Path) -> dict[str, Any]:
-    """Which adapter produced a run, pinned by content rather than by name.
-
-    The adapter weights are gitignored, so a path alone cannot say later
-    whether `adapter-final` was the file from run1 or something written over it.
-    """
-    import hashlib
-
-    weights = path / "adapter_model.safetensors"
-    digest = hashlib.sha256(weights.read_bytes()).hexdigest() if weights.exists() else None
-    return {"path": path.as_posix(), "sha256": digest}
-
-
-def arm_of(policy: dict[str, Any] | None) -> str:
-    """The arm a results file belongs to, read off the policy that produced it.
-
-    Derived rather than passed, so re-scoring a trained arm's checkpoint
-    without repeating `--adapter` cannot relabel it as the baseline.
-    """
-    return "rl-trained" if policy and policy.get("adapter") else "baseline-prompted"
-
     def generate(
         self,
         conversations: list[list[Message]],
@@ -861,6 +839,28 @@ def arm_of(policy: dict[str, Any] | None) -> str:
                 outputs[index] = self.tokenizer.decode(row, skip_special_tokens=True)
 
         return outputs
+
+
+def describe_adapter(path: Path) -> dict[str, Any]:
+    """Which adapter produced a run, pinned by content rather than by name.
+
+    The adapter weights are gitignored, so a path alone cannot say later
+    whether `adapter-final` was the file from run1 or something written over it.
+    """
+    import hashlib
+
+    weights = path / "adapter_model.safetensors"
+    digest = hashlib.sha256(weights.read_bytes()).hexdigest() if weights.exists() else None
+    return {"path": path.as_posix(), "sha256": digest}
+
+
+def arm_of(policy: dict[str, Any] | None) -> str:
+    """The arm a results file belongs to, read off the policy that produced it.
+
+    Derived rather than passed, so re-scoring a trained arm's checkpoint
+    without repeating `--adapter` cannot relabel it as the baseline.
+    """
+    return "rl-trained" if policy and policy.get("adapter") else "baseline-prompted"
 
 
 def run(
