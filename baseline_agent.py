@@ -726,6 +726,14 @@ class HFPolicy:
     this RTX 4060: fp32 draws 115.8W peak against bf16's 82.6W and runs 12 C
     hotter, and the first sustained fp32 run on this machine tripped a
     Kernel-Power 41 shutdown mid-training. It is also 1.6x faster per token.
+
+    `adapter` is how module 9 runs the trained arm through this exact loop: a
+    LoRA directory saved by `rl_training`, loaded on top of the same base. It is
+    kept unmerged, which is the form the policy was sampled from during
+    training - merging would fold the adapter into bf16 weights and change the
+    numerics of the thing being evaluated. With `adapter=None`, peft is never
+    imported and nothing here differs from the run that produced the committed
+    baseline.
     """
 
     def __init__(
@@ -737,6 +745,7 @@ class HFPolicy:
         top_p: float = 0.9,
         batch_size: int = 16,
         seed: int = 0,
+        adapter: str | Path | None = None,
     ) -> None:
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -747,6 +756,7 @@ class HFPolicy:
         self.top_p = top_p
         self.batch_size = batch_size
         self.seed = seed
+        self.adapter = Path(adapter) if adapter is not None else None
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
 
         # Left padding: with right padding the generated tokens start after a
@@ -759,11 +769,15 @@ class HFPolicy:
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name, dtype=torch.bfloat16
         ).to(self.device)
+        if self.adapter is not None:
+            from peft import PeftModel
+
+            self.model = PeftModel.from_pretrained(self.model, str(self.adapter))
         self.model.eval()
         torch.manual_seed(seed)
 
     def describe(self) -> dict[str, Any]:
-        return {
+        description: dict[str, Any] = {
             "model": self.model_name,
             "dtype": "bfloat16",
             "device": self.device,
@@ -772,6 +786,33 @@ class HFPolicy:
             "batch_size": self.batch_size,
             "seed": self.seed,
         }
+        if self.adapter is not None:
+            # Absent rather than null on the baseline, so a baseline results
+            # file keeps exactly the shape of the committed one.
+            description["adapter"] = describe_adapter(self.adapter)
+        return description
+
+
+def describe_adapter(path: Path) -> dict[str, Any]:
+    """Which adapter produced a run, pinned by content rather than by name.
+
+    The adapter weights are gitignored, so a path alone cannot say later
+    whether `adapter-final` was the file from run1 or something written over it.
+    """
+    import hashlib
+
+    weights = path / "adapter_model.safetensors"
+    digest = hashlib.sha256(weights.read_bytes()).hexdigest() if weights.exists() else None
+    return {"path": path.as_posix(), "sha256": digest}
+
+
+def arm_of(policy: dict[str, Any] | None) -> str:
+    """The arm a results file belongs to, read off the policy that produced it.
+
+    Derived rather than passed, so re-scoring a trained arm's checkpoint
+    without repeating `--adapter` cannot relabel it as the baseline.
+    """
+    return "rl-trained" if policy and policy.get("adapter") else "baseline-prompted"
 
     def generate(
         self,
@@ -976,6 +1017,11 @@ def main(argv: list[str] | None = None) -> int:
             "filesystem (POSIX). The results file records that it was used."
         ),
     )
+    parser.add_argument(
+        "--adapter",
+        type=Path,
+        help="a LoRA adapter directory from rl_training; runs the trained arm",
+    )
     parser.add_argument("--transcripts", type=Path, help="write full transcripts here")
     parser.add_argument("--show-transcripts", action="store_true")
     arguments = parser.parse_args(argv)
@@ -988,6 +1034,14 @@ def main(argv: list[str] | None = None) -> int:
     )
     if not tasks:
         print("no tasks selected", file=sys.stderr)
+        return 1
+
+    if arguments.adapter is not None and not (
+        arguments.adapter / "adapter_model.safetensors"
+    ).exists():
+        # Adapters are gitignored, so a fresh checkout has none. Say so before
+        # the model loads rather than after peft fails inside it.
+        print(f"no adapter weights in {arguments.adapter}", file=sys.stderr)
         return 1
 
     # A coding task cannot be scored without a sandbox, and `verify` raises
@@ -1083,6 +1137,7 @@ def main(argv: list[str] | None = None) -> int:
         top_p=arguments.top_p,
         batch_size=arguments.batch_size,
         seed=arguments.seed,
+        adapter=arguments.adapter,
     )
 
     print(
@@ -1161,7 +1216,7 @@ def write_results(
     confinement = code_exec.confinement() if code_exec.sandbox_available() else None
     payload = {
         "generated_by": "baseline_agent",
-        "arm": "baseline-prompted",
+        "arm": arm_of(policy),
         "split": arguments.split,
         "policy": policy,
         "agent": {

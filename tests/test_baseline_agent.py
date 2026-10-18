@@ -721,3 +721,135 @@ def test_select_tasks_filters_by_category():
         make_task(task_id="q-0", category="qa", ground_truth={"answers": ["x"]})
     ]
     assert [t.task_id for t in select_tasks(tasks, categories=["qa"])] == ["q-0"]
+
+
+# --- the trained arm through the same loop ---------------------------------
+#
+# `HFPolicy` imports torch, transformers and peft lazily, so stand-ins in
+# `sys.modules` are enough to watch what it does with them. That is the point:
+# the claim under test is about which calls are made, not about a model.
+
+
+class _FakeModel:
+    def __init__(self, name):
+        self.name = name
+        self.evaluated = False
+
+    def to(self, device):
+        return self
+
+    def eval(self):
+        self.evaluated = True
+        return self
+
+
+class _FakePeftModel(_FakeModel):
+    loaded: list = []
+
+    @classmethod
+    def from_pretrained(cls, base, path):
+        cls.loaded.append((base, path))
+        wrapped = cls(f"peft({base.name})")
+        wrapped.base = base
+        return wrapped
+
+
+@pytest.fixture
+def fake_backbone(monkeypatch):
+    import sys
+    import types
+
+    torch = types.SimpleNamespace(
+        bfloat16="bf16",
+        manual_seed=lambda seed: None,
+        cuda=types.SimpleNamespace(is_available=lambda: False),
+    )
+    tokenizer = types.SimpleNamespace(pad_token="<pad>", eos_token="<eos>")
+    transformers = types.SimpleNamespace(
+        AutoTokenizer=types.SimpleNamespace(from_pretrained=lambda *a, **k: tokenizer),
+        AutoModelForCausalLM=types.SimpleNamespace(
+            from_pretrained=lambda name, **k: _FakeModel(name)
+        ),
+    )
+    _FakePeftModel.loaded = []
+    monkeypatch.setitem(sys.modules, "torch", torch)
+    monkeypatch.setitem(sys.modules, "transformers", transformers)
+    monkeypatch.setitem(
+        sys.modules, "peft", types.SimpleNamespace(PeftModel=_FakePeftModel)
+    )
+    return _FakePeftModel
+
+
+def _committed_baseline() -> dict:
+    import json
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[1] / "artifacts/baseline/heldout.json"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def test_without_an_adapter_the_policy_is_the_bare_base_model(fake_backbone):
+    """The baseline path is unchanged by `--adapter` existing.
+
+    No peft load, the plain model, and a description with exactly the keys of
+    the policy record in the committed baseline - so a re-run baseline and the
+    original are the same shape of file.
+    """
+    policy = baseline_agent.HFPolicy("base", batch_size=32)
+
+    assert fake_backbone.loaded == []
+    assert type(policy.model) is _FakeModel and policy.model.evaluated
+    assert list(policy.describe()) == list(_committed_baseline()["policy"])
+
+
+def test_an_adapter_is_loaded_unmerged_on_the_same_base(fake_backbone, tmp_path):
+    (tmp_path / "adapter_model.safetensors").write_bytes(b"weights")
+    policy = baseline_agent.HFPolicy("base", adapter=tmp_path)
+
+    [(base, path)] = fake_backbone.loaded
+    assert base.name == "base" and path == str(tmp_path)
+    assert policy.model.base is base and policy.model.evaluated
+
+    import hashlib
+
+    adapter = policy.describe()["adapter"]
+    assert adapter["sha256"] == hashlib.sha256(b"weights").hexdigest()
+
+
+def test_the_arm_is_read_off_the_policy_record():
+    assert baseline_agent.arm_of(_committed_baseline()["policy"]) == "baseline-prompted"
+    assert baseline_agent.arm_of(None) == "baseline-prompted"
+    assert (
+        baseline_agent.arm_of({"model": "m", "adapter": {"path": "a", "sha256": "x"}})
+        == "rl-trained"
+    )
+
+
+def test_a_baseline_results_file_keeps_the_committed_shape(tmp_path):
+    import argparse
+    import json
+
+    committed = _committed_baseline()
+    arguments = argparse.Namespace(
+        split="heldout", max_calls=8, max_nudges=1, max_new_tokens=384, no_few_shot=False
+    )
+    path = baseline_agent.write_results(
+        tmp_path / "r.json", arguments, [], {}, tools=[], policy=committed["policy"]
+    )
+    written = json.loads(path.read_text(encoding="utf-8"))
+
+    assert list(written) == list(committed)
+    assert list(written["agent"]) == list(committed["agent"])
+    assert list(written["sandbox"]) == list(committed["sandbox"])
+    assert written["arm"] == committed["arm"]
+
+
+def test_a_missing_adapter_is_refused_before_the_model_loads(tmp_path, monkeypatch):
+    def explode(*args, **kwargs):
+        raise AssertionError("the model was constructed")
+
+    monkeypatch.setattr(baseline_agent, "HFPolicy", explode)
+    status = baseline_agent.main(
+        ["--categories", "math", "--limit", "1", "--adapter", str(tmp_path)]
+    )
+    assert status == 1

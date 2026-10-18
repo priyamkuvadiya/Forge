@@ -61,7 +61,7 @@ jobs:
         # most likely to be quietly wrong, and neither needs a tensor. If a
         # torch import ever creeps into them, this job is what notices. The
         # parts that do need torch skip here and run in the job below.
-        run: python -m pytest task_suite tools tests rl_training -q
+        run: python -m pytest task_suite tools tests rl_training eval -q
 
   transformer:
     name: transformer_scratch + GRPO objective (torch, CPU)
