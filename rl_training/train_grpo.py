@@ -153,6 +153,10 @@ class StepReport:
     spilled: bool
     tool_calls: dict[str, int] = field(default_factory=dict)
     penalized: int = 0
+    # Declining scores 0, above the penalty, so a falling `penalized` count can
+    # mean the policy learned to search *or* learned to stop answering. Only
+    # this count tells the two apart.
+    answered: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return {key: getattr(self, key) for key in self.__dataclass_fields__}
@@ -409,6 +413,7 @@ def train_step(
         mean_reward=round(sum(r.reward for r in results) / len(results), 4),
         per_category_reward=_per_category_reward(results),
         penalized=penalized,
+        answered=sum(1 for result in results if result.answer is not None),
         tool_calls=_tool_call_counts(results),
         seconds_rollout=round(seconds_rollout, 2),
         truncated=sum(1 for t, _ in transcripts if t.is_truncated),
