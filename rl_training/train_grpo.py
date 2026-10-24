@@ -152,6 +152,7 @@ class StepReport:
     reserved_gib: float
     spilled: bool
     tool_calls: dict[str, int] = field(default_factory=dict)
+    penalized: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return {key: getattr(self, key) for key in self.__dataclass_fields__}
@@ -165,6 +166,50 @@ def _per_category_reward(results) -> dict[str, float]:
         category: round(sum(values) / len(values), 4)
         for category, values in sorted(sums.items())
     }
+
+
+# Categories whose answers live only in the fictional corpus, so an answer given
+# without searching it is a guess by construction. run1 left these at a flat 0
+# whether the policy searched or not, which is why qa never produced a usable
+# group and why the trained policy learned to answer qa without looking.
+SEARCH_REQUIRED = frozenset({"qa", "multi_tool"})
+
+
+def _searched(result) -> bool:
+    # Only a search that *succeeded* counts. A malformed or empty call would
+    # otherwise be the cheapest way to dodge the penalty without retrieving
+    # anything.
+    return any(call["tool"] == "search" and call["ok"] for call in result.tool_calls)
+
+
+def training_rewards(results, no_search_penalty: float = 0.0) -> list[float]:
+    """The reward the advantages are computed from, which may differ from verify().
+
+    With a penalty of 0 this is exactly `[r.reward for r in results]`, run1's
+    objective. Otherwise a qa or multi_tool episode that gave an answer, scored
+    0, and never ran a successful search is scored `-no_search_penalty`.
+
+    Three things are deliberately left alone: declining to answer (that is not
+    the confabulation this targets), a correct answer reached without a search
+    (it keeps its reward rather than being punished for luck), and every other
+    category. Evaluation never sees this - module 9 scores with plain verify(),
+    so held-out numbers stay comparable with run1's.
+    """
+    if no_search_penalty < 0:
+        raise ValueError(f"penalty is a magnitude, got {no_search_penalty}")
+    rewards = []
+    for result in results:
+        reward = result.reward
+        if (
+            no_search_penalty
+            and result.category in SEARCH_REQUIRED
+            and result.answer is not None
+            and reward == 0.0
+            and not _searched(result)
+        ):
+            reward = -no_search_penalty
+        rewards.append(reward)
+    return rewards
 
 
 def _tool_call_counts(results) -> dict[str, int]:
@@ -235,6 +280,7 @@ def train_step(
     clip_epsilon: float = 0.2,
     keep_degenerate: bool = False,
     normalize_by_std: bool = True,
+    no_search_penalty: float = 0.0,
     tool_workers: int = 8,
     progress: bool = False,
 ) -> StepReport:
@@ -283,7 +329,8 @@ def train_step(
         workers=tool_workers,
         allow_unconfined=allow_unconfined,
     )
-    rewards = [result.reward for result in results]
+    rewards = training_rewards(results, no_search_penalty)
+    penalized = sum(1 for result, reward in zip(results, rewards) if reward != result.reward)
     advantages, stats = group_advantages(
         rewards,
         [f"{episode.task.task_id}" for episode in episodes],
@@ -357,8 +404,11 @@ def train_step(
         dropped_degenerate=len(every) - len(transcripts),
         groups=stats.n_groups,
         degenerate_groups=stats.n_degenerate,
-        mean_reward=round(stats.mean_reward, 4),
+        # verify() reward, not the training reward, so the curve stays
+        # comparable with run1's. The penalty shows up only in `penalized`.
+        mean_reward=round(sum(r.reward for r in results) / len(results), 4),
         per_category_reward=_per_category_reward(results),
+        penalized=penalized,
         tool_calls=_tool_call_counts(results),
         seconds_rollout=round(seconds_rollout, 2),
         truncated=sum(1 for t, _ in transcripts if t.is_truncated),
@@ -509,6 +559,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--categories", nargs="+", choices=CATEGORIES)
     parser.add_argument("--keep-degenerate", action="store_true")
     parser.add_argument("--no-std-normalization", action="store_true")
+    parser.add_argument(
+        "--no-search-penalty", type=float, default=0.0,
+        help="training reward for a wrong qa/multi_tool answer given without a "
+        "successful search is minus this (run2: 0.25). Eval is unaffected.",
+    )
     parser.add_argument("--checkpoint-every", type=int, default=10)
     parser.add_argument("--out", type=Path, default=Path("artifacts/rl/run"))
     parser.add_argument("--resume", type=Path)
@@ -622,6 +677,7 @@ def main(argv: list[str] | None = None) -> int:
                 clip_epsilon=arguments.clip_epsilon,
                 keep_degenerate=arguments.keep_degenerate,
                 normalize_by_std=not arguments.no_std_normalization,
+                no_search_penalty=arguments.no_search_penalty,
                 progress=arguments.progress,
             )
 
