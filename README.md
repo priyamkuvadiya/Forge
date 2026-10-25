@@ -27,7 +27,7 @@ the corresponding module exists and has been run for real.
 Modules 1 (from-scratch transformer), 2 (task suite and verifiers), 3 (tools,
 the sandbox, and the tool-call contract) and 4 (the prompted baseline agent)
 are complete, as are 5 (GRPO training) and 9 (the held-out evaluation) —
-613 tests, run on Linux and Windows on every push.
+627 tests, run on Linux and Windows on every push.
 
 The control-group numbers now exist: the prompted Qwen2.5-0.5B-Instruct
 baseline scores a **macro-average reward of 0.1908** across the five held-out
@@ -55,6 +55,14 @@ went from 0.183 to 0.467 (+0.285, 95% CI [+0.248, +0.322])**:
   of general knowledge and reasoning lost no answers.
 
 See [the held-out results](#held-out-results-baseline-vs-trained).
+
+A second run added one change to the *training* reward: on qa and
+multi_tool, answering without searching scores −0.25 instead of 0. **Held
+out, it reaches 0.503 (+0.320 [+0.277, +0.364] over the baseline, +0.036
+[+0.006, +0.068] over run 1).** It removed the QA confabulation: answers
+given without a search fell from 198 to 0. QA is still 0, because the policy
+searches once and never chains, and multi_tool stopped using the calculator.
+See [the second run](#the-second-run-a-penalty-for-answering-without-searching).
 
 ## Module 1: from-scratch transformer
 
@@ -314,6 +322,12 @@ trace — so module 9 can report "the RL policy called a tool on N% of tasks
 that needed none" alongside the reward. Folding a penalty into the reward
 would be training against a proxy invented here rather than against a
 verifiable outcome, which is the thing this whole project avoids.
+
+*Revised after module 5's first run.* The second training run does fold a
+penalty into the training reward, on qa and multi_tool only: answering
+without any successful search scores −0.25. Held-out scoring is unchanged.
+No_tool is still unpenalised. The reasons are in
+[the second run](#the-second-run-a-penalty-for-answering-without-searching).
 
 ### Running untrusted code, and not being lied to by it
 
@@ -1400,6 +1414,137 @@ Records: `artifacts/eval/heldout_comparison.json`, `baseline_bs16.json` and
 `trained_run1.json` (the trained file records the adapter's sha256). Rollouts
 and transcripts are gitignored and regenerate from the commands below.
 
+### The second run: a penalty for answering without searching
+
+Run 1 left qa where it found it, and made it worse in a way the reward could
+not see: the policy learned to answer fictional-corpus questions without
+searching. Both problems have one cause. Every qa group scored 0 for every
+rollout, so the category never produced a gradient, and a confident guess
+scored the same as declining.
+
+**Run 2 changes the training reward on qa and multi_tool only, and this
+reverses a decision recorded under module 2** ("the reward does not
+penalise a tool call; scoring is correctness alone"). An episode in those two
+categories that gave an answer, scored 0, and ran no *successful* search now
+gets −0.25 instead of 0 (`train_grpo --no-search-penalty 0.25`). Correct
+answers, declined answers, and the other three categories are unchanged.
+A failed search call does not count, so a broken call cannot be used to get
+out of the penalty for free. Held-out evaluation still uses the unchanged
+`verify()`, so run 2 is compared with run 1 and the baseline on the same
+scale. The reason for the reversal is specific: on these two categories
+"answered without looking anything up" is checkable and is always wrong (the
+corpus is fictional), so it is not a proxy in the sense the module 2 note
+warned against. The note's general stance still holds for no_tool, which
+is deliberately left unpenalised (see below).
+
+Everything else matches run 1: same seed, configuration, prompt stream and
+200 steps. The run took 3.06 h. Nothing spilled (peak reservation 4.80 GiB),
+nothing was truncated, and 5.0% of turns (1141 / 22726) re-encoded differently.
+
+| steps | math | code | qa | multi_tool | no_tool | searches / step | penalised / step | answered / 64 | usable groups / step | KL / token |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1–20 | 0.01 | 0.68 | 0.000 | 0.000 | 0.50 | 7.1 | 7.2 | 39.8 | 5.8 | 0.004 |
+| 21–40 | 0.14 | 0.71 | 0.000 | 0.000 | 0.61 | 18.1 | 3.0 | 37.9 | 4.5 | 0.016 |
+| 41–60 | 0.37 | 0.84 | 0.000 | 0.003 | 0.67 | 28.9 | 0.3 | 43.2 | 3.5 | 0.024 |
+| 61–80 | 0.47 | 0.82 | 0.000 | 0.047 | 0.87 | 26.0 | 1.1 | 53.9 | 3.1 | 0.030 |
+| 81–100 | 0.56 | 0.81 | 0.000 | 0.041 | 0.87 | 30.2 | 0.2 | 58.0 | 2.8 | 0.035 |
+| 101–120 | 0.75 | 0.86 | 0.000 | 0.081 | 0.97 | 26.1 | 0.7 | 59.7 | 2.4 | 0.031 |
+| 121–140 | 0.90 | 0.88 | 0.000 | 0.100 | 0.94 | 29.5 | 0.0 | 57.3 | 1.8 | 0.032 |
+| 141–160 | 0.76 | 0.89 | 0.000 | 0.025 | 0.98 | 28.4 | 0.2 | 58.5 | 1.7 | 0.031 |
+| 161–180 | 0.73 | 0.91 | 0.000 | 0.113 | 0.98 | 28.4 | 0.2 | 58.2 | 1.8 | 0.041 |
+| 181–200 | 0.95 | 0.95 | 0.000 | 0.048 | 0.98 | 27.8 | 0.1 | 58.6 | 1.6 | 0.039 |
+
+(Train-prompt reward again, not the result. "Penalised" counts episodes
+that received −0.25; the reward columns are `verify()`'s score without the
+penalty, so they compare directly with run 1.)
+
+The open question going in was whether the policy would escape the penalty
+by *searching* or by *declining*, since 0 beats −0.25 either way. The
+10-step trial could not tell: the penalised count fell while search calls
+stayed flat. The full run settles it. Searches went from 7 to ~28 per step,
+the number of answered episodes rose, and the penalty fired almost never
+after step 40 (254 times in the run, most of them in the first 30 steps). The
+policy learned to search. The usable-group count started at 5.8 per step
+(run 1: 2.85), but fell back to run 1's level once the penalty stopped
+firing, because qa groups were then all-zero again.
+
+**Held out, run 2 against the baseline: macro 0.183 → 0.503, +0.320, 95% CI
+[+0.277, +0.364].** Against run 1, paired in the same way (run 1 as the
+reference arm):
+
+| category | baseline | run 1 | run 2 | run 2 − run 1 [95% CI] | tool rate, run 1 → run 2 |
+| --- | --- | --- | --- | --- | --- |
+| math | 0.019 | 0.840 | 0.904 | +0.065 [−0.010, +0.144] | 0.99 → 1.00 |
+| code | 0.408 | 0.564 | 0.634 | +0.070 [+0.001, +0.148] | 0.00 → 0.00 |
+| qa | 0.000 | 0.000 | 0.000 | 0.000 | 0.22 → 1.00 |
+| multi_tool | 0.000 | 0.008 | 0.058 | +0.050 [−0.017, +0.158] | 0.57 → 1.00 |
+| no_tool | 0.487 | 0.925 | 0.919 | −0.006 [−0.069, +0.044] | 0.35 → 0.31 |
+| **macro** | **0.183** | **0.467** | **0.503** | **+0.036** [+0.006, +0.068] | |
+
+`eval.compare` refuses two trained arms by design, so the run 1 → run 2
+column was computed with its functions and run 1 relabelled as the reference
+in memory. Every other check (same prompt, sampler, tasks and sandbox) still
+applied. Records: `artifacts/eval/trained_run2.json`,
+`heldout_comparison_run2.json` (against the baseline) and
+`artifacts/rl/drift_run2.json`.
+
+What run 2 changed, and what it did not:
+
+- **The confabulation is gone; QA is still 0.** Every one of the 264
+  held-out qa episodes searched (run 1: 56). Answers given without a search
+  fell from 198 to **0**. The policy also declines more often (answer rate
+  0.917 → 0.739). But each episode searches once, for the entity named in the
+  question, and then answers from that first hop. Chaining is unchanged: 1
+  qa and 1 multi_tool episode made a second search call, out of 384. So
+  this is anti-confabulation, not multi-hop retrieval, and the penalty was
+  never going to produce multi-hop retrieval. It rewards one search, not
+  the right number of them.
+- **multi_tool moved off zero, but the calculator dropped out of it.** 7 of
+  120 held-out episodes were solved, on 2 tasks (6 of 8 rollouts on
+  `multi-heldout-0014`). In run 1, 63 of 120 multi_tool episodes called the
+  calculator; in run 2, **0** did. The penalty asks for a search and nothing
+  else, so the policy searches and then does the arithmetic in its head. On
+  `multi-heldout-0014` it fetched both documents with one query ("Hollow
+  Cape Station and Ilsen Fjord Station") and added mentally. That is
+  legitimate, and the multi_tool generator guarantees the answer does not
+  appear verbatim in a document. But the category was built to teach
+  choosing between two tools, and run 2 taught one. The small gain should be
+  read with its interval, which includes 0.
+- **Math and code edged up.** Code's interval just excludes 0, math's does
+  not. Both are plausibly seed noise between two 200-step runs, not an effect
+  of the penalty, which never touches those categories.
+- **no_tool over-calling changed shape, not size.** The tool rate on the
+  control went 35% → 31%. But calculator calls fell 54 → 12 and searches rose
+  2 → 37: on counting controls it searches the item list it was given
+  ("tickets, keys, brushes"), and a few times it sends `7 * 12` to search.
+  The names in no_tool are not in the corpus, so those searches return
+  nothing. Reward is unaffected (0.939 when it calls, 0.910 when it does not).
+  The search habit learned on qa carried over to the control. No_tool was
+  left unpenalised on purpose, because a per-call cost risked the math gain,
+  and that is still the trade-off.
+
+**Reward hacking: none found.** The penalty created a new incentive to
+check: an empty or junk search issued only to avoid −0.25. Of 423 held-out
+search calls, none failed. One was a single word ("Instrument", on
+`qa-heldout-0028`, a real attribute in its chain), and 262 of 265 qa queries
+share at least half their words with the question. The three that do not
+are paraphrases of the question ("Port where the ship sailed from"). The
+module 4 code patterns found nothing in either run 2's responses or its tool
+arguments. Invented tool names: 0 held-out calls, and 13 in training (`calc`
+7, `calculation` 3, `calculus` 3), against run 1's 59.
+
+**Drift: no probe answer lost at any of the 20 checkpoints**, and the probe KL
+ended *lower* than run 1's (0.0027 vs 0.0042 per token at step 200), even
+though the training-side KL ran higher (~0.04 vs ~0.03).
+
+| checkpoint | KL / token | right → wrong | wrong → right | answers reworded (shorter) |
+| --- | --- | --- | --- | --- |
+| step 10 | 0.0008 | 0 | 0 | 3 / 55 (3) |
+| step 50 | 0.0011 | 0 | 0 | 10 / 55 (6) |
+| step 100 | 0.0021 | 0 | 0 | 12 / 55 (6) |
+| step 150 | 0.0020 | 0 | 1 | 15 / 55 (11) |
+| step 200 | 0.0027 | 0 | 0 | 15 / 55 (9) |
+
 ### Reproducing
 
 ```bash
@@ -1421,6 +1566,18 @@ python -m baseline_agent --split heldout --rollouts 8 --batch-size 16 \
 python -m eval.compare --baseline artifacts/eval/baseline_bs16.json \
     --trained artifacts/eval/trained_run1.json --drift artifacts/rl/drift_run1.json \
     --out artifacts/eval/heldout_comparison.json
+
+# run 2: the same, plus the no-search penalty on qa and multi_tool
+python -m rl_training.train_grpo --steps 200 --prompts-per-step 8 \
+    --group-size 8 --batch-size 16 --learning-rate 1e-5 \
+    --no-search-penalty 0.25 --out artifacts/rl/run2
+python -m rl_training.measure_drift --adapter artifacts/rl/run2/adapter-step10 \
+    ... --adapter artifacts/rl/run2/adapter-step200 --out artifacts/rl/drift_run2.json
+python -m baseline_agent --split heldout --rollouts 8 --batch-size 16 \
+    --adapter artifacts/rl/run2/adapter-final --out artifacts/eval/trained_run2.json
+python -m eval.compare --baseline artifacts/eval/baseline_bs16.json \
+    --trained artifacts/eval/trained_run2.json --drift artifacts/rl/drift_run2.json \
+    --out artifacts/eval/heldout_comparison_run2.json
 ```
 
 Every step appends a JSON line to `<out>/steps.jsonl`, flushed and `fsync`'d
