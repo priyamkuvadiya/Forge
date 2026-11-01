@@ -17,3 +17,9 @@ accelerate
 # also gives the KL reference policy for free - `disable_adapter()` turns the
 # resident weights back into the base model, so there is no second copy.
 peft
+
+# Module 6. The backend serves the policy's next turn and nothing else; tool
+# execution belongs to the Go middle layer. fastapi pulls in opentelemetry-api,
+# which stays inert unless a tracer is configured.
+fastapi
+uvicorn

@@ -267,6 +267,18 @@ def build_system_prompt(registry: ToolRegistry) -> str:
     )
 
 
+def prompt_prefix(registry: ToolRegistry, *, few_shot: bool = True) -> list[Message]:
+    """Everything in front of the task: the system prompt and worked examples.
+
+    Shared with the serving backend, so the served policies see the prefix
+    they were evaluated under.
+    """
+    prefix: list[Message] = [{"role": "system", "content": build_system_prompt(registry)}]
+    if few_shot:
+        prefix += few_shot_messages(registry)
+    return prefix
+
+
 class Policy(Protocol):
     """What the agent loop needs from a model, and nothing more.
 
@@ -360,19 +372,32 @@ def _truncate(text: str, limit: int = MAX_TOOL_OUTPUT_CHARS) -> str:
     return text[:limit] + f"\n... [truncated, {len(text) - limit} more characters]"
 
 
-def _step(episode: Episode, text: str, max_nudges: int) -> ToolCall | None:
-    """Fold one completion into an episode. Returns a call to run, if any.
+@dataclass(frozen=True)
+class Completion:
+    """What one completion amounts to, before any episode is touched.
 
-    The call is returned rather than executed so that a whole batch's tool
-    calls can be run at once: the sandbox is 285ms per invocation and
-    thread-safe, so running sixteen of them one after another would dominate a
-    step that the GPU finished in under a second.
+    `kind` is one of "empty", "tool_call", "answer" or "no_answer". `visible`
+    is the text that goes into the transcript, which for a tool call is cut at
+    the end of the call.
+    """
+
+    kind: str
+    visible: str
+    call: ToolCall | None = None
+    answer: str | None = None
+
+
+def read_completion(text: str) -> Completion:
+    """Classify one completion. The agent loop and the serving backend share it.
+
+    Pulled out of `_step` so that module 6 interprets a served turn with the
+    exact rules the evaluated policy was scored under, rather than with a
+    second copy of them that could drift.
     """
     text = text.strip()
     if not text:
         # An immediate EOS. Nothing to append, nothing to nudge towards.
-        episode.finish_reason = "empty"
-        return None
+        return Completion(kind="empty", visible="")
 
     spans = find_tool_calls(text)
     answer_at = _ANSWER_OPEN.search(text)
@@ -381,15 +406,34 @@ def _step(episode: Episode, text: str, max_nudges: int) -> ToolCall | None:
     if spans and (answer_start is None or spans[0].start < answer_start):
         # Cut at the end of the call. See `ToolCallSpan` - anything after it is
         # the model imagining the result it is about to be given.
-        visible = text[: spans[0].end]
-        episode.assistant_turns.append(visible)
-        episode.messages.append({"role": "assistant", "content": visible})
-        return spans[0].call
+        return Completion(kind="tool_call", visible=text[: spans[0].end], call=spans[0].call)
 
-    episode.assistant_turns.append(text)
-    episode.messages.append({"role": "assistant", "content": text})
+    answer = extract_answer(text)
+    if answer is not None:
+        return Completion(kind="answer", visible=text, answer=answer)
+    return Completion(kind="no_answer", visible=text)
 
-    if extract_answer(text) is not None:
+
+def _step(episode: Episode, text: str, max_nudges: int) -> ToolCall | None:
+    """Fold one completion into an episode. Returns a call to run, if any.
+
+    The call is returned rather than executed so that a whole batch's tool
+    calls can be run at once: the sandbox is 285ms per invocation and
+    thread-safe, so running sixteen of them one after another would dominate a
+    step that the GPU finished in under a second.
+    """
+    completion = read_completion(text)
+    if completion.kind == "empty":
+        episode.finish_reason = "empty"
+        return None
+
+    episode.assistant_turns.append(completion.visible)
+    episode.messages.append({"role": "assistant", "content": completion.visible})
+
+    if completion.kind == "tool_call":
+        return completion.call
+
+    if completion.kind == "answer":
         episode.finish_reason = "answer"
         return None
 
@@ -418,9 +462,7 @@ def make_episodes(
     record of exactly one attempt, and a shared budget across rollouts would
     make the first one starve the rest.
     """
-    prefix: list[Message] = [{"role": "system", "content": build_system_prompt(registry)}]
-    if few_shot:
-        prefix += few_shot_messages(registry)
+    prefix = prompt_prefix(registry, few_shot=few_shot)
 
     return [
         Episode(

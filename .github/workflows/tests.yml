@@ -41,8 +41,9 @@ jobs:
       - name: Install test dependencies
         # Deliberately not requirements.txt: it pins a CUDA torch build that
         # no runner can use, and nothing under task_suite/ or tools/ imports
-        # torch at all.
-        run: python -m pip install --upgrade pip pytest
+        # torch at all. fastapi and httpx are for `backend`, whose tests drive
+        # the HTTP app against a scripted engine with no model behind it.
+        run: python -m pip install --upgrade pip pytest fastapi httpx
 
       - name: Report the sandbox backend and what it confines
         # Also does the one-time setup, which on Windows is a ~90s icacls pass
@@ -61,7 +62,7 @@ jobs:
         # most likely to be quietly wrong, and neither needs a tensor. If a
         # torch import ever creeps into them, this job is what notices. The
         # parts that do need torch skip here and run in the job below.
-        run: python -m pytest task_suite tools tests rl_training eval -q
+        run: python -m pytest task_suite tools tests rl_training eval backend -q
 
   transformer:
     name: transformer_scratch + GRPO objective (torch, CPU)

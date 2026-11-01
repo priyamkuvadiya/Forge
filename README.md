@@ -26,8 +26,9 @@ the corresponding module exists and has been run for real.
 
 Modules 1 (from-scratch transformer), 2 (task suite and verifiers), 3 (tools,
 the sandbox, and the tool-call contract) and 4 (the prompted baseline agent)
-are complete, as are 5 (GRPO training) and 9 (the held-out evaluation) —
-627 tests, run on Linux and Windows on every push.
+are complete, as are 5 (GRPO training), 9 (the held-out evaluation) and 6
+(the backend that serves the baseline and trained policies) — 644 tests, run
+on Linux and Windows on every push.
 
 The control-group numbers now exist: the prompted Qwen2.5-0.5B-Instruct
 baseline scores a **macro-average reward of 0.1908** across the five held-out
@@ -1587,3 +1588,65 @@ surviving evidence of the run. Adapters are checkpointed every
 `--checkpoint-every` steps with a temp-directory-then-replace write, and are
 35 MB rather than 2 GB because only the adapter is saved. Neither the adapters
 nor the smoke runs are committed; `steps.jsonl` is the record.
+
+## Module 6: the backend
+
+A small FastAPI service that runs a policy and returns its next turn. It
+serves the prompted baseline and every trained adapter side by side, so the
+demo can show the same conversation under each one rather than only the
+final version.
+
+It runs **no tools**. Sessions, tool execution and deciding when an episode
+ends belong to the Go middle layer (module 7). The backend owns only what
+would quietly change the policy being served if a caller got it wrong:
+
+- **The prompt prefix.** The system prompt and the worked examples are added
+  by the same `prompt_prefix` function the evaluation used. The caller sends
+  only the task and what followed it. A test checks that the conversation
+  reaching the model is exactly the one `make_episodes` built during
+  evaluation.
+- **Reading the reply.** `read_completion` was taken out of the agent loop so
+  that the loop and the server share it. A tool call is cut at its closing
+  tag, as during evaluation, and anything the model wrote after the call (an
+  imagined result, an answer based on it) is discarded.
+- **Generation settings.** Temperature 0.7, top-p 0.9 and the 384-token cap
+  are the evaluated values, and a request cannot change them.
+
+### One base model, several policies
+
+Every trained arm is the same 0.5B base model plus a LoRA adapter of a few
+megabytes. The server loads the base model once and attaches each adapter by
+name. A request picks one with `set_adapter`, and the baseline runs with the
+adapters switched off. The adapters stay unmerged, as they were when
+evaluated. A lock serialises requests, because the active adapter is state
+shared by the whole model.
+
+That this serves the evaluated functions is checked, not assumed:
+`backend.check_parity` runs the same held-out prompts with no sampling
+randomness through the server and through the evaluation's own
+`HFPolicy(adapter=...)`, one policy at a time. On 10 held-out prompts (2 per
+category), all 10 served outputs were character-for-character identical to
+the evaluation path's, for the baseline, run1 and run2. The three policies'
+outputs also differed from one another, so the check is not passing because
+switching does nothing.
+
+### API
+
+| route | what it returns |
+| --- | --- |
+| `GET /health` | `{"status": "ok"}` |
+| `GET /policies` | the base model, sampling settings, and each policy with its adapter's sha256 |
+| `GET /contract` | what the caller's loop must match: tool names, call budget, nudge text and limit, tool-output cap |
+| `POST /turn` | `{policy, messages}` → `kind` (`tool_call`, `answer`, `no_answer`, `empty`), the cut `text`, the parsed `tool_call` or `answer`, and the `raw` generation |
+
+A conversation must open and close with a user message, and has no system
+role; anything else is refused with 422 before it reaches the model.
+
+### Reproducing
+
+```bash
+python -m backend --adapter run1=artifacts/rl/run1/adapter-final \
+                  --adapter run2=artifacts/rl/run2/adapter-final
+python -m backend.check_parity --adapter run1=artifacts/rl/run1/adapter-final \
+                               --adapter run2=artifacts/rl/run2/adapter-final
+```
