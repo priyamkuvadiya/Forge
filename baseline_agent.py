@@ -54,7 +54,7 @@ from task_suite import Task, extract_answer, verify
 from task_suite.protocol import ANSWER_INSTRUCTIONS
 from task_suite.registry import load_suite
 from task_suite.schema import CATEGORIES
-from tools import DEFAULT_MAX_CALLS, ToolCall, ToolRegistry, ToolSession, build_registry
+from tools import DEFAULT_MAX_CALLS, ToolCall, ToolRegistry, ToolResult, ToolSession, build_registry
 
 # Module scope, not inside `main`: `write_results` records the sandbox
 # confinement beside every coding score, so this is needed on the
@@ -372,6 +372,11 @@ def _truncate(text: str, limit: int = MAX_TOOL_OUTPUT_CHARS) -> str:
     return text[:limit] + f"\n... [truncated, {len(text) - limit} more characters]"
 
 
+def render_for_policy(result: ToolResult) -> str:
+    """The user message a tool result becomes. The loop and `tool_worker` share it."""
+    return _truncate(result.render())
+
+
 @dataclass(frozen=True)
 class Completion:
     """What one completion amounts to, before any episode is touched.
@@ -544,7 +549,7 @@ def run_episodes(
                 )
             for (episode, _), result in zip(wanted, results):
                 episode.messages.append(
-                    {"role": "user", "content": _truncate(result.render())}
+                    {"role": "user", "content": render_for_policy(result)}
                 )
     else:
         for episode in episodes:
