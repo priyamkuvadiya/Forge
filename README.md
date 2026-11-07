@@ -26,11 +26,10 @@ the corresponding module exists and has been run for real.
 
 Modules 1 (from-scratch transformer), 2 (task suite and verifiers), 3 (tools,
 the sandbox, and the tool-call contract) and 4 (the prompted baseline agent)
-are complete, as are 5 (GRPO training), 9 (the held-out evaluation) and 6
-(the backend that serves the baseline and trained policies). Module 7 (the Go
-middle layer) is in progress: sessions, routing and tool execution work, and
-persistence does not exist yet. The Python and Go tests run on Linux and Windows
-on every push.
+are complete, as are 5 (GRPO training), 9 (the held-out evaluation), 6 (the
+backend that serves the baseline and trained policies) and 7 (the Go middle layer:
+sessions, routing, tool execution and SQLite persistence). The frontend (module 8)
+does not exist yet. The Python and Go tests run on Linux and Windows on every push.
 
 The control-group numbers now exist: the prompted Qwen2.5-0.5B-Instruct
 baseline scores a **macro-average reward of 0.1908** across the five held-out
@@ -1653,12 +1652,12 @@ python -m backend.check_parity --adapter run1=artifacts/rl/run1/adapter-final \
                                --adapter run2=artifacts/rl/run2/adapter-final
 ```
 
-## Module 7: the middle layer (in progress)
+## Module 7: the middle layer
 
-A Go service between the frontend and the backend, using only the standard
-library. It keeps sessions, routes requests to the backend, runs the tools and
-decides when an episode is over. **Sessions are in memory for now**, so a restart
-loses them. SQLite persistence is the next step and is not built.
+A Go service between the frontend and the backend. It keeps sessions in SQLite,
+routes requests to the backend, runs the tools and decides when an episode is over.
+Its one dependency beyond the standard library is the SQLite driver,
+`modernc.org/sqlite`, chosen because it needs no cgo.
 
 ### The tools stay in Python
 
@@ -1724,6 +1723,8 @@ well a policy behaves in that situation.
 | `POST /sessions` | `{policy}` → a new session. The policy is fixed for the session's life, so comparing policies means opening one session each |
 | `GET /sessions/{id}` | one session with its episodes |
 | `POST /sessions/{id}/messages` | `{content}` → the finished episode as JSON, or one server-sent event per step with `Accept: text/event-stream` |
+| `GET /runs` | every imported training run, without its records |
+| `GET /runs/{name}` | one training run: its config and every step record |
 
 Events are whole steps, not tokens: `episode_started`, `turn`, `tool_result`,
 `nudge`, `episode_finished`. A client disconnecting cancels the episode, though a
@@ -1742,12 +1743,43 @@ number was chosen, not measured for this purpose. It is about the size one
 full-budget episode can already reach under evaluation, and it exists because going
 past the card's memory here slows generation down instead of raising an error.
 
+### Persistence
+
+Everything lives in one SQLite file, `middle-layer/forge.db` by default, with no
+database server and no outside account. Conversations and tool traces survive a
+restart, and a follow-up message after one shows the policy the same history it
+would have seen without it.
+
+An episode's row is written when it starts, so a crash cannot lose the message that
+caused it. A row with no recorded end and no live episode behind it reads back as
+`interrupted`, a system failure like `tool_error`: it stays visible and is left out
+of what the policy sees next. Only finished episodes are saved whole, so an
+interrupted one keeps its message and nothing it did before the cut-off.
+
+That rule only holds if no other process owns those rows, so the middle layer holds
+an exclusive lock on the file, and a second copy is refused at startup. The operating
+system releases the lock however the process ends.
+
+Training metrics share the file. At startup, each `artifacts/rl/<run>/steps.jsonl`
+is copied in, and skipped if its hash has not changed. Records are stored verbatim,
+because the fields differ between runs: run1 never logged `penalized`, and it stays
+absent rather than becoming a zero on a chart. Nothing is computed here. A log that
+is torn or unfamiliar is refused whole and reported, without stopping the server,
+and the same goes for a resumed run, whose log restarts its step numbers. Smoke runs
+are skipped, since their rewards come from a handful of prompts.
+
+The tests kill the real binary hard, both between episodes and in the middle of one,
+and restart it on the same file. They also serve the committed run1 and run2 logs and
+require every record to match the file. A power cut has not been tested. Writes use
+SQLite's `synchronous=FULL`, which is designed for that case, and the setting itself
+is asserted.
+
 ### Reproducing
 
 ```bash
 python -m backend --adapter run1=artifacts/rl/run1/adapter-final \
                   --adapter run2=artifacts/rl/run2/adapter-final
-cd middle-layer && go run .     # serves on 127.0.0.1:8080
+cd middle-layer && go run .     # serves on 127.0.0.1:8080; --db and --metrics to change paths
 
 # the comparison above; needs the GPU, and starts its own backend and binary
 python -m eval.serving --adapter run1=artifacts/rl/run1/adapter-final \
