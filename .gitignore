@@ -10,6 +10,8 @@ checkpoints/
 wandb/
 .pytest_cache/
 .claude/
+middle-layer/middle-layer
+middle-layer/middle-layer.exe
 
 # corpora fetched at runtime by data loaders, not source
 transformer_scratch/data/*.txt

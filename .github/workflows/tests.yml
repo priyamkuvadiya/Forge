@@ -38,12 +38,20 @@ jobs:
         with:
           python-version: "3.14"
 
+      # For tests/test_middle_layer_parity.py, which builds the real binary and
+      # compares its episodes with the Python loop's.
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: middle-layer/go.mod
+          cache-dependency-path: middle-layer/go.mod
+
       - name: Install test dependencies
         # Deliberately not requirements.txt: it pins a CUDA torch build that
         # no runner can use, and nothing under task_suite/ or tools/ imports
         # torch at all. fastapi and httpx are for `backend`, whose tests drive
         # the HTTP app against a scripted engine with no model behind it.
-        run: python -m pip install --upgrade pip pytest fastapi httpx
+        # uvicorn runs that same app on a real port for the parity test.
+        run: python -m pip install --upgrade pip pytest fastapi httpx uvicorn
 
       - name: Report the sandbox backend and what it confines
         # Also does the one-time setup, which on Windows is a ~90s icacls pass
@@ -62,7 +70,48 @@ jobs:
         # most likely to be quietly wrong, and neither needs a tensor. If a
         # torch import ever creeps into them, this job is what notices. The
         # parts that do need torch skip here and run in the job below.
+        env:
+          # The parity test skips where Go is absent. Here that would mean this
+          # file is broken, and it would look exactly like a pass.
+          FORGE_REQUIRE_GO: "1"
         run: python -m pytest task_suite tools tests rl_training eval backend -q
+
+  middle-layer:
+    name: middle-layer (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    defaults:
+      run:
+        working-directory: middle-layer
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: middle-layer/go.mod
+          cache-dependency-path: middle-layer/go.mod
+
+      - name: Check formatting
+        # Linux only: a Windows checkout can have CRLF line endings.
+        if: runner.os == 'Linux'
+        run: test -z "$(gofmt -l .)"
+
+      - run: go vet ./...
+
+      - name: Run tests
+        # The race detector needs cgo, which the Windows runner is not set up
+        # for. Linux runs it, and the code it checks is not platform-specific.
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            go test -race -count=1 ./...
+          else
+            go test -count=1 ./...
+          fi
 
   transformer:
     name: transformer_scratch + GRPO objective (torch, CPU)
