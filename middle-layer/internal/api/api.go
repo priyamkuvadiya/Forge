@@ -6,6 +6,8 @@
 //	POST /sessions                {policy} -> a new session
 //	GET  /sessions/{id}           one session with its episodes
 //	POST /sessions/{id}/messages  {content} -> the episode it caused
+//	GET  /runs                    every imported training run, without records
+//	GET  /runs/{name}             one run: its config and every step record
 //
 // The last one returns the finished episode as JSON, or with
 // `Accept: text/event-stream` streams each step as it happens. That stream is
@@ -21,6 +23,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"mime"
 	"net"
 	"net/http"
@@ -28,6 +31,7 @@ import (
 	"time"
 
 	"github.com/priyamkuvadiya/Forge/middle-layer/internal/agent"
+	"github.com/priyamkuvadiya/Forge/middle-layer/internal/metrics"
 	"github.com/priyamkuvadiya/Forge/middle-layer/internal/session"
 	"github.com/priyamkuvadiya/Forge/middle-layer/internal/toolworker"
 )
@@ -58,6 +62,7 @@ type Server struct {
 	Worker  Worker
 	Runner  Runner
 	Store   *session.Store
+	Metrics *metrics.Store
 }
 
 func (s *Server) Handler() http.Handler {
@@ -68,6 +73,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /sessions", s.createSession)
 	mux.HandleFunc("GET /sessions/{id}", s.getSession)
 	mux.HandleFunc("POST /sessions/{id}/messages", s.postMessage)
+	mux.HandleFunc("GET /runs", s.listRuns)
+	mux.HandleFunc("GET /runs/{name}", s.getRun)
 	return guard(mux)
 }
 
@@ -165,7 +172,12 @@ func (s *Server) policies(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) listSessions(w http.ResponseWriter, _ *http.Request) {
-	writeJSON(w, http.StatusOK, map[string]any{"sessions": s.Store.List()})
+	summaries, err := s.Store.List()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"sessions": summaries})
 }
 
 func (s *Server) createSession(w http.ResponseWriter, r *http.Request) {
@@ -184,7 +196,12 @@ func (s *Server) createSession(w http.ResponseWriter, r *http.Request) {
 	}
 	for _, name := range names {
 		if name == request.Policy {
-			writeJSON(w, http.StatusCreated, s.Store.Create(request.Policy))
+			created, err := s.Store.Create(request.Policy)
+			if err != nil {
+				writeError(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+			writeJSON(w, http.StatusCreated, created)
 			return
 		}
 	}
@@ -194,11 +211,37 @@ func (s *Server) createSession(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) getSession(w http.ResponseWriter, r *http.Request) {
 	found, err := s.Store.Get(r.PathValue("id"))
-	if err != nil {
+	switch {
+	case errors.Is(err, session.ErrNotFound):
 		writeError(w, http.StatusNotFound, err.Error())
+		return
+	case err != nil:
+		writeError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	writeJSON(w, http.StatusOK, found)
+}
+
+func (s *Server) listRuns(w http.ResponseWriter, _ *http.Request) {
+	summaries, err := s.Metrics.List()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"runs": summaries})
+}
+
+func (s *Server) getRun(w http.ResponseWriter, r *http.Request) {
+	run, err := s.Metrics.Get(r.PathValue("name"))
+	switch {
+	case errors.Is(err, metrics.ErrNotFound):
+		writeError(w, http.StatusNotFound, err.Error())
+		return
+	case err != nil:
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, run)
 }
 
 func (s *Server) postMessage(w http.ResponseWriter, r *http.Request) {
@@ -236,7 +279,11 @@ func (s *Server) postMessage(w http.ResponseWriter, r *http.Request) {
 		emit = startStream(w)
 	}
 	episode := s.Runner.Run(r.Context(), begun.EpisodeID, begun.Policy, begun.History, request.Content, emit)
-	s.Store.End(id, episode)
+	// The client has already seen, or is about to get, the episode itself. All a
+	// failed save costs is the later record, which then reads as interrupted.
+	if err := s.Store.End(id, episode); err != nil {
+		log.Printf("%v", err)
+	}
 
 	if stream {
 		return

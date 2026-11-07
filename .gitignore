@@ -32,6 +32,10 @@ artifacts/**/*_transcripts.txt
 # to them is the part worth keeping.
 artifacts/**/adapter-*/
 
+# The middle layer's database: local conversations, and metrics that regenerate
+# from the step logs.
+middle-layer/forge.db*
+
 # Smoke runs. These exist to prove the loop executes, not to record a result,
 # and their reward numbers are drawn from a handful of prompts.
 artifacts/rl/smoke*/

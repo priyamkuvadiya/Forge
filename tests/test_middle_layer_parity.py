@@ -32,6 +32,7 @@ from eval.serving import (
     play_evaluation,
     record_of_serving,
     request,
+    scratch_database,
 )
 from task_suite.schema import Task
 from tools import DEFAULT_MAX_CALLS, build_registry
@@ -298,6 +299,8 @@ def fails_to_start(binary, *flags, backend_url="http://127.0.0.1:9"):
             f"--python={sys.executable}",
             f"--backend={backend_url}",
             "--backend-wait=5s",
+            f"--db={scratch_database(binary)}",
+            "--metrics=none",
             *(() if sys.platform == "win32" else ("--allow-unconfined",)),
             *flags,
         ],
@@ -361,6 +364,110 @@ def test_a_follow_up_message_is_shown_the_conversation_so_far(registry, binary):
         {"role": "assistant", "content": "<answer>4</answer>"},
         {"role": "user", "content": "second"},
     ]
+
+
+class Holding(Echoing):
+    """Echoing, except that the message "hold" blocks in the backend until released."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.entered = threading.Event()
+        self.release = threading.Event()
+
+    def complete(self, policy, conversation):
+        if conversation[-1]["content"] == "hold":
+            self.entered.set()
+            self.release.wait(120)
+        return super().complete(policy, conversation)
+
+
+def test_a_conversation_survives_a_hard_kill(registry, binary, tmp_path):
+    db = tmp_path / "forge.db"
+    engine = Echoing()
+    with Backend(engine, registry) as backend:
+        with MiddleLayer(binary, backend.url, db=db) as middle:
+            _, session = request(f"{middle.url}/sessions", {"policy": POLICY})
+            url = f"{middle.url}/sessions/{session['id']}"
+            status, _ = request(f"{url}/messages", {"content": "first"})
+            assert status == 200
+            _, before = request(url)
+
+        with MiddleLayer(binary, backend.url, db=db) as middle:
+            url = f"{middle.url}/sessions/{session['id']}"
+            _, after = request(url)
+            assert after == before
+            _, listed = request(f"{middle.url}/sessions")
+            assert [row["id"] for row in listed["sessions"]] == [session["id"]]
+
+            status, _ = request(f"{url}/messages", {"content": "second"})
+            assert status == 200
+
+    prefix_length = len(prompt_prefix(registry))
+    assert engine.seen[-1][prefix_length:] == [
+        {"role": "user", "content": "first"},
+        {"role": "assistant", "content": "<answer>4</answer>"},
+        {"role": "user", "content": "second"},
+    ]
+
+
+def test_an_episode_cut_off_by_a_kill_is_reported_and_hidden_from_the_policy(registry, binary, tmp_path):
+    db = tmp_path / "forge.db"
+    engine = Holding()
+    with Backend(engine, registry) as backend:
+        with MiddleLayer(binary, backend.url, db=db) as middle:
+            _, session = request(f"{middle.url}/sessions", {"policy": POLICY})
+            url = f"{middle.url}/sessions/{session['id']}"
+
+            def post() -> None:
+                # The connection dies with the process, and that is the point.
+                try:
+                    request(f"{url}/messages", {"content": "hold"})
+                except OSError:
+                    pass
+
+            sender = threading.Thread(target=post, daemon=True)
+            sender.start()
+            assert engine.entered.wait(60)
+            _, running = request(url)
+            assert running["running"] is True and running["episodes"] == []
+        sender.join(30)
+        engine.release.set()
+
+        with MiddleLayer(binary, backend.url, db=db) as middle:
+            url = f"{middle.url}/sessions/{session['id']}"
+            _, found = request(url)
+            assert found["running"] is False
+            assert [episode["finish_reason"] for episode in found["episodes"]] == ["interrupted"]
+            assert found["episodes"][0]["messages"] == [{"role": "user", "content": "hold"}]
+
+            status, _ = request(f"{url}/messages", {"content": "after"})
+            assert status == 200
+
+    prefix_length = len(prompt_prefix(registry))
+    assert engine.seen[-1][prefix_length:] == [{"role": "user", "content": "after"}]
+
+
+def test_a_second_copy_on_the_same_database_is_refused(registry, binary, tmp_path):
+    db = tmp_path / "forge.db"
+    with Backend(Echoing(), registry) as backend, MiddleLayer(binary, backend.url, db=db) as middle:
+        assert "another middle layer" in fails_to_start(binary, f"--db={db}", backend_url=backend.url)
+        # And the running one was not disturbed by the attempt.
+        assert middle.play(POLICY, "still here")["finish_reason"] == "answer"
+
+
+@pytest.mark.parametrize("run", ["run1", "run2"])
+def test_a_real_training_log_is_served_exactly(registry, binary, run):
+    lines = (ROOT / "artifacts" / "rl" / run / "steps.jsonl").read_text(encoding="utf-8").splitlines()
+    written = [json.loads(line) for line in lines]
+    with Backend(Echoing(), registry) as backend:
+        with MiddleLayer(binary, backend.url, metrics=ROOT / "artifacts" / "rl") as middle:
+            status, served = request(f"{middle.url}/runs/{run}")
+    assert status == 200
+    assert served["config"] == written[0]
+    assert served["records"] == [record for record in written if record["record"] == "step"]
+    assert served["steps"] == 200
+    assert served["finished"] is True
+    assert served["wall_clock_seconds"] == written[-1]["wall_clock_seconds"]
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="only the Windows sandbox confines the filesystem")

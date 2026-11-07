@@ -4,16 +4,21 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/priyamkuvadiya/Forge/middle-layer/internal/agent"
+	"github.com/priyamkuvadiya/Forge/middle-layer/internal/database"
+	"github.com/priyamkuvadiya/Forge/middle-layer/internal/metrics"
 	"github.com/priyamkuvadiya/Forge/middle-layer/internal/session"
 	"github.com/priyamkuvadiya/Forge/middle-layer/internal/toolworker"
 )
@@ -46,6 +51,8 @@ type fakeRunner struct {
 	entered chan struct{}
 	left    chan error
 	history []agent.Message
+	// afterRun runs as the episode returns, before the server records it.
+	afterRun func()
 }
 
 func (r *fakeRunner) Run(ctx context.Context, id, policy string, history []agent.Message, prompt string, emit func(agent.Event)) agent.Episode {
@@ -71,6 +78,9 @@ func (r *fakeRunner) Run(ctx context.Context, id, policy string, history []agent
 	}
 	emit(agent.Event{Type: agent.EventTurn, Episode: id, Text: "line one\nline two"})
 	emit(agent.Event{Type: agent.EventFinished, Episode: id, Finished: &episode})
+	if r.afterRun != nil {
+		r.afterRun()
+	}
 	return episode
 }
 
@@ -80,17 +90,26 @@ type fixture struct {
 	worker  *fakeWorker
 	runner  *fakeRunner
 	store   *session.Store
+	metrics *metrics.Store
+	db      *sql.DB
 }
 
 func newFixture(t *testing.T) *fixture {
 	t.Helper()
+	db, err := database.Open(filepath.Join(t.TempDir(), "forge.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { db.Close() })
 	f := &fixture{
 		backend: &fakeBackend{},
 		worker:  &fakeWorker{alive: true},
 		runner:  &fakeRunner{reason: agent.FinishAnswer},
-		store:   session.NewStore(1000),
+		store:   session.NewStore(db, 1000),
+		metrics: metrics.NewStore(db),
+		db:      db,
 	}
-	server := &Server{Backend: f.backend, Worker: f.worker, Runner: f.runner, Store: f.store}
+	server := &Server{Backend: f.backend, Worker: f.worker, Runner: f.runner, Store: f.store, Metrics: f.metrics}
 	f.Server = httptest.NewServer(server.Handler())
 	t.Cleanup(f.Close)
 	return f
@@ -234,9 +253,70 @@ func TestAPolicyTheBackendDoesNotServeIsRefused(t *testing.T) {
 	f := newFixture(t)
 	expect(t, f.post(t, "/sessions", `{"policy":"run9"}`), http.StatusUnprocessableEntity)
 	expect(t, f.post(t, "/sessions", `{}`), http.StatusUnprocessableEntity)
-	if len(f.store.List()) != 0 {
+	if summaries, _ := f.store.List(); len(summaries) != 0 {
 		t.Fatal("a session was created anyway")
 	}
+}
+
+func TestADatabaseFailureIsAServerErrorNotAMissingSession(t *testing.T) {
+	f := newFixture(t)
+	id := f.session(t)
+	f.db.Close()
+
+	expect(t, f.get(t, "/sessions/"+id), http.StatusInternalServerError)
+	expect(t, f.get(t, "/sessions"), http.StatusInternalServerError)
+	expect(t, f.post(t, "/sessions", `{"policy":"baseline"}`), http.StatusInternalServerError)
+	expect(t, f.post(t, "/sessions/"+id+"/messages", `{"content":"a"}`), http.StatusInternalServerError)
+	expect(t, f.get(t, "/runs"), http.StatusInternalServerError)
+	expect(t, f.get(t, "/runs/run1"), http.StatusInternalServerError)
+}
+
+func TestAnEpisodeThatCannotBeSavedStillReachesTheClient(t *testing.T) {
+	f := newFixture(t)
+	id := f.session(t)
+	f.runner.afterRun = func() { f.db.Close() }
+
+	response := f.post(t, "/sessions/"+id+"/messages", `{"content":"a"}`)
+	expect(t, response, http.StatusOK)
+	if episode := decode[agent.Episode](t, response); episode.FinishReason != agent.FinishAnswer {
+		t.Fatalf("episode = %+v", episode)
+	}
+}
+
+func TestRunsAreServedAsImported(t *testing.T) {
+	f := newFixture(t)
+	root := t.TempDir()
+	directory := filepath.Join(root, "run1")
+	if err := os.Mkdir(directory, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	log := `{"record": "config", "lr": 1e-05}` + "\n" +
+		`{"record": "step", "step": 1, "mean_reward": 0.2446}` + "\n" +
+		`{"record": "summary", "wall_clock_seconds": 12.5}` + "\n"
+	if err := os.WriteFile(filepath.Join(directory, "steps.jsonl"), []byte(log), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.metrics.Import(root); err != nil {
+		t.Fatal(err)
+	}
+
+	listed := decode[struct {
+		Runs []metrics.Summary `json:"runs"`
+	}](t, f.get(t, "/runs"))
+	if len(listed.Runs) != 1 || listed.Runs[0].Name != "run1" || listed.Runs[0].Steps != 1 || !listed.Runs[0].Finished {
+		t.Fatalf("runs = %+v", listed.Runs)
+	}
+
+	run := decode[map[string]any](t, f.get(t, "/runs/run1"))
+	records := run["records"].([]any)
+	if len(records) != 1 || records[0].(map[string]any)["mean_reward"] != 0.2446 {
+		t.Fatalf("run = %+v", run)
+	}
+	if run["config"].(map[string]any)["lr"] != 1e-05 || run["wall_clock_seconds"] != 12.5 {
+		t.Fatalf("run = %+v", run)
+	}
+
+	expect(t, f.get(t, "/runs/run9"), http.StatusNotFound)
 }
 
 func TestBadRequests(t *testing.T) {

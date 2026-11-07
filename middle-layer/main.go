@@ -27,6 +27,8 @@ import (
 	"github.com/priyamkuvadiya/Forge/middle-layer/internal/agent"
 	"github.com/priyamkuvadiya/Forge/middle-layer/internal/api"
 	"github.com/priyamkuvadiya/Forge/middle-layer/internal/backend"
+	"github.com/priyamkuvadiya/Forge/middle-layer/internal/database"
+	"github.com/priyamkuvadiya/Forge/middle-layer/internal/metrics"
 	"github.com/priyamkuvadiya/Forge/middle-layer/internal/session"
 	"github.com/priyamkuvadiya/Forge/middle-layer/internal/toolworker"
 )
@@ -56,6 +58,8 @@ func run() error {
 		backendWait     = flag.Duration("backend-wait", 5*time.Minute, "how long to wait for the backend at startup")
 		turnTimeout     = flag.Duration("turn-timeout", 5*time.Minute, "limit on one generation, including queueing for the GPU")
 		toolTimeout     = flag.Duration("tool-timeout", time.Minute, "limit on one tool call before the worker is killed")
+		dbPath          = flag.String("db", "", "the SQLite file (default: middle-layer/forge.db in the repo)")
+		metricsRoot     = flag.String("metrics", "", "directory of training runs to import (default: artifacts/rl in the repo; \"none\" imports nothing)")
 	)
 	flag.Parse()
 
@@ -68,6 +72,25 @@ func run() error {
 	}
 	if _, err := os.Stat(filepath.Join(root, "tool_worker.py")); err != nil {
 		return fmt.Errorf("no tool_worker.py in %s; set --repo", root)
+	}
+
+	// First, so that a second copy is refused before it starts anything.
+	if *dbPath == "" {
+		*dbPath = filepath.Join(root, "middle-layer", "forge.db")
+	}
+	db, err := database.Open(*dbPath)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	log.Printf("database: %s", *dbPath)
+
+	runs := metrics.NewStore(db)
+	if *metricsRoot == "" {
+		*metricsRoot = filepath.Join(root, "artifacts", "rl")
+	}
+	if *metricsRoot != "none" {
+		importRuns(runs, *metricsRoot)
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -105,7 +128,8 @@ func run() error {
 	server := &api.Server{
 		Backend: client,
 		Worker:  worker,
-		Store:   session.NewStore(maxConversationChars),
+		Store:   session.NewStore(db, maxConversationChars),
+		Metrics: runs,
 		Runner: agent.Runner{
 			Policy: client,
 			Tools:  worker,
@@ -149,6 +173,21 @@ func run() error {
 		_ = httpServer.Shutdown(shutdown)
 	}
 	return nil
+}
+
+// importRuns reports problems and carries on: a damaged training log should not
+// stop anyone from chatting with a policy.
+func importRuns(runs *metrics.Store, root string) {
+	report, err := runs.Import(root)
+	if err != nil {
+		log.Printf("training runs: %v", err)
+		return
+	}
+	log.Printf("training runs: %d imported, %d unchanged, %d failed",
+		len(report.Imported), len(report.Unchanged), len(report.Failed))
+	for name, failure := range report.Failed {
+		log.Printf("training run %s: %v", name, failure)
+	}
 }
 
 // requireLoopback refuses any other address: this server has no authentication,

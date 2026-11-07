@@ -38,6 +38,9 @@ const (
 	FinishBackendError = "backend_error"
 	FinishToolError    = "tool_error"
 	FinishCancelled    = "cancelled"
+	// The process stopped mid-episode. Run never returns this: the session store
+	// reports it for an episode that has no recorded end.
+	FinishInterrupted = "interrupted"
 )
 
 type Message struct {
@@ -126,7 +129,7 @@ type Episode struct {
 // Failed reports whether the system, rather than the policy, ended the episode.
 func (e Episode) Failed() bool {
 	switch e.FinishReason {
-	case FinishBackendError, FinishToolError, FinishCancelled:
+	case FinishBackendError, FinishToolError, FinishCancelled, FinishInterrupted:
 		return true
 	}
 	return false

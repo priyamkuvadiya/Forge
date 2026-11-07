@@ -43,7 +43,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: middle-layer/go.mod
-          cache-dependency-path: middle-layer/go.mod
+          cache-dependency-path: middle-layer/go.sum
 
       - name: Install test dependencies
         # Deliberately not requirements.txt: it pins a CUDA torch build that
@@ -93,7 +93,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: middle-layer/go.mod
-          cache-dependency-path: middle-layer/go.mod
+          cache-dependency-path: middle-layer/go.sum
 
       - name: Check formatting
         # Linux only: a Windows checkout can have CRLF line endings.

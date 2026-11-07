@@ -28,6 +28,7 @@ import threading
 import time
 import urllib.error
 import urllib.request
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -79,6 +80,10 @@ def build_middle_layer(directory: Path) -> Path:
     return binary
 
 
+def scratch_database(binary: Path) -> Path:
+    return binary.parent / f"scratch-{uuid.uuid4().hex}.db"
+
+
 class Backend:
     """The real FastAPI app around any engine, in a thread of this process."""
 
@@ -109,7 +114,9 @@ class Backend:
 class MiddleLayer:
     """The real Go binary, with its real Python tool worker."""
 
-    def __init__(self, binary: Path, backend_url: str) -> None:
+    def __init__(
+        self, binary: Path, backend_url: str, *, db: Path | None = None, metrics: Path | None = None
+    ) -> None:
         self.port = free_port()
         self.url = f"http://127.0.0.1:{self.port}"
         self.command = [
@@ -119,6 +126,10 @@ class MiddleLayer:
             f"--repo={ROOT}",
             f"--python={sys.executable}",
             "--backend-wait=30s",
+            # A file of its own unless told otherwise, or a comparison would write
+            # into the real database.
+            f"--db={db or scratch_database(binary)}",
+            f"--metrics={metrics or 'none'}",
         ]
         if sys.platform != "win32":
             # A test run on CI, with nothing valuable on the runner's disk.
