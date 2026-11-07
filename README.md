@@ -27,8 +27,10 @@ the corresponding module exists and has been run for real.
 Modules 1 (from-scratch transformer), 2 (task suite and verifiers), 3 (tools,
 the sandbox, and the tool-call contract) and 4 (the prompted baseline agent)
 are complete, as are 5 (GRPO training), 9 (the held-out evaluation) and 6
-(the backend that serves the baseline and trained policies) — 644 tests, run
-on Linux and Windows on every push.
+(the backend that serves the baseline and trained policies). Module 7 (the Go
+middle layer) is in progress: sessions, routing and tool execution work, and
+persistence does not exist yet. The Python and Go tests run on Linux and Windows
+on every push.
 
 The control-group numbers now exist: the prompted Qwen2.5-0.5B-Instruct
 baseline scores a **macro-average reward of 0.1908** across the five held-out
@@ -1649,4 +1651,105 @@ python -m backend --adapter run1=artifacts/rl/run1/adapter-final \
                   --adapter run2=artifacts/rl/run2/adapter-final
 python -m backend.check_parity --adapter run1=artifacts/rl/run1/adapter-final \
                                --adapter run2=artifacts/rl/run2/adapter-final
+```
+
+## Module 7: the middle layer (in progress)
+
+A Go service between the frontend and the backend, using only the standard
+library. It keeps sessions, routes requests to the backend, runs the tools and
+decides when an episode is over. **Sessions are in memory for now**, so a restart
+loses them. SQLite persistence is the next step and is not built.
+
+### The tools stay in Python
+
+The code sandbox is an AppContainer plus a Job Object, and it took several rounds
+of real bugs to harden. Rewriting it in Go would mean a second sandbox to harden
+and a second copy of the call budget and result format, which could drift from
+what the policies were evaluated with.
+
+So Go supervises a long-lived `python -m tool_worker` process and talks to it in
+line-delimited JSON over stdin and stdout. The worker runs the same `ToolSession`
+the evaluation used. There is no port for anything else to reach, and the worker
+exits when its parent does. It returns the final text to append to the
+conversation and the answer as `extract_answer` reads it, so Go never reimplements
+those rules.
+
+A tool failing and the worker failing are treated differently:
+
+- **A tool that fails** is ordinary policy behaviour. The error goes back to the
+  policy as a result, as it did during evaluation.
+- **A worker that dies or hangs** is the system's failure. The episode ends as
+  `tool_error`, the policy is never told, and that episode is left out of what the
+  policy sees next. The next episode starts a new worker. A running episode cannot
+  continue on the new one, because that would silently refill its call budget.
+
+### Does it serve the policy that was evaluated?
+
+The published numbers describe a policy inside the Python loop. Here it runs inside
+a different loop, written in another language, so the two are compared directly.
+Both checks run the real binary, the real FastAPI app and the real tool worker.
+
+- **Scripted policy, on every push.** The same script plays through both loops, on
+  40 written scenarios (budget exhaustion, the turn limit, nudges, truncation, an
+  answer split across two turns) and 150 generated ones. Every record has to match,
+  and so does the conversation the policy is shown on every turn. Each sandbox run
+  gets a randomly named directory that shows up in tracebacks, so that one name is
+  masked before comparing.
+- **Real policies, on the GPU.** Greedy decoding, 20 held-out tasks (4 per
+  category), through each loop:
+
+| policy | identical episodes | tool calls exercised |
+| --- | --- | --- |
+| baseline | 20/20 | 0 |
+| run1 | 20/20 | 7 |
+| run2 | 20/20 | 13 |
+
+The baseline row says nothing about tools, because it made no calls on these tasks.
+The tool path rests on the other two rows and on the scripted scenarios. This also
+does not check sampled generation, since two sampled runs would differ anyway; the
+sampling settings are fixed by the backend, which module 6 checked separately.
+
+**The evaluation only covers a session's first message.** A policy was only ever
+measured on a single task, with no earlier conversation. A follow-up message sees
+the conversation so far, which is what a chat needs, but nothing here measures how
+well a policy behaves in that situation.
+
+### API
+
+| route | what it does |
+| --- | --- |
+| `GET /health` | whether the backend answers and the worker is running, and what the sandbox confines |
+| `GET /policies` | the backend's description of what it serves |
+| `GET /sessions` | every session, without transcripts |
+| `POST /sessions` | `{policy}` → a new session. The policy is fixed for the session's life, so comparing policies means opening one session each |
+| `GET /sessions/{id}` | one session with its episodes |
+| `POST /sessions/{id}/messages` | `{content}` → the finished episode as JSON, or one server-sent event per step with `Accept: text/event-stream` |
+
+Events are whole steps, not tokens: `episode_started`, `turn`, `tool_result`,
+`nudge`, `episode_finished`. A client disconnecting cancels the episode, though a
+generation already running on the GPU still finishes before the next one starts.
+
+The server has no authentication, and a request to it can end with generated code
+running. So it refuses to listen on anything but loopback, and it rejects cross-site
+requests (JSON only, no CORS headers) and DNS rebinding (the `Host` header must be
+local). At startup it refuses to serve if the backend's prompt advertises different
+tools or limits from what the worker holds. On a sandbox that does not confine the
+filesystem, which today means POSIX, the worker refuses to run unless started with
+`--allow-unconfined`.
+
+Conversations are limited to 32,000 characters when a new message arrives. That
+number was chosen, not measured for this purpose. It is about the size one
+full-budget episode can already reach under evaluation, and it exists because going
+past the card's memory here slows generation down instead of raising an error.
+
+### Reproducing
+
+```bash
+python -m backend --adapter run1=artifacts/rl/run1/adapter-final \
+                  --adapter run2=artifacts/rl/run2/adapter-final
+cd middle-layer && go run .     # serves on 127.0.0.1:8080
+
+# the comparison above; needs the GPU, and starts its own backend and binary
+python -m eval.serving --adapter run1=artifacts/rl/run1/adapter-final \
+                       --adapter run2=artifacts/rl/run2/adapter-final
 ```
