@@ -2,15 +2,16 @@ import { useCallback, useEffect, useState } from "react";
 import { getHealth } from "./api/client";
 import type { Health } from "./api/types";
 import { ChatView } from "./chat/ChatView";
+import { TrainingView } from "./training/TrainingView";
 
-type Route = { view: "chat"; session: string | null } | { view: "training"; run: string | null };
+type Route = { view: "chat"; session: string | null } | { view: "training" };
 
 // The route lives in the hash, so a refresh lands back on the same session, and
 // reattaches to whatever is running in it.
 function routeFromHash(): Route {
   const [, view, id] = window.location.hash.split("/");
-  const decoded = id ? decodeURIComponent(id) : null;
-  return view === "training" ? { view: "training", run: decoded } : { view: "chat", session: decoded };
+  if (view === "training") return { view: "training" };
+  return { view: "chat", session: id ? decodeURIComponent(id) : null };
 }
 
 export function App() {
@@ -45,7 +46,7 @@ export function App() {
         {route.view === "chat" ? (
           <ChatView sessionId={route.session} onSelect={selectSession} />
         ) : (
-          <p className="muted">Training dashboard goes here.</p>
+          <TrainingView />
         )}
       </main>
     </div>
