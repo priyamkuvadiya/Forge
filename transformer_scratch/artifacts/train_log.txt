@@ -24,4 +24,4 @@ iter 4750: train loss 0.6534, val loss 1.6566, lr 1.06e-04 [14.3 min]
 iter 4999: train loss 0.6411, val loss 1.6703, lr 1.00e-04 [15.0 min]
 best val loss 1.4652 at iter 1750 (checkpoint kept)
 done in 15.0 min
-saved checkpoint and loss curve to C:\Users\Priyam\Documents\MS\agentic-rl\transformer_scratch\checkpoints / C:\Users\Priyam\Documents\MS\agentic-rl\transformer_scratch\artifacts
+saved checkpoint and loss curve to transformer_scratch/checkpoints / transformer_scratch/artifacts

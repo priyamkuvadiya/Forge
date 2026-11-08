@@ -1,10 +1,65 @@
 # Forge
 
-Training an agentic LLM's tool-use policy with reinforcement learning on
-verifiable-reward tasks — arithmetic requiring a calculator tool, coding
-problems checkable by running tests, and multi-hop QA answerable via a
-search tool. Rewards come from real programmatic verifiers, not a learned
-preference model, so nothing here can be gamed the way an eval score can.
+[![tests](https://github.com/priyamkuvadiya/Forge/actions/workflows/tests.yml/badge.svg)](https://github.com/priyamkuvadiya/Forge/actions/workflows/tests.yml)
+
+Reinforcement learning for LLM tool use on a laptop GPU. A 0.5B open-weight
+model (Qwen2.5-0.5B-Instruct) learns when and how to call a calculator, a search
+engine and a sandboxed Python runner, trained with a hand-written GRPO loop on
+tasks whose answers are checked by code, not by a learned judge. It runs on an
+8 GB RTX 4060. The trained policy is served through a Python backend, a Go
+middle layer and a React page that shows every tool call as it happens.
+
+## At a glance
+
+**Held-out result: macro-average reward 0.183 → 0.503** (+0.320, 95% CI [+0.277,
++0.364]). That is 148 unseen tasks × 8 attempts per policy, compared task by task
+against the prompted base model, with a bootstrap over tasks.
+
+| category | baseline | run1 | run2 (served as "trained") |
+| --- | --- | --- | --- |
+| math | 0.019 | 0.840 | 0.904 |
+| code | 0.408 | 0.564 | 0.634 |
+| qa (multi-hop search) | 0.000 | 0.000 | 0.000 |
+| multi_tool (search + arithmetic) | 0.000 | 0.008 | 0.058 |
+| no_tool (control) | 0.487 | 0.925 | 0.919 |
+| **macro** | **0.183** | **0.467** | **0.503** |
+
+![run2 solving a held-out math task with the calculator](docs/images/chat-run2-math.png)
+
+**What it does and does not show:**
+
+- **Math is real tool use.** The policy calls the calculator in 99% of math
+  episodes instead of 7%. In run1, 377 of 403 correct answers were the
+  calculator's exact output.
+- **Code and no_tool gains are mostly format.** The policy learned to put its
+  answer in the expected tags; it did not learn new skills there.
+- **Multi-hop QA did not improve.** The policy searches once and never chains a
+  second search. With the right searches handed to it, it still answers only ~20%
+  ([why](#why-qa-is-still-0-and-why-there-is-no-third-run)). At the start, these
+  tasks gave GRPO no learning signal at all, which was measured before training.
+- **Nothing measurable was lost.** No reward hacking was found in the transcripts,
+  and a 55-question probe of general knowledge lost no answers at any checkpoint.
+- **Only first messages were evaluated.** Follow-ups in the chat were checked by a
+  small pilot only.
+
+**Run it** (built and tested on Windows 11 with an NVIDIA GPU, Python 3.14, Go 1.27,
+Node 26):
+
+```bash
+pip install -r requirements.txt
+# the trained adapters (35 MB each) are release assets, not in git:
+# download both zips from https://github.com/priyamkuvadiya/Forge/releases/tag/v1.0
+# and unzip them in the repo root
+python -m demo        # builds the page and middle layer, opens http://127.0.0.1:8080
+```
+
+**Where to look:** [held-out results](#held-out-results-baseline-vs-trained) ·
+[the second run](#the-second-run-a-penalty-for-answering-without-searching) ·
+[the demo](#module-8-the-frontend) · [reward hacking, and how the code sandbox
+stops it](#running-untrusted-code-and-not-being-lied-to-by-it) · [fitting GRPO in
+8 GB](#fitting-a-training-step-in-8gb).
+
+## Two separate claims
 
 This repo makes two separate claims, kept architecturally and narratively
 distinct throughout:
@@ -17,12 +72,10 @@ distinct throughout:
    the from-scratch model in (1). An 8GB GPU cannot pretrain a model capable
    enough to be a useful agent backbone.
 
-## Status
+## How it was built
 
 Complete. It was built module by module, and each section below was written
 only after its module existed and had been run for real.
-
-![tests](https://github.com/priyamkuvadiya/Forge/actions/workflows/tests.yml/badge.svg)
 
 Modules 1 (from-scratch transformer), 2 (task suite and verifiers), 3 (tools,
 the sandbox, and the tool-call contract) and 4 (the prompted baseline agent)
@@ -33,9 +86,11 @@ a chat that shows every tool call as it happens, and the training dashboard).
 `python -m demo` starts the whole stack. The Python and Go tests run on Linux and
 Windows on every push, and the frontend tests on Linux.
 
-The control-group numbers now exist: the prompted Qwen2.5-0.5B-Instruct
-baseline scores a **macro-average reward of 0.1908** across the five held-out
-categories. It calls a tool in under a fifth of episodes in every category —
+The sequence, in brief. The prompted Qwen2.5-0.5B-Instruct baseline first scored
+a macro-average reward of 0.1908, at generation batch size 32. It was re-run at
+batch 16 to match the trained arms exactly, and scored **0.183**. Every comparison
+uses that 0.183 run, and the 0.008 gap between the two runs is sampling noise. The
+baseline calls a tool in under a fifth of episodes in every category —
 not once in 160 coding episodes — and when it does call one, it never chains:
 of the 72 QA and multi_tool episodes that used a tool, none made a second
 call, on the two categories that structurally require more than one hop.
@@ -67,10 +122,6 @@ out, it reaches 0.503 (+0.320 [+0.277, +0.364] over the baseline, +0.036
 given without a search fell from 198 to 0. QA is still 0, because the policy
 searches once and never chains, and multi_tool stopped using the calculator.
 See [the second run](#the-second-run-a-penalty-for-answering-without-searching).
-
-![run2 solving a held-out math task with the calculator, in the demo](docs/images/chat-run2-math.png)
-
-The demo shows every tool call as it happens; see [module 8](#module-8-the-frontend).
 
 ## Module 1: from-scratch transformer
 
@@ -1972,7 +2023,11 @@ build, starts the backend with the baseline, run1 and run2, starts the middle la
 with the page, waits for both to be healthy and opens <http://127.0.0.1:8080>. It
 installs the page's packages on first use. It needs the GPU, Go, Node, and the two
 adapters at
-`artifacts/rl/run{1,2}/adapter-final`, which are not in git. `--backend URL` uses a
+`artifacts/rl/run{1,2}/adapter-final`. Those are not in git: they are attached to
+[release v1.0](https://github.com/priyamkuvadiya/Forge/releases/tag/v1.0) as two
+zips that unzip into place from the repo root. Their sha256 matches the one recorded
+in `artifacts/eval/trained_run{1,2}.json`, so they are the weights that were
+evaluated. `--backend URL` uses a
 backend that is already running, and `--no-build`, `--port` and `--db` do what they
 say.
 

@@ -35,6 +35,8 @@ DEFAULT_ADAPTERS = {
     "run1": ROOT / "artifacts" / "rl" / "run1" / "adapter-final",
     "run2": ROOT / "artifacts" / "rl" / "run2" / "adapter-final",
 }
+# The evaluated adapters, published as release assets since they are not in git.
+RELEASE_URL = "https://github.com/priyamkuvadiya/Forge/releases/tag/v1.0"
 
 
 def log(message: str) -> None:
@@ -184,7 +186,8 @@ def main(argv: list[str] | None = None) -> int:
     if arguments.backend is None:
         missing = [f"{name}={path}" for name, path in adapters.items() if not path.exists()]
         if missing:
-            log("adapter weights not found (they are not in git; train them, or pass --adapter): " + ", ".join(missing))
+            log("adapter weights not found: " + ", ".join(missing))
+            log(f"they are not in git; download the evaluated ones from {RELEASE_URL} and unzip them in the repo root")
             return 1
 
     if not arguments.no_build:
