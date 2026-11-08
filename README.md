@@ -1749,8 +1749,16 @@ sampling settings are fixed by the backend, which module 6 checked separately.
 
 **The evaluation only covers a session's first message.** A policy was only ever
 measured on a single task, with no earlier conversation. A follow-up message sees
-the conversation so far, which is what a chat needs, but nothing here measures how
-well a policy behaves in that situation.
+the conversation so far, which is what a chat needs, but the evaluation does not
+measure how well a policy behaves in that situation.
+
+A small pilot looked for obvious harm. Through the real stack, run2 was given 20
+held-out tasks (4 per category), twice each as a session's first message and twice
+after a held-out task from another category. It scored 0.43 as a first message and
+0.47 as a follow-up, with tool calls per episode 0.62 and 0.57, and no category
+dropped. Forty pairs cannot rule out a moderate effect in either direction, so this
+says only that follow-ups do not visibly break the policy. The script and results
+are in `artifacts/followup_pilot/`.
 
 ### API
 
@@ -1823,9 +1831,23 @@ are skipped, since their rewards come from a handful of prompts.
 
 The tests kill the real binary hard, both between episodes and in the middle of one,
 and restart it on the same file. They also serve the committed run1 and run2 logs and
-require every record to match the file. A power cut has not been tested. Writes use
-SQLite's `synchronous=FULL`, which is designed for that case, and the setting itself
-is asserted.
+require every record to match the file. Writes use SQLite's `synchronous=FULL`, and
+the setting itself is asserted.
+
+A power cut was tested too, on Linux with `dm-flakey`, a device-mapper target that
+can be told to silently drop every write from a chosen moment.
+`middle-layer/cmd/powercut` runs the real store in a loop and reports each save
+once the store returns. The script freezes the writer at a random moment and notes
+what had been promised. It then switches the disk to drop writes, kills the writer
+and unmounts, so anything that was only in memory never reaches the disk. Finally it
+remounts and checks the file. Over 10 cuts and about 10,200 promised saves, nothing
+was lost and SQLite's integrity check passed every time; episodes cut off mid-run
+read back as `interrupted` with their prompt. The control, the same run with
+syncing turned off, lost every promised save (about 390,000 over 3 cuts). That shows
+the cut is real. An earlier attempt that killed the whole WSL virtual machine looked
+like a power cut and was not: the control lost nothing there. This was ext4 in a
+virtual machine, not this laptop's own disk, so a drive that reports a write as
+done before it is is still untested.
 
 ### Reproducing
 
@@ -1837,6 +1859,13 @@ cd middle-layer && go run .     # serves on 127.0.0.1:8080; --db and --metrics t
 # the comparison above; needs the GPU, and starts its own backend and binary
 python -m eval.serving --adapter run1=artifacts/rl/run1/adapter-final \
                        --adapter run2=artifacts/rl/run2/adapter-final
+
+# the power-cut test; Linux (WSL works), root, and the dm_flakey module
+cd middle-layer
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o powercut ./cmd/powercut
+sudo modprobe dm_flakey
+sudo bash cmd/powercut/flakey.sh ./powercut 10 0   # syncing on: must lose nothing
+sudo bash cmd/powercut/flakey.sh ./powercut 3 1    # control, syncing off: must lose data
 ```
 
 ## Module 8: the frontend

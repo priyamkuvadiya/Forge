@@ -1,0 +1,46 @@
+﻿{"task": "math-heldout-0000", "cat": "math", "before": "code-heldout-0000", "first": 1.0, "follow": 1.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "math-heldout-0000", "cat": "math", "before": "code-heldout-0000", "first": 1.0, "follow": 1.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "math-heldout-0015", "cat": "math", "before": "code-heldout-0001", "first": 1.0, "follow": 0.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 0}
+{"task": "math-heldout-0015", "cat": "math", "before": "code-heldout-0001", "first": 0.0, "follow": 1.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "math-heldout-0030", "cat": "math", "before": "code-heldout-0002", "first": 1.0, "follow": 1.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "math-heldout-0030", "cat": "math", "before": "code-heldout-0002", "first": 0.0, "follow": 1.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "math-heldout-0045", "cat": "math", "before": "code-heldout-0003", "first": 0.0, "follow": 0.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "math-heldout-0045", "cat": "math", "before": "code-heldout-0003", "first": 0.0, "follow": 0.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "code-heldout-0000", "cat": "code", "before": "qa-heldout-0000", "first": 0.4, "follow": 0.4, "first_finish": "answer", "follow_finish": "answer", "first_calls": 0, "follow_calls": 0}
+{"task": "code-heldout-0000", "cat": "code", "before": "qa-heldout-0000", "first": 0.4, "follow": 1.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 0, "follow_calls": 0}
+{"task": "code-heldout-0005", "cat": "code", "before": "qa-heldout-0001", "first": 1.0, "follow": 0.5, "first_finish": "answer", "follow_finish": "answer", "first_calls": 0, "follow_calls": 0}
+{"task": "code-heldout-0005", "cat": "code", "before": "qa-heldout-0001", "first": 1.0, "follow": 1.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 0, "follow_calls": 0}
+{"task": "code-heldout-0010", "cat": "code", "before": "qa-heldout-0002", "first": 0.25, "follow": 0.75, "first_finish": "answer", "follow_finish": "answer", "first_calls": 0, "follow_calls": 0}
+{"task": "code-heldout-0010", "cat": "code", "before": "qa-heldout-0002", "first": 0.5, "follow": 1.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 0, "follow_calls": 0}
+{"task": "code-heldout-0015", "cat": "code", "before": "qa-heldout-0003", "first": 1.0, "follow": 0.4, "first_finish": "answer", "follow_finish": "answer", "first_calls": 0, "follow_calls": 0}
+{"task": "code-heldout-0015", "cat": "code", "before": "qa-heldout-0003", "first": 0.6, "follow": 0.8, "first_finish": "answer", "follow_finish": "answer", "first_calls": 0, "follow_calls": 0}
+{"task": "qa-heldout-0000", "cat": "qa", "before": "multi-heldout-0000", "first": 0.0, "follow": 0.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "qa-heldout-0000", "cat": "qa", "before": "multi-heldout-0000", "first": 0.0, "follow": 0.0, "first_finish": "no_answer", "follow_finish": "no_answer", "first_calls": 1, "follow_calls": 1}
+{"task": "qa-heldout-0008", "cat": "qa", "before": "multi-heldout-0001", "first": 0.0, "follow": 0.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "qa-heldout-0008", "cat": "qa", "before": "multi-heldout-0001", "first": 0.0, "follow": 0.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "qa-heldout-0016", "cat": "qa", "before": "multi-heldout-0002", "first": 0.0, "follow": 0.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "qa-heldout-0016", "cat": "qa", "before": "multi-heldout-0002", "first": 0.0, "follow": 0.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "qa-heldout-0024", "cat": "qa", "before": "multi-heldout-0003", "first": 0.0, "follow": 0.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "qa-heldout-0024", "cat": "qa", "before": "multi-heldout-0003", "first": 0.0, "follow": 0.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "multi-heldout-0000", "cat": "multi_tool", "before": "notool-heldout-0000", "first": 0.0, "follow": 0.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "multi-heldout-0000", "cat": "multi_tool", "before": "notool-heldout-0000", "first": 0.0, "follow": 0.0, "first_finish": "no_answer", "follow_finish": "no_answer", "first_calls": 1, "follow_calls": 1}
+{"task": "multi-heldout-0003", "cat": "multi_tool", "before": "notool-heldout-0001", "first": 0.0, "follow": 0.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "multi-heldout-0003", "cat": "multi_tool", "before": "notool-heldout-0001", "first": 0.0, "follow": 0.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "multi-heldout-0006", "cat": "multi_tool", "before": "notool-heldout-0002", "first": 0.0, "follow": 0.0, "first_finish": "no_answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "multi-heldout-0006", "cat": "multi_tool", "before": "notool-heldout-0002", "first": 0.0, "follow": 0.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "multi-heldout-0009", "cat": "multi_tool", "before": "notool-heldout-0003", "first": 0.0, "follow": 0.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 1, "follow_calls": 1}
+{"task": "multi-heldout-0009", "cat": "multi_tool", "before": "notool-heldout-0003", "first": 0.0, "follow": 0.0, "first_finish": "no_answer", "follow_finish": "answer", "first_calls": 2, "follow_calls": 1}
+{"task": "notool-heldout-0000", "cat": "no_tool", "before": "math-heldout-0000", "first": 1.0, "follow": 1.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 0, "follow_calls": 0}
+{"task": "notool-heldout-0000", "cat": "no_tool", "before": "math-heldout-0000", "first": 1.0, "follow": 1.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 0, "follow_calls": 0}
+{"task": "notool-heldout-0005", "cat": "no_tool", "before": "math-heldout-0001", "first": 1.0, "follow": 1.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 0, "follow_calls": 0}
+{"task": "notool-heldout-0005", "cat": "no_tool", "before": "math-heldout-0001", "first": 1.0, "follow": 1.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 0, "follow_calls": 0}
+{"task": "notool-heldout-0010", "cat": "no_tool", "before": "math-heldout-0002", "first": 1.0, "follow": 1.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 0, "follow_calls": 0}
+{"task": "notool-heldout-0010", "cat": "no_tool", "before": "math-heldout-0002", "first": 1.0, "follow": 1.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 0, "follow_calls": 0}
+{"task": "notool-heldout-0015", "cat": "no_tool", "before": "math-heldout-0003", "first": 1.0, "follow": 1.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 0, "follow_calls": 0}
+{"task": "notool-heldout-0015", "cat": "no_tool", "before": "math-heldout-0003", "first": 1.0, "follow": 1.0, "first_finish": "answer", "follow_finish": "answer", "first_calls": 0, "follow_calls": 0}
+math       n=  8 first 0.500 follow-up 0.625  calls/ep 1.00 -> 0.88
+all        n= 40 first 0.429 follow-up 0.471  calls/ep 0.62 -> 0.57
+code       n=  8 first 0.644 follow-up 0.731  calls/ep 0.00 -> 0.00
+qa         n=  8 first 0.000 follow-up 0.000  calls/ep 1.00 -> 1.00
+multi_tool n=  8 first 0.000 follow-up 0.000  calls/ep 1.12 -> 1.00
+no_tool    n=  8 first 1.000 follow-up 1.000  calls/ep 0.00 -> 0.00
