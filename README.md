@@ -19,8 +19,8 @@ distinct throughout:
 
 ## Status
 
-Work in progress, built incrementally. Sections below are added only once
-the corresponding module exists and has been run for real.
+Complete. It was built module by module, and each section below was written
+only after its module existed and had been run for real.
 
 ![tests](https://github.com/priyamkuvadiya/Forge/actions/workflows/tests.yml/badge.svg)
 
