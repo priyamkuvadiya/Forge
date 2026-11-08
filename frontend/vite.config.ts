@@ -5,14 +5,12 @@ import react from "@vitejs/plugin-react";
 // an arbitrary web page from driving it (see guard in internal/api). So the page
 // is never cross-origin to it. Every API call goes to /api on this server, and
 // Vite forwards it. The Host it forwards is loopback, which the guard accepts.
+// The middle layer serves the API under /api/ itself (and the built page at /),
+// so this is only needed while working on the page with hot reload.
 const middleLayer = process.env.FORGE_MIDDLE_LAYER ?? "http://127.0.0.1:8080";
 
 const proxy = {
-  "/api": {
-    target: middleLayer,
-    changeOrigin: true,
-    rewrite: (path: string) => path.replace(/^\/api/, ""),
-  },
+  "/api": { target: middleLayer, changeOrigin: true },
 };
 
 export default defineConfig({

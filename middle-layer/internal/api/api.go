@@ -27,6 +27,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"mime"
 	"net"
 	"net/http"
@@ -70,6 +71,8 @@ type Server struct {
 	// Context is the server's lifetime. Episodes run on it, so cancelling it
 	// stops them all; then Wait for their records. Nil means never cancelled.
 	Context context.Context
+	// Frontend is the built page (frontend/dist), served at /. Nil serves none.
+	Frontend fs.FS
 
 	liveMu   sync.Mutex
 	live     map[string]*live // Session ID -> its running episode.
@@ -90,7 +93,22 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /sessions/{id}/cancel", s.cancelEpisode)
 	mux.HandleFunc("GET /runs", s.listRuns)
 	mux.HandleFunc("GET /runs/{name}", s.getRun)
-	return guard(mux)
+
+	// The API at the root, as before, and again under /api/, which is where the
+	// page calls it. That one prefix is all the page needs to work the same
+	// whether this server serves it or Vite's dev server forwards to it.
+	root := http.NewServeMux()
+	root.Handle("/", mux)
+	root.Handle("/api/", http.StripPrefix("/api", mux))
+	if s.Frontend != nil {
+		// Less specific than every API route, so it only gets what they do not.
+		static := staticFiles(s.Frontend)
+		root.Handle("GET /{$}", static)
+		root.Handle("GET /index.html", static)
+		root.Handle("GET /assets/", static)
+		root.Handle("GET /favicon.ico", static)
+	}
+	return guard(root)
 }
 
 // guard stops a web page in the user's browser from driving this server.

@@ -12,6 +12,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"log"
 	"net"
 	"net/http"
@@ -60,6 +61,7 @@ func run() error {
 		toolTimeout     = flag.Duration("tool-timeout", time.Minute, "limit on one tool call before the worker is killed")
 		dbPath          = flag.String("db", "", "the SQLite file (default: middle-layer/forge.db in the repo)")
 		metricsRoot     = flag.String("metrics", "", "directory of training runs to import (default: artifacts/rl in the repo; \"none\" imports nothing)")
+		frontendDir     = flag.String("frontend", "", "the built page to serve at / (default: frontend/dist in the repo; \"none\" serves none)")
 	)
 	flag.Parse()
 
@@ -125,12 +127,18 @@ func run() error {
 		return err
 	}
 
+	page, err := frontend(root, *frontendDir)
+	if err != nil {
+		return err
+	}
+
 	server := &api.Server{
-		Context: ctx,
-		Backend: client,
-		Worker:  worker,
-		Store:   session.NewStore(db, maxConversationChars),
-		Metrics: runs,
+		Context:  ctx,
+		Frontend: page,
+		Backend:  client,
+		Worker:   worker,
+		Store:    session.NewStore(db, maxConversationChars),
+		Metrics:  runs,
 		Runner: agent.Runner{
 			Policy: client,
 			Tools:  worker,
@@ -195,6 +203,29 @@ func importRuns(runs *metrics.Store, root string) {
 	for name, failure := range report.Failed {
 		log.Printf("training run %s: %v", name, failure)
 	}
+}
+
+// frontend finds the built page. Without one the API still serves: the page
+// can come from `npm run dev` instead, or not be wanted at all. A directory
+// given explicitly has to be there, since asking for one and silently getting
+// none would look like a broken page.
+func frontend(root, dir string) (fs.FS, error) {
+	switch dir {
+	case "none":
+		return nil, nil
+	case "":
+		dir = filepath.Join(root, "frontend", "dist")
+		if _, err := os.Stat(filepath.Join(dir, "index.html")); err != nil {
+			log.Printf("no built page at %s (npm run build in frontend/); serving the API only", dir)
+			return nil, nil
+		}
+	default:
+		if _, err := os.Stat(filepath.Join(dir, "index.html")); err != nil {
+			return nil, fmt.Errorf("--frontend %s: no index.html there", dir)
+		}
+	}
+	log.Printf("page: %s", dir)
+	return os.DirFS(dir), nil
 }
 
 // requireLoopback refuses any other address: this server has no authentication,
