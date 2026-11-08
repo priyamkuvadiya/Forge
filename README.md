@@ -1553,6 +1553,39 @@ though the training-side KL ran higher (~0.04 vs ~0.03).
 | step 150 | 0.0020 | 0 | 1 | 15 / 55 (11) |
 | step 200 | 0.0027 | 0 | 0 | 15 / 55 (9) |
 
+### Why QA is still 0, and why there is no third run
+
+A third run aimed at chaining was considered and checked first. QA turns out to
+be blocked twice, and only one of the two blocks is about searching.
+
+- **Search can reach every hop.** On all 118 QA tasks (train and held-out),
+  searching the question's subject returns the first supporting document, that
+  document names the next entity, and searching that name returns the next
+  document. Retrieval is not what fails.
+- **Given a perfect chain, the policy still mostly fails to answer.** Each policy
+  was handed a conversation in which the right searches had already been made,
+  with their real results, and only had to answer. Two samples per task, scored
+  by `verify()`:
+
+| policy | qa held-out | qa train | multi_tool held-out | multi_tool train |
+| --- | --- | --- | --- | --- |
+| baseline | 0.076 | 0.076 | 0.000 | 0.000 |
+| run1 | 0.091 | 0.118 | 0.033 | 0.000 |
+| run2 | 0.212 | 0.176 | 0.000 | 0.000 |
+
+Reading the failures, the policy most often answers with the middle hop: asked
+which instrument the survey's leader designed, it names the leader. On
+multi_tool it does the date arithmetic in its head and gets it wrong (2042 − 2008
+answered as 4).
+
+So even perfect chaining would lift QA to about 0.2, at most about +0.04 on the
+macro average. Rewarding chaining directly would also start where QA started: run2
+makes a second search in about 0.5% of episodes, so a group of 8 rollouts almost
+never differs and gives no gradient. That would need an exploration aid on top of
+a new reward. The expected gain did not justify another run.
+
+The script, the per-episode results and the log are in `artifacts/run3_feasibility/`.
+
 ### Reproducing
 
 ```bash
