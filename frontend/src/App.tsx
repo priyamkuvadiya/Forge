@@ -1,20 +1,30 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getHealth } from "./api/client";
 import type { Health } from "./api/types";
+import { ChatView } from "./chat/ChatView";
 
-type View = "chat" | "training";
+type Route = { view: "chat"; session: string | null } | { view: "training"; run: string | null };
 
-function viewFromHash(): View {
-  return window.location.hash.startsWith("#/training") ? "training" : "chat";
+// The route lives in the hash, so a refresh lands back on the same session, and
+// reattaches to whatever is running in it.
+function routeFromHash(): Route {
+  const [, view, id] = window.location.hash.split("/");
+  const decoded = id ? decodeURIComponent(id) : null;
+  return view === "training" ? { view: "training", run: decoded } : { view: "chat", session: decoded };
 }
 
 export function App() {
-  const [view, setView] = useState<View>(viewFromHash);
+  const [route, setRoute] = useState<Route>(routeFromHash);
+  const view = route.view;
 
   useEffect(() => {
-    const onHash = () => setView(viewFromHash());
+    const onHash = () => setRoute(routeFromHash());
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  const selectSession = useCallback((id: string | null) => {
+    window.location.hash = id ? `#/chat/${encodeURIComponent(id)}` : "#/chat";
   }, []);
 
   return (
@@ -32,7 +42,11 @@ export function App() {
         <HealthBadge />
       </header>
       <main className="content">
-        {view === "chat" ? <p className="muted">Chat goes here.</p> : <p className="muted">Training dashboard goes here.</p>}
+        {route.view === "chat" ? (
+          <ChatView sessionId={route.session} onSelect={selectSession} />
+        ) : (
+          <p className="muted">Training dashboard goes here.</p>
+        )}
       </main>
     </div>
   );

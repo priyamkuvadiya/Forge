@@ -145,3 +145,353 @@ pre {
   font-family: var(--mono);
   font-size: 12.5px;
 }
+
+pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0.25rem 0 0;
+}
+
+h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.15rem;
+}
+
+h3 {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.small-text {
+  font-size: 12px;
+  display: block;
+}
+
+button.small {
+  font-size: 12px;
+  padding: 0.1rem 0.55rem;
+}
+
+.error-banner {
+  border: 1px solid var(--bad);
+  color: var(--bad);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0;
+  cursor: pointer;
+}
+
+/* Chat layout */
+
+.content:has(.chat) {
+  padding: 0;
+  overflow: hidden;
+}
+
+.chat {
+  display: flex;
+  height: 100%;
+}
+
+.sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--line);
+  background: var(--panel);
+  overflow-y: auto;
+  padding: 0 1rem 1rem;
+}
+
+.conversation {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 1rem 1.5rem;
+}
+
+@media (max-width: 760px) {
+  .chat {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: auto;
+    max-height: 40vh;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+}
+
+.policy-option {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-bottom: 0.4rem;
+  cursor: pointer;
+}
+
+.policy-option.chosen {
+  border-color: var(--accent);
+}
+
+.policy-option input {
+  margin-top: 0.2rem;
+}
+
+.new-session button.primary {
+  width: 100%;
+}
+
+.session-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.session-list button {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  border-color: transparent;
+  padding: 0.4rem 0.5rem;
+  margin-bottom: 0.15rem;
+}
+
+.session-list button.selected {
+  border-color: var(--line);
+  background: var(--tool);
+}
+
+.session-list .muted {
+  font-size: 12px;
+}
+
+.dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 0.4rem;
+  border-radius: 50%;
+  background: var(--good);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.intro {
+  max-width: 640px;
+  margin: 2rem auto;
+  line-height: 1.55;
+}
+
+.thread {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.thread-head {
+  margin-bottom: 1rem;
+}
+
+/* Episodes */
+
+.episode {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.episode.failed {
+  border-style: dashed;
+  opacity: 0.85;
+}
+
+.episode-head {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.episode-head button {
+  margin-left: auto;
+}
+
+.tag {
+  font-size: 11px;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+}
+
+.tag.eval {
+  color: var(--good);
+}
+.tag.followup {
+  color: var(--warn);
+}
+.tag.running {
+  color: var(--accent);
+}
+
+.bubble {
+  border-radius: 8px;
+  padding: 0.5rem 0.7rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  position: relative;
+}
+
+.bubble.user {
+  align-self: flex-end;
+  max-width: 85%;
+  background: var(--accent);
+  color: #fff;
+}
+
+.bubble.assistant {
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+
+.latency {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.2rem;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.mark-tool {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-radius: 3px;
+  padding: 0 0.15rem;
+}
+
+.mark-answer {
+  background: color-mix(in srgb, var(--good) 18%, transparent);
+  border-radius: 3px;
+  padding: 0 0.15rem;
+}
+
+.tool-card {
+  border-left: 3px solid var(--accent);
+  background: var(--tool);
+  border-radius: 0 8px 8px 0;
+  padding: 0.45rem 0.7rem;
+  margin-left: 1rem;
+}
+
+.tool-card.failed {
+  border-left-color: var(--bad);
+}
+.tool-card.refused {
+  border-left-color: var(--warn);
+}
+
+.tool-head {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  font-size: 12.5px;
+}
+
+.tool-name {
+  font-family: var(--mono);
+  font-weight: 600;
+}
+
+.tool-status.ok {
+  color: var(--good);
+}
+.tool-status.failed {
+  color: var(--bad);
+}
+.tool-status.refused {
+  color: var(--warn);
+}
+
+.tool-args {
+  margin-top: 0.3rem;
+}
+
+.tool-error {
+  color: var(--bad);
+  font-size: 12.5px;
+  margin-top: 0.25rem;
+}
+
+details summary {
+  cursor: pointer;
+  font-size: 12px;
+  margin-top: 0.3rem;
+}
+
+.nudge {
+  font-size: 12px;
+  color: var(--warn);
+  font-style: italic;
+  margin-left: 1rem;
+}
+
+.thinking {
+  color: var(--muted);
+  font-size: 12.5px;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.episode-foot {
+  border-top: 1px solid var(--line);
+  padding-top: 0.45rem;
+  font-size: 13px;
+}
+
+.final-answer {
+  margin-bottom: 0.2rem;
+}
+
+.finish.good {
+  color: var(--good);
+}
+.finish.warn {
+  color: var(--warn);
+}
+.finish.bad {
+  color: var(--bad);
+}
+
+.composer {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  padding: 0.5rem 0 0.25rem;
+}
+
+.composer textarea {
+  flex: 1;
+  font: inherit;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem;
+  background: var(--panel);
+  color: var(--ink);
+}

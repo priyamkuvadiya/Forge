@@ -65,6 +65,8 @@ interface EventBase {
 
 export interface StartedEvent extends EventBase {
   type: "episode_started";
+  /** The user message that started it. */
+  prompt?: string;
 }
 
 export interface TurnEvent extends EventBase {
@@ -85,6 +87,8 @@ export interface ToolResultEvent extends EventBase {
   /** False when the call budget refused the call, so it never ran. */
   ran?: boolean;
   duration_ms?: number;
+  /** The call's trace entry; absent when it never ran. */
+  trace?: TraceEntry;
 }
 
 export interface NudgeEvent extends EventBase {
