@@ -27,9 +27,11 @@ the corresponding module exists and has been run for real.
 Modules 1 (from-scratch transformer), 2 (task suite and verifiers), 3 (tools,
 the sandbox, and the tool-call contract) and 4 (the prompted baseline agent)
 are complete, as are 5 (GRPO training), 9 (the held-out evaluation), 6 (the
-backend that serves the baseline and trained policies) and 7 (the Go middle layer:
-sessions, routing, tool execution and SQLite persistence). The frontend (module 8)
-does not exist yet. The Python and Go tests run on Linux and Windows on every push.
+backend that serves the baseline and trained policies), 7 (the Go middle layer:
+sessions, routing, tool execution and SQLite persistence) and 8 (the React frontend:
+a chat that shows every tool call as it happens, and the training dashboard).
+`python -m demo` starts the whole stack. The Python and Go tests run on Linux and
+Windows on every push, and the frontend tests on Linux.
 
 The control-group numbers now exist: the prompted Qwen2.5-0.5B-Instruct
 baseline scores a **macro-average reward of 0.1908** across the five held-out
@@ -1728,6 +1730,10 @@ well a policy behaves in that situation.
 | `GET /runs` | every imported training run, without its records |
 | `GET /runs/{name}` | one training run: its config and every step record |
 
+Every route is also served under `/api/`, which is the path the page uses. With
+`--frontend` (default `frontend/dist`, `none` to turn it off) the same server serves
+the built page at `/`, so the browser talks to one origin and the API needs no CORS.
+
 Events are whole steps, not tokens: `episode_started`, `turn`, `tool_result`,
 `nudge`, `episode_finished`. An episode belongs to the server, not to the request
 that started it. A page that refreshes or loses its connection leaves the episode
@@ -1795,3 +1801,119 @@ cd middle-layer && go run .     # serves on 127.0.0.1:8080; --db and --metrics t
 python -m eval.serving --adapter run1=artifacts/rl/run1/adapter-final \
                        --adapter run2=artifacts/rl/run2/adapter-final
 ```
+
+## Module 8: the frontend
+
+A React and TypeScript page (Vite, no UI library, charts drawn as plain SVG) with
+two views. It talks only to the middle layer and holds no state of its own beyond
+the URL.
+
+### Chat, with every step visible
+
+The point of a page rather than a CLI is to watch the policy work. Each episode is
+shown as it runs, one card per step: the policy's turn, each tool call with its
+arguments, result, status and duration, any nudge the loop sent, and how the
+episode ended. A call the budget refused is shown as not run rather than as a
+failure of the tool.
+
+- **Policies.** A session is opened with one policy and keeps it. The page offers
+  the baseline, **run2 as "trained"**, and run1. run2 is the default because it
+  scores higher held out (0.503 against 0.467) and stopped guessing on QA. run1
+  stays one click away because it is the one that still chains a search into the
+  calculator on multi_tool; run2 never calls the calculator there (0 of 120
+  held-out episodes, against run1's 63). The page says this next to the choice.
+- **Evaluated or not.** Only a session's first message matches what the evaluation
+  measured (see module 7). Each episode is labelled *evaluated* if nothing came
+  before it except episodes that failed on the system's side, and *follow-up*
+  otherwise. It matters in practice: asked a follow-up about the same boxes
+  problem, run2 answered 703 where the correct answer was 787.
+- **Refresh and reconnect.** The session is in the URL fragment, `#/chat/<id>`. A
+  page that reloads, or loses its connection mid-episode, reattaches through
+  `/live`, receives every event so far and then the rest. A dropped stream is
+  retried up to five times, with a growing delay, before the page gives up. Stopping an
+  episode is an explicit button, which calls `/cancel`; closing the tab does not
+  stop it.
+
+### Training dashboard
+
+The dashboard reads the step logs the middle layer imported, and shows run1 and run2
+on the same axes: mean training-prompt reward, usable groups per step, reward per
+category, calls per tool (including invented tool names), run2's penalised and
+answered episodes, KL from the base model, seconds per step, and GPU memory against
+the card's 8 GiB.
+
+These are training-prompt numbers, and the page says so. The held-out results above
+are the result; this is how the runs got there. Two details keep the charts honest:
+
+- A step where every group was degenerate made no update and logs 0.0 as a
+  placeholder for KL and memory. Those points are left out, not drawn as zeros.
+- A field a run never logged (run1 has no `penalized`) is a gap, not a line at zero.
+
+### Tests
+
+48 tests under Vitest, jsdom and Testing Library, run in CI on every push with a
+typecheck and a production build.
+
+They run against `frontend/src/test/wire.json`, which is not written by hand. It is
+recorded from the real Go binary and the real tool worker by
+`tests/test_frontend_wire.py`, with a scripted policy in place of the model: a
+finished episode with tool calls and a nudge, a follow-up that spends the call
+budget and has a call refused, a cancelled episode, and an excerpt of the run1 log
+that includes an update-free step.
+The Python test fails if the recording no longer matches what the binary sends, so
+a change to the wire format on either side breaks a test rather than the page.
+Regenerate it with `FORGE_UPDATE_WIRE=1`.
+
+The tests found three real bugs:
+
+- Sending a message refreshes the session list, and that re-render aborted the
+  stream being watched. The live view stopped mid-episode while the episode kept
+  running.
+- A finished episode was drawn twice for one render, once from the stream and once
+  from the reloaded session.
+- The middle layer's `/cancel` never read its request body. On Windows that let
+  the connection be reset before the reply arrived: 8 of 25 cancels lost their
+  reply before the fix, 0 of 25 after. The cancel itself always took effect.
+
+Ten deliberate breakages of the page's logic were each caught by at least one test,
+one of them only after a missing test was added.
+
+### Running the demo
+
+```bash
+python -m demo
+```
+
+This rebuilds the page and the Go binary if any of their sources are newer than the
+build, starts the backend with the baseline, run1 and run2, starts the middle layer
+with the page, waits for both to be healthy and opens <http://127.0.0.1:8080>. It
+installs the page's packages on first use. It needs the GPU, Go, Node, and the two
+adapters at
+`artifacts/rl/run{1,2}/adapter-final`, which are not in git. `--backend URL` uses a
+backend that is already running, and `--no-build`, `--port` and `--db` do what they
+say.
+
+Ctrl+C stops the middle layer first, politely, so an episode still running is
+recorded as `cancelled` and not read back later as `interrupted`. Then it stops the
+backend. `tests/test_demo.py` runs the real launcher against the real binary,
+interrupts it during an episode and checks what was recorded.
+
+For work on the page itself, `npm run dev` in `frontend/` serves it with hot reload
+on <http://127.0.0.1:5173> and forwards `/api` to the middle layer.
+
+```bash
+cd frontend
+npm ci
+npm test            # the 48 tests
+npm run typecheck
+npm run build       # into frontend/dist, which the middle layer serves
+
+# regenerate the wire recording after changing what the middle layer sends
+FORGE_UPDATE_WIRE=1 python -m pytest tests/test_frontend_wire.py
+```
+
+## License
+
+[MIT](LICENSE). The base model, Qwen2.5-0.5B-Instruct, is not part of this
+repository; it is downloaded from Hugging Face and comes with its own licence.
+The tinyshakespeare corpus used by module 1 is also downloaded, not included.
