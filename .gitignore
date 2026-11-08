@@ -42,3 +42,10 @@ artifacts/rl/smoke*/
 
 # The frontend's production build; regenerate with npm run build.
 frontend/dist/
+
+# Console logs of GPU runs. Machine-local progress output; the results each run
+# produced (results JSON, steps.jsonl, drift JSON) are committed beside them.
+artifacts/**/*.log
+
+# Editor settings.
+.vscode/
