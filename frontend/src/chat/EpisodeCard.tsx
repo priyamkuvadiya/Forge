@@ -1,9 +1,6 @@
 import { Fragment } from "react";
 import { systemFailed } from "../api/types";
-import { describeFinish, type EpisodeView, type Step } from "./steps";
-
-/** Where an episode stands against what the evaluation measured. */
-export type Setting = "evaluated" | "follow-up";
+import { describeFinish, type EpisodeView, type Setting, type Step } from "./steps";
 
 interface Props {
   view: EpisodeView;

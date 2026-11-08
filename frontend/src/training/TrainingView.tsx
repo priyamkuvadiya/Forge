@@ -56,13 +56,15 @@ export function TrainingView() {
   }, []);
 
   useEffect(() => {
+    // Only runs the middle layer has: the defaults may not have been imported.
+    const available = new Set(summaries.map((s) => s.name));
     for (const name of selected) {
-      if (runs[name]) continue;
+      if (runs[name] || !available.has(name)) continue;
       getRun(name)
         .then((run) => setRuns((all) => ({ ...all, [name]: run })))
         .catch((e: unknown) => setError(`${name}: ${e instanceof Error ? e.message : String(e)}`));
     }
-  }, [selected, runs]);
+  }, [selected, runs, summaries]);
 
   const shown = useMemo(
     () => selected.map((name) => runs[name]).filter((run): run is Run => run !== undefined),

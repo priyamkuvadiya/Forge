@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError, createSession, getPolicies, getSession, listSessions } from "../api/client";
 import { cancelEpisode, followLive, streamMessage, type StreamOutcome } from "../api/stream";
-import { systemFailed, type AgentEvent, type PolicyInfo, type Session, type SessionSummary } from "../api/types";
+import type { AgentEvent, PolicyInfo, Session, SessionSummary } from "../api/types";
 import { labelFor, orderPolicies, TRAINED } from "../policies";
-import { EpisodeCard, type Setting } from "./EpisodeCard";
-import { applyEvent, emptyView, fromEpisode, type EpisodeView } from "./steps";
+import { EpisodeCard } from "./EpisodeCard";
+import { applyEvent, emptyView, fromEpisode, settingAt, type EpisodeView } from "./steps";
 
 interface Props {
   sessionId: string | null;
@@ -142,6 +142,11 @@ function Conversation({ id, onChanged, onMissing }: ConversationProps) {
   const [cancelling, setCancelling] = useState(false);
   const abort = useRef<AbortController | null>(null);
   const bottom = useRef<HTMLDivElement | null>(null);
+  // The parent's callbacks change on every render of the parent. Held in a ref so
+  // that nothing below depends on them: an effect that did would rerun, and its
+  // cleanup aborts the stream being followed.
+  const parent = useRef({ onChanged, onMissing });
+  parent.current = { onChanged, onMissing };
 
   const reload = useCallback(async () => {
     try {
@@ -149,11 +154,11 @@ function Conversation({ id, onChanged, onMissing }: ConversationProps) {
       setSession(found);
       return found;
     } catch (e) {
-      if (e instanceof ApiError && e.status === 404) onMissing();
+      if (e instanceof ApiError && e.status === 404) parent.current.onMissing();
       else setError(message(e));
       return null;
     }
-  }, [id, onMissing]);
+  }, [id]);
 
   const onEvent = useCallback((event: AgentEvent) => {
     setLive((view) => applyEvent(view ?? emptyView(""), event));
@@ -179,12 +184,20 @@ function Conversation({ id, onChanged, onMissing }: ConversationProps) {
         if (!controller.signal.aborted) setError(message(e));
       }
       if (controller.signal.aborted) return;
-      setCancelling(false);
-      await reload();
+      // The record and the end of the live view in one render, so the episode
+      // is never on screen twice or not at all.
+      try {
+        const found = await getSession(id);
+        if (controller.signal.aborted) return;
+        setSession(found);
+      } catch (e) {
+        setError(message(e));
+      }
       setLive(null);
-      onChanged();
+      setCancelling(false);
+      parent.current.onChanged();
     },
-    [id, onEvent, reload, onChanged],
+    [id, onEvent],
   );
 
   // On opening a session, reattach if an episode is running in it: this is what
@@ -232,10 +245,6 @@ function Conversation({ id, onChanged, onMissing }: ConversationProps) {
   }
 
   const episodes = session.episodes;
-  // Evaluated means the policy saw no prior conversation. System-failed
-  // episodes are left out of the history, so they do not count.
-  const settingAt = (index: number): Setting =>
-    episodes.slice(0, index).every((e) => systemFailed(e.finish_reason)) ? "evaluated" : "follow-up";
   const label = labelFor(session.policy);
 
   return (
@@ -245,12 +254,12 @@ function Conversation({ id, onChanged, onMissing }: ConversationProps) {
         <span className="muted small-text">{label.note}</span>
       </header>
       {episodes.map((episode, index) => (
-        <EpisodeCard key={episode.id} view={fromEpisode(episode)} setting={settingAt(index)} live={false} />
+        <EpisodeCard key={episode.id} view={fromEpisode(episode)} setting={settingAt(episodes, index)} live={false} />
       ))}
       {live && (
         <EpisodeCard
           view={live}
-          setting={settingAt(episodes.length)}
+          setting={settingAt(episodes, episodes.length)}
           live
           onCancel={cancel}
           cancelling={cancelling}

@@ -1,4 +1,4 @@
-import type { AgentEvent, Episode, FinishReason, ToolCall, TraceEntry } from "../api/types";
+import { systemFailed, type AgentEvent, type Episode, type FinishReason, type ToolCall, type TraceEntry } from "../api/types";
 
 // One view of an episode, whether it is arriving live as events or was loaded
 // finished from the session. Both describe the same appends agent.Run makes.
@@ -125,6 +125,19 @@ export function fromEpisode(episode: Episode): EpisodeView {
     error: episode.error ?? null,
     nudges: episode.nudges,
   };
+}
+
+/** Where an episode stands against what the evaluation measured. */
+export type Setting = "evaluated" | "follow-up";
+
+/**
+ * The setting of the episode at `index` (which may be one past the end, for the
+ * one running now). Evaluated means the policy saw no earlier conversation, as
+ * on every held-out task. System-failed episodes are left out of the history the
+ * policy is shown (session.Store.Begin), so they do not count.
+ */
+export function settingAt(episodes: Pick<Episode, "finish_reason">[], index: number): Setting {
+  return episodes.slice(0, index).every((e) => systemFailed(e.finish_reason)) ? "evaluated" : "follow-up";
 }
 
 /** What each ending means, in the words the evaluation uses. */

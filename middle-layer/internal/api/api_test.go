@@ -411,6 +411,9 @@ func TestBadRequests(t *testing.T) {
 		{"/sessions/" + id + "/messages", `{"content":"x","messages":[]}`, http.StatusBadRequest},
 		{"/sessions/" + id + "/messages", `{"content":"x","system":"y"}`, http.StatusBadRequest},
 		{"/sessions", `{"policy":"run2","temperature":0}`, http.StatusBadRequest},
+		// Its body is read, so that it is not left unread on the socket.
+		{"/sessions/" + id + "/cancel", `not json`, http.StatusBadRequest},
+		{"/sessions/" + id + "/cancel", `{"force":true}`, http.StatusBadRequest},
 		{"/sessions/" + id + "/messages", `{"content":"` + strings.Repeat("x", maxBodyBytes) + `"}`, http.StatusRequestEntityTooLarge},
 		{"/sessions/" + id + "/messages", `{"content":"` + strings.Repeat("x", 1001) + `"}`, http.StatusRequestEntityTooLarge},
 	}

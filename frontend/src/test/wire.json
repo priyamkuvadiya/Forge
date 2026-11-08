@@ -1,0 +1,1126 @@
+{
+  "streamed": [
+    [
+      {
+        "type": "episode_started",
+        "episode": "e-1",
+        "turn": 0,
+        "prompt": "What is 6 * 7?"
+      },
+      {
+        "type": "turn",
+        "episode": "e-1",
+        "turn": 0,
+        "kind": "tool_call",
+        "text": "<tool name=\"calculator\">6 * 7</tool>",
+        "tool_call": {
+          "name": "calculator",
+          "arguments": "6 * 7"
+        },
+        "latency_ms": 1.5
+      },
+      {
+        "type": "tool_result",
+        "episode": "e-1",
+        "turn": 0,
+        "tool": "calculator",
+        "ok": true,
+        "message": "<tool_result name=\"calculator\">\n6 * 7 = 42\n</tool_result>",
+        "ran": true,
+        "duration_ms": 1.5,
+        "trace": {
+          "index": 0,
+          "tool": "calculator",
+          "arguments": "6 * 7",
+          "ok": true,
+          "output": "6 * 7 = 42",
+          "error": null,
+          "duration_ms": 1.5
+        }
+      },
+      {
+        "type": "turn",
+        "episode": "e-1",
+        "turn": 1,
+        "kind": "tool_call",
+        "text": "<tool name=\"calc\">6 * 7</tool>",
+        "tool_call": {
+          "name": "calc",
+          "arguments": "6 * 7"
+        },
+        "latency_ms": 1.5
+      },
+      {
+        "type": "tool_result",
+        "episode": "e-1",
+        "turn": 1,
+        "tool": "calc",
+        "ok": false,
+        "message": "<tool_result name=\"calc\">\nThere is no tool named 'calc'. Available tools: calculator, python, search.\n</tool_result>",
+        "tool_error": "unknown tool",
+        "ran": true,
+        "duration_ms": 1.5,
+        "trace": {
+          "index": 1,
+          "tool": "calc",
+          "arguments": "6 * 7",
+          "ok": false,
+          "output": "There is no tool named 'calc'. Available tools: calculator, python, search.",
+          "error": "unknown tool",
+          "duration_ms": 1.5
+        }
+      },
+      {
+        "type": "turn",
+        "episode": "e-1",
+        "turn": 2,
+        "kind": "no_answer",
+        "text": "Let me think about it.",
+        "latency_ms": 1.5
+      },
+      {
+        "type": "nudge",
+        "episode": "e-1",
+        "turn": 2,
+        "message": "That reply cannot be scored, because it did not contain the answer tags. Send the same answer again with the literal text <answer> immediately before it and the literal text </answer> immediately after it. Do not start over and do not call any more tools."
+      },
+      {
+        "type": "turn",
+        "episode": "e-1",
+        "turn": 3,
+        "kind": "answer",
+        "text": "<answer>42</answer>",
+        "latency_ms": 1.5
+      },
+      {
+        "type": "episode_finished",
+        "episode": "e-1",
+        "turn": 0,
+        "finished": {
+          "id": "e-1",
+          "policy": "baseline",
+          "messages": [
+            {
+              "role": "user",
+              "content": "What is 6 * 7?"
+            },
+            {
+              "role": "assistant",
+              "content": "<tool name=\"calculator\">6 * 7</tool>"
+            },
+            {
+              "role": "user",
+              "content": "<tool_result name=\"calculator\">\n6 * 7 = 42\n</tool_result>"
+            },
+            {
+              "role": "assistant",
+              "content": "<tool name=\"calc\">6 * 7</tool>"
+            },
+            {
+              "role": "user",
+              "content": "<tool_result name=\"calc\">\nThere is no tool named 'calc'. Available tools: calculator, python, search.\n</tool_result>"
+            },
+            {
+              "role": "assistant",
+              "content": "Let me think about it."
+            },
+            {
+              "role": "user",
+              "content": "That reply cannot be scored, because it did not contain the answer tags. Send the same answer again with the literal text <answer> immediately before it and the literal text </answer> immediately after it. Do not start over and do not call any more tools."
+            },
+            {
+              "role": "assistant",
+              "content": "<answer>42</answer>"
+            }
+          ],
+          "nudges": 1,
+          "finish_reason": "answer",
+          "answer": "42",
+          "trace": [
+            {
+              "index": 0,
+              "tool": "calculator",
+              "arguments": "6 * 7",
+              "ok": true,
+              "output": "6 * 7 = 42",
+              "error": null,
+              "duration_ms": 1.5
+            },
+            {
+              "index": 1,
+              "tool": "calc",
+              "arguments": "6 * 7",
+              "ok": false,
+              "output": "There is no tool named 'calc'. Available tools: calculator, python, search.",
+              "error": "unknown tool",
+              "duration_ms": 1.5
+            }
+          ]
+        }
+      }
+    ],
+    [
+      {
+        "type": "episode_started",
+        "episode": "e-2",
+        "turn": 0,
+        "prompt": "Now look up the Ashen Bay Survey."
+      },
+      {
+        "type": "turn",
+        "episode": "e-2",
+        "turn": 0,
+        "kind": "tool_call",
+        "text": "<tool name=\"search\">Ashen Bay Survey</tool>",
+        "tool_call": {
+          "name": "search",
+          "arguments": "Ashen Bay Survey"
+        },
+        "latency_ms": 1.5
+      },
+      {
+        "type": "tool_result",
+        "episode": "e-2",
+        "turn": 0,
+        "tool": "search",
+        "ok": true,
+        "message": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>",
+        "ran": true,
+        "duration_ms": 1.5,
+        "trace": {
+          "index": 0,
+          "tool": "search",
+          "arguments": "Ashen Bay Survey",
+          "ok": true,
+          "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+          "error": null,
+          "duration_ms": 1.5
+        }
+      },
+      {
+        "type": "turn",
+        "episode": "e-2",
+        "turn": 1,
+        "kind": "tool_call",
+        "text": "<tool name=\"search\">Ashen Bay Survey</tool>",
+        "tool_call": {
+          "name": "search",
+          "arguments": "Ashen Bay Survey"
+        },
+        "latency_ms": 1.5
+      },
+      {
+        "type": "tool_result",
+        "episode": "e-2",
+        "turn": 1,
+        "tool": "search",
+        "ok": true,
+        "message": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>",
+        "ran": true,
+        "duration_ms": 1.5,
+        "trace": {
+          "index": 1,
+          "tool": "search",
+          "arguments": "Ashen Bay Survey",
+          "ok": true,
+          "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+          "error": null,
+          "duration_ms": 1.5
+        }
+      },
+      {
+        "type": "turn",
+        "episode": "e-2",
+        "turn": 2,
+        "kind": "tool_call",
+        "text": "<tool name=\"search\">Ashen Bay Survey</tool>",
+        "tool_call": {
+          "name": "search",
+          "arguments": "Ashen Bay Survey"
+        },
+        "latency_ms": 1.5
+      },
+      {
+        "type": "tool_result",
+        "episode": "e-2",
+        "turn": 2,
+        "tool": "search",
+        "ok": true,
+        "message": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>",
+        "ran": true,
+        "duration_ms": 1.5,
+        "trace": {
+          "index": 2,
+          "tool": "search",
+          "arguments": "Ashen Bay Survey",
+          "ok": true,
+          "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+          "error": null,
+          "duration_ms": 1.5
+        }
+      },
+      {
+        "type": "turn",
+        "episode": "e-2",
+        "turn": 3,
+        "kind": "tool_call",
+        "text": "<tool name=\"search\">Ashen Bay Survey</tool>",
+        "tool_call": {
+          "name": "search",
+          "arguments": "Ashen Bay Survey"
+        },
+        "latency_ms": 1.5
+      },
+      {
+        "type": "tool_result",
+        "episode": "e-2",
+        "turn": 3,
+        "tool": "search",
+        "ok": true,
+        "message": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>",
+        "ran": true,
+        "duration_ms": 1.5,
+        "trace": {
+          "index": 3,
+          "tool": "search",
+          "arguments": "Ashen Bay Survey",
+          "ok": true,
+          "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+          "error": null,
+          "duration_ms": 1.5
+        }
+      },
+      {
+        "type": "turn",
+        "episode": "e-2",
+        "turn": 4,
+        "kind": "tool_call",
+        "text": "<tool name=\"search\">Ashen Bay Survey</tool>",
+        "tool_call": {
+          "name": "search",
+          "arguments": "Ashen Bay Survey"
+        },
+        "latency_ms": 1.5
+      },
+      {
+        "type": "tool_result",
+        "episode": "e-2",
+        "turn": 4,
+        "tool": "search",
+        "ok": true,
+        "message": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>",
+        "ran": true,
+        "duration_ms": 1.5,
+        "trace": {
+          "index": 4,
+          "tool": "search",
+          "arguments": "Ashen Bay Survey",
+          "ok": true,
+          "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+          "error": null,
+          "duration_ms": 1.5
+        }
+      },
+      {
+        "type": "turn",
+        "episode": "e-2",
+        "turn": 5,
+        "kind": "tool_call",
+        "text": "<tool name=\"search\">Ashen Bay Survey</tool>",
+        "tool_call": {
+          "name": "search",
+          "arguments": "Ashen Bay Survey"
+        },
+        "latency_ms": 1.5
+      },
+      {
+        "type": "tool_result",
+        "episode": "e-2",
+        "turn": 5,
+        "tool": "search",
+        "ok": true,
+        "message": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>",
+        "ran": true,
+        "duration_ms": 1.5,
+        "trace": {
+          "index": 5,
+          "tool": "search",
+          "arguments": "Ashen Bay Survey",
+          "ok": true,
+          "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+          "error": null,
+          "duration_ms": 1.5
+        }
+      },
+      {
+        "type": "turn",
+        "episode": "e-2",
+        "turn": 6,
+        "kind": "tool_call",
+        "text": "<tool name=\"search\">Ashen Bay Survey</tool>",
+        "tool_call": {
+          "name": "search",
+          "arguments": "Ashen Bay Survey"
+        },
+        "latency_ms": 1.5
+      },
+      {
+        "type": "tool_result",
+        "episode": "e-2",
+        "turn": 6,
+        "tool": "search",
+        "ok": true,
+        "message": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>",
+        "ran": true,
+        "duration_ms": 1.5,
+        "trace": {
+          "index": 6,
+          "tool": "search",
+          "arguments": "Ashen Bay Survey",
+          "ok": true,
+          "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+          "error": null,
+          "duration_ms": 1.5
+        }
+      },
+      {
+        "type": "turn",
+        "episode": "e-2",
+        "turn": 7,
+        "kind": "tool_call",
+        "text": "<tool name=\"search\">Ashen Bay Survey</tool>",
+        "tool_call": {
+          "name": "search",
+          "arguments": "Ashen Bay Survey"
+        },
+        "latency_ms": 1.5
+      },
+      {
+        "type": "tool_result",
+        "episode": "e-2",
+        "turn": 7,
+        "tool": "search",
+        "ok": true,
+        "message": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>",
+        "ran": true,
+        "duration_ms": 1.5,
+        "trace": {
+          "index": 7,
+          "tool": "search",
+          "arguments": "Ashen Bay Survey",
+          "ok": true,
+          "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+          "error": null,
+          "duration_ms": 1.5
+        }
+      },
+      {
+        "type": "turn",
+        "episode": "e-2",
+        "turn": 8,
+        "kind": "tool_call",
+        "text": "<tool name=\"search\">Ashen Bay Survey</tool>",
+        "tool_call": {
+          "name": "search",
+          "arguments": "Ashen Bay Survey"
+        },
+        "latency_ms": 1.5
+      },
+      {
+        "type": "tool_result",
+        "episode": "e-2",
+        "turn": 8,
+        "tool": "search",
+        "ok": false,
+        "message": "<tool_result name=\"search\">\nTool call budget exhausted (8 calls). Give your final answer now inside <answer></answer> tags.\n</tool_result>",
+        "tool_error": "budget exceeded",
+        "ran": false
+      },
+      {
+        "type": "turn",
+        "episode": "e-2",
+        "turn": 9,
+        "kind": "answer",
+        "text": "<answer>done</answer>",
+        "latency_ms": 1.5
+      },
+      {
+        "type": "episode_finished",
+        "episode": "e-2",
+        "turn": 0,
+        "finished": {
+          "id": "e-2",
+          "policy": "baseline",
+          "messages": [
+            {
+              "role": "user",
+              "content": "Now look up the Ashen Bay Survey."
+            },
+            {
+              "role": "assistant",
+              "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+            },
+            {
+              "role": "user",
+              "content": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>"
+            },
+            {
+              "role": "assistant",
+              "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+            },
+            {
+              "role": "user",
+              "content": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>"
+            },
+            {
+              "role": "assistant",
+              "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+            },
+            {
+              "role": "user",
+              "content": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>"
+            },
+            {
+              "role": "assistant",
+              "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+            },
+            {
+              "role": "user",
+              "content": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>"
+            },
+            {
+              "role": "assistant",
+              "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+            },
+            {
+              "role": "user",
+              "content": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>"
+            },
+            {
+              "role": "assistant",
+              "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+            },
+            {
+              "role": "user",
+              "content": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>"
+            },
+            {
+              "role": "assistant",
+              "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+            },
+            {
+              "role": "user",
+              "content": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>"
+            },
+            {
+              "role": "assistant",
+              "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+            },
+            {
+              "role": "user",
+              "content": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>"
+            },
+            {
+              "role": "assistant",
+              "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+            },
+            {
+              "role": "user",
+              "content": "<tool_result name=\"search\">\nTool call budget exhausted (8 calls). Give your final answer now inside <answer></answer> tags.\n</tool_result>"
+            },
+            {
+              "role": "assistant",
+              "content": "<answer>done</answer>"
+            }
+          ],
+          "nudges": 0,
+          "finish_reason": "answer",
+          "answer": "done",
+          "trace": [
+            {
+              "index": 0,
+              "tool": "search",
+              "arguments": "Ashen Bay Survey",
+              "ok": true,
+              "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+              "error": null,
+              "duration_ms": 1.5
+            },
+            {
+              "index": 1,
+              "tool": "search",
+              "arguments": "Ashen Bay Survey",
+              "ok": true,
+              "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+              "error": null,
+              "duration_ms": 1.5
+            },
+            {
+              "index": 2,
+              "tool": "search",
+              "arguments": "Ashen Bay Survey",
+              "ok": true,
+              "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+              "error": null,
+              "duration_ms": 1.5
+            },
+            {
+              "index": 3,
+              "tool": "search",
+              "arguments": "Ashen Bay Survey",
+              "ok": true,
+              "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+              "error": null,
+              "duration_ms": 1.5
+            },
+            {
+              "index": 4,
+              "tool": "search",
+              "arguments": "Ashen Bay Survey",
+              "ok": true,
+              "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+              "error": null,
+              "duration_ms": 1.5
+            },
+            {
+              "index": 5,
+              "tool": "search",
+              "arguments": "Ashen Bay Survey",
+              "ok": true,
+              "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+              "error": null,
+              "duration_ms": 1.5
+            },
+            {
+              "index": 6,
+              "tool": "search",
+              "arguments": "Ashen Bay Survey",
+              "ok": true,
+              "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+              "error": null,
+              "duration_ms": 1.5
+            },
+            {
+              "index": 7,
+              "tool": "search",
+              "arguments": "Ashen Bay Survey",
+              "ok": true,
+              "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+              "error": null,
+              "duration_ms": 1.5
+            }
+          ]
+        }
+      }
+    ]
+  ],
+  "session": {
+    "id": "s-3",
+    "policy": "baseline",
+    "created_at": "2026-01-01T00:00:00Z",
+    "running": false,
+    "episodes": [
+      {
+        "id": "e-1",
+        "policy": "baseline",
+        "messages": [
+          {
+            "role": "user",
+            "content": "What is 6 * 7?"
+          },
+          {
+            "role": "assistant",
+            "content": "<tool name=\"calculator\">6 * 7</tool>"
+          },
+          {
+            "role": "user",
+            "content": "<tool_result name=\"calculator\">\n6 * 7 = 42\n</tool_result>"
+          },
+          {
+            "role": "assistant",
+            "content": "<tool name=\"calc\">6 * 7</tool>"
+          },
+          {
+            "role": "user",
+            "content": "<tool_result name=\"calc\">\nThere is no tool named 'calc'. Available tools: calculator, python, search.\n</tool_result>"
+          },
+          {
+            "role": "assistant",
+            "content": "Let me think about it."
+          },
+          {
+            "role": "user",
+            "content": "That reply cannot be scored, because it did not contain the answer tags. Send the same answer again with the literal text <answer> immediately before it and the literal text </answer> immediately after it. Do not start over and do not call any more tools."
+          },
+          {
+            "role": "assistant",
+            "content": "<answer>42</answer>"
+          }
+        ],
+        "nudges": 1,
+        "finish_reason": "answer",
+        "answer": "42",
+        "trace": [
+          {
+            "index": 0,
+            "tool": "calculator",
+            "arguments": "6 * 7",
+            "ok": true,
+            "output": "6 * 7 = 42",
+            "error": null,
+            "duration_ms": 1.5
+          },
+          {
+            "index": 1,
+            "tool": "calc",
+            "arguments": "6 * 7",
+            "ok": false,
+            "output": "There is no tool named 'calc'. Available tools: calculator, python, search.",
+            "error": "unknown tool",
+            "duration_ms": 1.5
+          }
+        ]
+      },
+      {
+        "id": "e-2",
+        "policy": "baseline",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Now look up the Ashen Bay Survey."
+          },
+          {
+            "role": "assistant",
+            "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+          },
+          {
+            "role": "user",
+            "content": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>"
+          },
+          {
+            "role": "assistant",
+            "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+          },
+          {
+            "role": "user",
+            "content": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>"
+          },
+          {
+            "role": "assistant",
+            "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+          },
+          {
+            "role": "user",
+            "content": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>"
+          },
+          {
+            "role": "assistant",
+            "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+          },
+          {
+            "role": "user",
+            "content": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>"
+          },
+          {
+            "role": "assistant",
+            "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+          },
+          {
+            "role": "user",
+            "content": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>"
+          },
+          {
+            "role": "assistant",
+            "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+          },
+          {
+            "role": "user",
+            "content": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>"
+          },
+          {
+            "role": "assistant",
+            "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+          },
+          {
+            "role": "user",
+            "content": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>"
+          },
+          {
+            "role": "assistant",
+            "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+          },
+          {
+            "role": "user",
+            "content": "<tool_result name=\"search\">\n[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.\n</tool_result>"
+          },
+          {
+            "role": "assistant",
+            "content": "<tool name=\"search\">Ashen Bay Survey</tool>"
+          },
+          {
+            "role": "user",
+            "content": "<tool_result name=\"search\">\nTool call budget exhausted (8 calls). Give your final answer now inside <answer></answer> tags.\n</tool_result>"
+          },
+          {
+            "role": "assistant",
+            "content": "<answer>done</answer>"
+          }
+        ],
+        "nudges": 0,
+        "finish_reason": "answer",
+        "answer": "done",
+        "trace": [
+          {
+            "index": 0,
+            "tool": "search",
+            "arguments": "Ashen Bay Survey",
+            "ok": true,
+            "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+            "error": null,
+            "duration_ms": 1.5
+          },
+          {
+            "index": 1,
+            "tool": "search",
+            "arguments": "Ashen Bay Survey",
+            "ok": true,
+            "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+            "error": null,
+            "duration_ms": 1.5
+          },
+          {
+            "index": 2,
+            "tool": "search",
+            "arguments": "Ashen Bay Survey",
+            "ok": true,
+            "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+            "error": null,
+            "duration_ms": 1.5
+          },
+          {
+            "index": 3,
+            "tool": "search",
+            "arguments": "Ashen Bay Survey",
+            "ok": true,
+            "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+            "error": null,
+            "duration_ms": 1.5
+          },
+          {
+            "index": 4,
+            "tool": "search",
+            "arguments": "Ashen Bay Survey",
+            "ok": true,
+            "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+            "error": null,
+            "duration_ms": 1.5
+          },
+          {
+            "index": 5,
+            "tool": "search",
+            "arguments": "Ashen Bay Survey",
+            "ok": true,
+            "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+            "error": null,
+            "duration_ms": 1.5
+          },
+          {
+            "index": 6,
+            "tool": "search",
+            "arguments": "Ashen Bay Survey",
+            "ok": true,
+            "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+            "error": null,
+            "duration_ms": 1.5
+          },
+          {
+            "index": 7,
+            "tool": "search",
+            "arguments": "Ashen Bay Survey",
+            "ok": true,
+            "output": "[exp-10] The Ashen Bay Survey\nThe Ashen Bay Survey took place in 2042 and ran for 4 weeks. It was led by Emeka Stroud. The party was based at Fenwold Station and travelled aboard RV Marlin Fen. Field notes and raw logs from the Ashen Bay Survey are held in the institute archive.\n\n[exp-07] The Saltmarsh Survey\nThe Saltmarsh Survey took place in 2038 and ran for 18 weeks. It was led by Cato Lindqvist. The party was based at Grimsby Shoal Station and travelled aboard RV Windrose. Field notes and raw logs from the Saltmarsh Survey are held in the institute archive.\n\n[exp-13] The Hollowmere Survey\nThe Hollowmere Survey took place in 2044 and ran for 15 weeks. It was led by Elin Abenov. The party was based at Drossel Ridge Station and travelled aboard RV Northlight. Field notes and raw logs from the Hollowmere Survey are held in the institute archive.",
+            "error": null,
+            "duration_ms": 1.5
+          }
+        ]
+      }
+    ]
+  },
+  "running_session": {
+    "id": "s-4",
+    "policy": "baseline",
+    "created_at": "2026-01-01T00:00:00Z",
+    "running": true,
+    "episodes": []
+  },
+  "live_replay": [
+    {
+      "type": "episode_started",
+      "episode": "e-5",
+      "turn": 0,
+      "prompt": "hold until cancelled"
+    }
+  ],
+  "cancel": {
+    "cancelling": "e-5"
+  },
+  "cancelled_stream": [
+    {
+      "type": "episode_started",
+      "episode": "e-5",
+      "turn": 0,
+      "prompt": "hold until cancelled"
+    },
+    {
+      "type": "episode_finished",
+      "episode": "e-5",
+      "turn": 0,
+      "finished": {
+        "id": "e-5",
+        "policy": "baseline",
+        "messages": [
+          {
+            "role": "user",
+            "content": "hold until cancelled"
+          }
+        ],
+        "nudges": 0,
+        "finish_reason": "cancelled",
+        "answer": null,
+        "trace": [],
+        "error": "backend POST /turn: Post \"http://127.0.0.1:PORT/turn\": context canceled"
+      }
+    }
+  ],
+  "cancelled_session": {
+    "id": "s-4",
+    "policy": "baseline",
+    "created_at": "2026-01-01T00:00:00Z",
+    "running": false,
+    "episodes": [
+      {
+        "id": "e-5",
+        "policy": "baseline",
+        "messages": [
+          {
+            "role": "user",
+            "content": "hold until cancelled"
+          }
+        ],
+        "nudges": 0,
+        "finish_reason": "cancelled",
+        "answer": null,
+        "trace": [],
+        "error": "backend POST /turn: Post \"http://127.0.0.1:PORT/turn\": context canceled"
+      }
+    ]
+  },
+  "sessions": [
+    {
+      "id": "s-3",
+      "policy": "baseline",
+      "created_at": "2026-01-01T00:00:00Z",
+      "running": false,
+      "episodes": 2
+    },
+    {
+      "id": "s-4",
+      "policy": "baseline",
+      "created_at": "2026-01-01T00:00:00Z",
+      "running": false,
+      "episodes": 1
+    }
+  ],
+  "runs": [
+    {
+      "name": "run1",
+      "finished": false,
+      "wall_clock_seconds": null,
+      "steps": 3
+    }
+  ],
+  "run": {
+    "name": "run1",
+    "finished": false,
+    "wall_clock_seconds": null,
+    "steps": 3,
+    "config": {
+      "record": "config",
+      "policy": {
+        "model": "Qwen/Qwen2.5-0.5B-Instruct",
+        "dtype": "bfloat16",
+        "device": "cuda",
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "batch_size": 16,
+        "seed": 0,
+        "lora": {
+          "rank": 16,
+          "targets": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ],
+          "trainable": 8798208,
+          "total": 502830976
+        }
+      },
+      "tasks": {
+        "code": 30,
+        "math": 150,
+        "multi_tool": 35,
+        "no_tool": 40,
+        "qa": 85
+      },
+      "sandbox": {
+        "backend": "windows",
+        "confinement": "appcontainer+job (confines: filesystem, network, resources)",
+        "allow_unconfined": false
+      },
+      "arguments": {
+        "steps": 200,
+        "prompts_per_step": 8,
+        "group_size": 8,
+        "model": "Qwen/Qwen2.5-0.5B-Instruct",
+        "rank": 16,
+        "learning_rate": 1e-05,
+        "kl_beta": 0.04,
+        "clip_epsilon": 0.2,
+        "max_grad_norm": 1.0,
+        "chunk_size": 64,
+        "max_sequence_tokens": 2048,
+        "max_new_tokens": 384,
+        "batch_size": 16,
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "seed": 0,
+        "categories": null,
+        "keep_degenerate": false,
+        "no_std_normalization": false,
+        "checkpoint_every": 10,
+        "out": "artifacts\\rl\\run1",
+        "resume": null,
+        "allow_unconfined": false,
+        "no_code_tool": false,
+        "progress": false
+      }
+    },
+    "records": [
+      {
+        "record": "step",
+        "step": 1,
+        "episodes": 64,
+        "kept_episodes": 24,
+        "dropped_degenerate": 40,
+        "groups": 8,
+        "degenerate_groups": 5,
+        "mean_reward": 0.2781,
+        "per_category_reward": {
+          "code": 0.675,
+          "math": 0.0,
+          "multi_tool": 0.0,
+          "no_tool": 0.875,
+          "qa": 0.0
+        },
+        "loss": -0.029643,
+        "grad_norm": 0.268274,
+        "mean_kl": 0.0,
+        "completion_tokens": 1920.0,
+        "microbatches": 2,
+        "truncated": 0,
+        "retokenized": 0,
+        "overshoot_chars": 0,
+        "divergent_turns": 3,
+        "measured_turns": 103,
+        "divergence_rate": 0.0291,
+        "seconds_rollout": 120.53,
+        "seconds_backward": 8.05,
+        "peak_gib": 3.597,
+        "reserved_gib": 4.102,
+        "spilled": false,
+        "tool_calls": {
+          "calculator": 1,
+          "search": 9
+        }
+      },
+      {
+        "record": "step",
+        "step": 2,
+        "episodes": 64,
+        "kept_episodes": 8,
+        "dropped_degenerate": 56,
+        "groups": 8,
+        "degenerate_groups": 7,
+        "mean_reward": 0.2781,
+        "per_category_reward": {
+          "code": 0.6125,
+          "math": 0.0,
+          "multi_tool": 0.0,
+          "no_tool": 0.5,
+          "qa": 0.0
+        },
+        "loss": 0.010914,
+        "grad_norm": 0.209477,
+        "mean_kl": 0.000731,
+        "completion_tokens": 1079.0,
+        "microbatches": 2,
+        "truncated": 0,
+        "retokenized": 0,
+        "overshoot_chars": 0,
+        "divergent_turns": 3,
+        "measured_turns": 101,
+        "divergence_rate": 0.0297,
+        "seconds_rollout": 59.94,
+        "seconds_backward": 2.79,
+        "peak_gib": 2.139,
+        "reserved_gib": 2.498,
+        "spilled": false,
+        "tool_calls": {
+          "calculator": 4,
+          "search": 2
+        }
+      },
+      {
+        "record": "step",
+        "step": 88,
+        "episodes": 64,
+        "kept_episodes": 0,
+        "dropped_degenerate": 64,
+        "groups": 8,
+        "degenerate_groups": 8,
+        "mean_reward": 0.625,
+        "per_category_reward": {
+          "code": 1.0,
+          "math": 1.0,
+          "multi_tool": 0.0,
+          "no_tool": 1.0,
+          "qa": 0.0
+        },
+        "loss": 0.0,
+        "grad_norm": 0.0,
+        "mean_kl": 0.0,
+        "completion_tokens": 0.0,
+        "microbatches": 0,
+        "truncated": 0,
+        "retokenized": 0,
+        "overshoot_chars": 0,
+        "divergent_turns": 6,
+        "measured_turns": 106,
+        "divergence_rate": 0.0566,
+        "seconds_rollout": 37.11,
+        "seconds_backward": 0.0,
+        "peak_gib": 0.0,
+        "reserved_gib": 0.0,
+        "spilled": false,
+        "tool_calls": {
+          "calculator": 33,
+          "search": 7
+        }
+      }
+    ]
+  }
+}
