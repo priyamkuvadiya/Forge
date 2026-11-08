@@ -39,3 +39,6 @@ middle-layer/forge.db*
 # Smoke runs. These exist to prove the loop executes, not to record a result,
 # and their reward numbers are drawn from a handful of prompts.
 artifacts/rl/smoke*/
+
+# The frontend's production build; regenerate with npm run build.
+frontend/dist/
