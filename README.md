@@ -68,6 +68,10 @@ given without a search fell from 198 to 0. QA is still 0, because the policy
 searches once and never chains, and multi_tool stopped using the calculator.
 See [the second run](#the-second-run-a-penalty-for-answering-without-searching).
 
+![run2 solving a held-out math task with the calculator, in the demo](docs/images/chat-run2-math.png)
+
+The demo shows every tool call as it happens; see [module 8](#module-8-the-frontend).
+
 ## Module 1: from-scratch transformer
 
 `transformer_scratch/` — a GPT-style decoder-only transformer (causal
@@ -1816,6 +1820,21 @@ arguments, result, status and duration, any nudge the loop sent, and how the
 episode ended. A call the budget refused is shown as not run rather than as a
 failure of the tool.
 
+The screenshots below are the first sample of each, from the real stack, not
+picked from several. On a held-out math task, run2 calls the calculator and gets
+it right (1701.87); the baseline, given the same task, answers 352.66 without a
+tool.
+
+![run2 solving a held-out math task with the calculator](docs/images/chat-run2-math.png)
+
+![the baseline on the same task, answering without a tool](docs/images/chat-baseline-math.png)
+
+The failure the evaluation reports is visible too. On a held-out multi_tool
+question that needs two hops (which station, then when it was founded), run2
+searches once, does not look up the station, and guesses 27. The answer is 34.
+
+![run2 searching once on a two-hop question and guessing](docs/images/chat-run2-multi.png)
+
 - **Policies.** A session is opened with one policy and keeps it. The page offers
   the baseline, **run2 as "trained"**, and run1. run2 is the default because it
   scores higher held out (0.503 against 0.467) and stopped guessing on QA. run1
@@ -1848,6 +1867,8 @@ are the result; this is how the runs got there. Two details keep the charts hone
 - A step where every group was degenerate made no update and logs 0.0 as a
   placeholder for KL and memory. Those points are left out, not drawn as zeros.
 - A field a run never logged (run1 has no `penalized`) is a gap, not a line at zero.
+
+![the training dashboard comparing run1 and run2](docs/images/training.png)
 
 ### Tests
 
