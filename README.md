@@ -1723,12 +1723,19 @@ well a policy behaves in that situation.
 | `POST /sessions` | `{policy}` → a new session. The policy is fixed for the session's life, so comparing policies means opening one session each |
 | `GET /sessions/{id}` | one session with its episodes |
 | `POST /sessions/{id}/messages` | `{content}` → the finished episode as JSON, or one server-sent event per step with `Accept: text/event-stream` |
+| `GET /sessions/{id}/live` | the running episode's events from the first one, then the rest as they happen; `204` if nothing is running |
+| `POST /sessions/{id}/cancel` | stop the running episode, which then ends as `cancelled` |
 | `GET /runs` | every imported training run, without its records |
 | `GET /runs/{name}` | one training run: its config and every step record |
 
 Events are whole steps, not tokens: `episode_started`, `turn`, `tool_result`,
-`nudge`, `episode_finished`. A client disconnecting cancels the episode, though a
+`nudge`, `episode_finished`. An episode belongs to the server, not to the request
+that started it. A page that refreshes or loses its connection leaves the episode
+running, and `/live` hands the new page every event so far, then the rest. Any
+number of pages can follow one episode. Only `/cancel` or shutdown stops it, and a
 generation already running on the GPU still finishes before the next one starts.
+The final event is sent only after the episode is saved, so a page that reloads
+the session when it sees that event always finds the episode there.
 
 The server has no authentication, and a request to it can end with generated code
 running. So it refuses to listen on anything but loopback, and it rejects cross-site
@@ -1753,8 +1760,11 @@ would have seen without it.
 An episode's row is written when it starts, so a crash cannot lose the message that
 caused it. A row with no recorded end and no live episode behind it reads back as
 `interrupted`, a system failure like `tool_error`: it stays visible and is left out
-of what the policy sees next. Only finished episodes are saved whole, so an
-interrupted one keeps its message and nothing it did before the cut-off.
+of what the policy sees next. Each event is checkpointed to the row as it happens,
+so an interrupted episode keeps every turn and tool call up to the cut-off. It is
+rebuilt by `agent.Replay`, which makes the same appends as the loop and is tested
+against it at every point an episode can be cut. On shutdown, running episodes
+are cancelled and each one's ending is recorded before the file closes.
 
 That rule only holds if no other process owns those rows, so the middle layer holds
 an exclusive lock on the file, and a second copy is refused at startup. The operating

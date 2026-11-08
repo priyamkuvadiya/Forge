@@ -138,22 +138,28 @@ func (e Episode) Failed() bool {
 // Event is one step of an episode as it happens, for the live view. Unused
 // fields are omitted, so each type carries only what it means.
 type Event struct {
-	Type      string    `json:"type"`
-	Episode   string    `json:"episode"`
-	Turn      int       `json:"turn"`
+	Type    string `json:"type"`
+	Episode string `json:"episode"`
+	Turn    int    `json:"turn"`
+	// Started: the user message, for a page that reattaches mid-episode and
+	// so never sent it.
+	Prompt    string    `json:"prompt,omitempty"`
 	Kind      string    `json:"kind,omitempty"`
 	Text      string    `json:"text,omitempty"`
 	ToolCall  *ToolCall `json:"tool_call,omitempty"`
 	LatencyMS float64   `json:"latency_ms,omitempty"`
 	// Tool result: Message is what the policy was shown. Ran is false when the
 	// budget refused the call.
-	Tool       string   `json:"tool,omitempty"`
-	OK         *bool    `json:"ok,omitempty"`
-	Message    string   `json:"message,omitempty"`
-	ToolError  *string  `json:"tool_error,omitempty"`
-	Ran        *bool    `json:"ran,omitempty"`
-	DurationMS float64  `json:"duration_ms,omitempty"`
-	Finished   *Episode `json:"finished,omitempty"`
+	Tool       string  `json:"tool,omitempty"`
+	OK         *bool   `json:"ok,omitempty"`
+	Message    string  `json:"message,omitempty"`
+	ToolError  *string `json:"tool_error,omitempty"`
+	Ran        *bool   `json:"ran,omitempty"`
+	DurationMS float64 `json:"duration_ms,omitempty"`
+	// The call's trace entry, nil when it never ran. It is what Replay rebuilds
+	// the trace from, so an episode cut off mid-way keeps the calls it made.
+	Trace    *TraceEntry `json:"trace,omitempty"`
+	Finished *Episode    `json:"finished,omitempty"`
 }
 
 const (
@@ -196,7 +202,7 @@ func (r Runner) Run(
 		Messages: []Message{{Role: "user", Content: prompt}},
 		Trace:    []TraceEntry{},
 	}
-	emit(Event{Type: EventStarted, Episode: id})
+	emit(Event{Type: EventStarted, Episode: id, Prompt: prompt})
 
 	var replies []string
 	conversation := func() []Message {
@@ -282,6 +288,7 @@ func (r Runner) Run(
 				Message:   result.Message,
 				ToolError: result.Error,
 				Ran:       &ran,
+				Trace:     result.Trace,
 			}
 			if result.Trace != nil {
 				event.DurationMS = result.Trace.DurationMS
@@ -299,6 +306,37 @@ func (r Runner) Run(
 		}
 	}
 	return finish(FinishTurnLimit, nil)
+}
+
+// Replay rebuilds what an episode had done from the events it emitted, for an
+// episode that never finished. It makes the same appends Run makes, so the
+// messages, nudges and trace are exactly those Run held at the last event. What
+// it cannot know is how the episode would have ended: FinishReason, Answer and
+// Error are left for the caller. A finished event, if present, is ignored.
+func Replay(id, policy, prompt string, events []Event) Episode {
+	episode := Episode{
+		ID:       id,
+		Policy:   policy,
+		Messages: []Message{{Role: "user", Content: prompt}},
+		Trace:    []TraceEntry{},
+	}
+	for _, event := range events {
+		switch event.Type {
+		case EventTurn:
+			if event.Kind != KindEmpty {
+				episode.Messages = append(episode.Messages, Message{Role: "assistant", Content: event.Text})
+			}
+		case EventToolResult:
+			episode.Messages = append(episode.Messages, Message{Role: "user", Content: event.Message})
+			if event.Trace != nil {
+				episode.Trace = append(episode.Trace, *event.Trace)
+			}
+		case EventNudge:
+			episode.Nudges++
+			episode.Messages = append(episode.Messages, Message{Role: "user", Content: event.Message})
+		}
+	}
+	return episode
 }
 
 func failureReason(err error, otherwise string) string {

@@ -16,7 +16,16 @@ import (
 	sqlite3 "modernc.org/sqlite/lib"
 )
 
-const schemaVersion = 1
+const schemaVersion = 2
+
+// migrations[v] takes a database at version v to v+1. A fresh database runs the
+// schema and then every migration, so the two paths cannot drift apart.
+var migrations = map[int]string{
+	// Version 2: an episode's events so far, rewritten after each one, so an
+	// episode cut off by a crash keeps what it had done. NULL once it finishes,
+	// when body is the record.
+	1: `ALTER TABLE episodes ADD COLUMN events TEXT;`,
+}
 
 const schema = `
 CREATE TABLE sessions (
@@ -127,23 +136,34 @@ func prepare(db *sql.DB) error {
 	if err := db.QueryRow("PRAGMA user_version").Scan(&version); err != nil {
 		return err
 	}
-	switch version {
-	case schemaVersion:
-		return nil
-	case 0:
-		return create(db)
+	if version > schemaVersion || version < 0 {
+		return fmt.Errorf("schema version %d, this build only knows up to %d", version, schemaVersion)
 	}
-	return fmt.Errorf("schema version %d, this build only knows %d", version, schemaVersion)
+	if version == schemaVersion {
+		return nil
+	}
+	return upgrade(db, version)
 }
 
-func create(db *sql.DB) error {
+// upgrade brings the database to schemaVersion in one transaction, so a failure
+// leaves it at the version it started at.
+func upgrade(db *sql.DB, from int) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	if _, err := tx.Exec(schema); err != nil {
-		return err
+	version := from
+	if version == 0 {
+		if _, err := tx.Exec(schema); err != nil {
+			return err
+		}
+		version = 1
+	}
+	for ; version < schemaVersion; version++ {
+		if _, err := tx.Exec(migrations[version]); err != nil {
+			return fmt.Errorf("migrating from version %d: %w", version, err)
+		}
 	}
 	if _, err := tx.Exec(fmt.Sprintf("PRAGMA user_version = %d", schemaVersion)); err != nil {
 		return err

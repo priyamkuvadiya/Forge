@@ -6,12 +6,16 @@
 //	POST /sessions                {policy} -> a new session
 //	GET  /sessions/{id}           one session with its episodes
 //	POST /sessions/{id}/messages  {content} -> the episode it caused
+//	GET  /sessions/{id}/live      the running episode's events, from the first
+//	POST /sessions/{id}/cancel    stop the running episode
 //	GET  /runs                    every imported training run, without records
 //	GET  /runs/{name}             one run: its config and every step record
 //
-// The last one returns the finished episode as JSON, or with
+// A message returns the finished episode as JSON, or with
 // `Accept: text/event-stream` streams each step as it happens. That stream is
-// what the live tool view is built on. Disconnecting cancels the episode.
+// what the live tool view is built on. The episode belongs to the server, not to
+// the request: disconnecting leaves it running, /live picks it up again with
+// everything it has done so far, and only /cancel or shutdown stops it.
 //
 // The server has no authentication, and a request to it can end with generated
 // code running in the sandbox. It therefore only ever listens on loopback, and
@@ -23,11 +27,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"mime"
 	"net"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/priyamkuvadiya/Forge/middle-layer/internal/agent"
@@ -63,9 +67,18 @@ type Server struct {
 	Runner  Runner
 	Store   *session.Store
 	Metrics *metrics.Store
+	// Context is the server's lifetime. Episodes run on it, so cancelling it
+	// stops them all; then Wait for their records. Nil means never cancelled.
+	Context context.Context
+
+	liveMu   sync.Mutex
+	live     map[string]*live // Session ID -> its running episode.
+	episodes sync.WaitGroup
 }
 
+// Handler is called once per Server.
 func (s *Server) Handler() http.Handler {
+	s.live = map[string]*live{}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", s.health)
 	mux.HandleFunc("GET /policies", s.policies)
@@ -73,6 +86,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /sessions", s.createSession)
 	mux.HandleFunc("GET /sessions/{id}", s.getSession)
 	mux.HandleFunc("POST /sessions/{id}/messages", s.postMessage)
+	mux.HandleFunc("GET /sessions/{id}/live", s.followLive)
+	mux.HandleFunc("POST /sessions/{id}/cancel", s.cancelEpisode)
 	mux.HandleFunc("GET /runs", s.listRuns)
 	mux.HandleFunc("GET /runs/{name}", s.getRun)
 	return guard(mux)
@@ -273,20 +288,14 @@ func (s *Server) postMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var emit func(agent.Event)
-	stream := wantsStream(r)
-	if stream {
-		emit = startStream(w)
-	}
-	episode := s.Runner.Run(r.Context(), begun.EpisodeID, begun.Policy, begun.History, request.Content, emit)
-	// The client has already seen, or is about to get, the episode itself. All a
-	// failed save costs is the later record, which then reads as interrupted.
-	if err := s.Store.End(id, episode); err != nil {
-		log.Printf("%v", err)
-	}
-
-	if stream {
+	running := s.start(id, begun, request.Content)
+	if wantsStream(r) {
+		running.follow(r.Context(), startStream(w))
 		return
+	}
+	episode, ok := running.wait(r.Context())
+	if !ok {
+		return // The client left; the episode carries on without it.
 	}
 	status := http.StatusOK
 	if episode.Failed() {
@@ -295,13 +304,56 @@ func (s *Server) postMessage(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, status, episode)
 }
 
+// followLive streams the running episode from its first event, for a page that
+// was not there when it started. 204 means nothing is running: reload the
+// session, where a just-finished episode already is.
+func (s *Server) followLive(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	running := s.running(id)
+	if running == nil {
+		s.nothingRunning(w, id, http.StatusNoContent)
+		return
+	}
+	running.follow(r.Context(), startStream(w))
+}
+
+// cancelEpisode stops the running episode. It returns at once; the episode then
+// ends as cancelled, which its stream and the session show as usual.
+func (s *Server) cancelEpisode(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	running := s.running(id)
+	if running == nil {
+		s.nothingRunning(w, id, http.StatusConflict)
+		return
+	}
+	running.cancel()
+	writeJSON(w, http.StatusAccepted, map[string]string{"cancelling": running.episodeID})
+}
+
+// nothingRunning answers for a session with no live episode: 404 if there is no
+// such session, otherwise the given status.
+func (s *Server) nothingRunning(w http.ResponseWriter, id string, status int) {
+	_, err := s.Store.Get(id)
+	switch {
+	case errors.Is(err, session.ErrNotFound):
+		writeError(w, http.StatusNotFound, err.Error())
+	case err != nil:
+		writeError(w, http.StatusInternalServerError, err.Error())
+	case status == http.StatusNoContent:
+		w.WriteHeader(status)
+	default:
+		writeError(w, status, "nothing is running in this session")
+	}
+}
+
 func wantsStream(r *http.Request) bool {
 	return strings.Contains(r.Header.Get("Accept"), "text/event-stream")
 }
 
 // startStream sends the event-stream headers and returns the function that writes
 // each event. A write can fail once the client has gone, and that is ignored: the
-// request context is cancelled too, which is what stops the episode.
+// request context is cancelled too, which is what stops the following (and only
+// the following; the episode is not the request's).
 func startStream(w http.ResponseWriter) func(agent.Event) {
 	header := w.Header()
 	header.Set("Content-Type", "text/event-stream")

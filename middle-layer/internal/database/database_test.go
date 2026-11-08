@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"os"
 	"path/filepath"
 	"strings"
@@ -120,6 +121,58 @@ func TestANewerSchemaIsRefused(t *testing.T) {
 
 	if _, err := Open(path); err == nil || !strings.Contains(err.Error(), "schema version 99") {
 		t.Fatalf("err = %v", err)
+	}
+}
+
+// A version 1 file is what every database written before schema 2 is, including
+// the conversations already on this machine.
+func TestAVersionOneDatabaseIsMigratedWithItsRowsKept(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "forge.db")
+	source, err := dataSource(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, err := sql.Open("sqlite", source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, statement := range []string{
+		schema,
+		"PRAGMA user_version = 1",
+		"INSERT INTO sessions (id, policy, created_at) VALUES ('s', 'run2', 't')",
+		`INSERT INTO episodes (id, session_id, prompt, started_at, finished_at, finish_reason, body)
+		 VALUES ('e', 's', 'p', 't', 't', 'answer', '{"id":"e"}')`,
+	} {
+		if _, err := raw.Exec(statement); err != nil {
+			t.Fatal(err)
+		}
+	}
+	raw.Close()
+
+	db, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	var version int
+	if err := db.QueryRow("PRAGMA user_version").Scan(&version); err != nil || version != schemaVersion {
+		t.Fatalf("version = %d, err = %v", version, err)
+	}
+	var body string
+	var events sql.NullString
+	if err := db.QueryRow("SELECT body, events FROM episodes WHERE id = 'e'").Scan(&body, &events); err != nil {
+		t.Fatal(err)
+	}
+	if body != `{"id":"e"}` || events.Valid {
+		t.Fatalf("body = %q, events = %v", body, events)
+	}
+}
+
+func TestEveryVersionHasAMigration(t *testing.T) {
+	for version := 1; version < schemaVersion; version++ {
+		if migrations[version] == "" {
+			t.Fatalf("no migration from version %d", version)
+		}
 	}
 }
 

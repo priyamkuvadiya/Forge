@@ -346,6 +346,75 @@ func TestAnEpisodeCutOffByARestartReadsAsInterrupted(t *testing.T) {
 	}
 }
 
+func TestAnInterruptedEpisodeKeepsWhatItHadDone(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "forge.db")
+	db := openAt(t, path)
+	store := NewStore(db, 1000)
+	created := create(t, store, "run2")
+	begun, _ := store.Begin(created.ID, "6*7?")
+
+	ok, ran := true, true
+	events := []agent.Event{
+		{Type: agent.EventStarted, Episode: begun.EpisodeID},
+		{Type: agent.EventTurn, Kind: agent.KindToolCall, Text: `<tool name="calculator">6*7</tool>`,
+			ToolCall: &agent.ToolCall{Name: "calculator", Arguments: "6*7"}},
+		{Type: agent.EventToolResult, Tool: "calculator", OK: &ok, Ran: &ran, Message: "6*7 = 42",
+			Trace: &agent.TraceEntry{Tool: "calculator", Arguments: "6*7", OK: true, Output: "42"}},
+	}
+	// Each checkpoint replaces the last, so only the latest counts.
+	if err := store.Progress(created.ID, events[:1]); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Progress(created.ID, events); err != nil {
+		t.Fatal(err)
+	}
+	db.Close() // The process dies here.
+
+	found, err := NewStore(openAt(t, path), 1000).Get(created.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cut := found.Episodes[0]
+	if cut.ID != begun.EpisodeID || cut.FinishReason != agent.FinishInterrupted || cut.Answer != nil {
+		t.Fatalf("episode = %+v", cut)
+	}
+	want := []agent.Message{
+		{Role: "user", Content: "6*7?"},
+		{Role: "assistant", Content: `<tool name="calculator">6*7</tool>`},
+		{Role: "user", Content: "6*7 = 42"},
+	}
+	if !reflect.DeepEqual(cut.Messages, want) || len(cut.Trace) != 1 || cut.Trace[0].Output != "42" {
+		t.Fatalf("episode = %+v", cut)
+	}
+}
+
+func TestACheckpointCannotTouchAFinishedEpisode(t *testing.T) {
+	db := openAt(t, filepath.Join(t.TempDir(), "forge.db"))
+	store := NewStore(db, 1000)
+	created := create(t, store, "run2")
+	_, _ = store.Begin(created.ID, "a")
+	if err := store.Progress(created.ID, []agent.Event{{Type: agent.EventStarted}}); err != nil {
+		t.Fatal(err)
+	}
+	end(t, store, created.ID, exchange(agent.FinishAnswer, "a", "b"))
+
+	// A late checkpoint, after the session was released.
+	if err := store.Progress(created.ID, []agent.Event{{Type: agent.EventNudge}}); err != nil {
+		t.Fatal(err)
+	}
+	var events sql.NullString
+	if err := db.QueryRow("SELECT events FROM episodes").Scan(&events); err != nil {
+		t.Fatal(err)
+	}
+	if events.Valid {
+		t.Fatalf("a finished episode still holds a checkpoint: %s", events.String)
+	}
+	found, _ := store.Get(created.ID)
+	if found.Episodes[0].FinishReason != agent.FinishAnswer || found.Episodes[0].Nudges != 0 {
+		t.Fatalf("episode = %+v", found.Episodes[0])
+	}
+}
+
 func TestAnEpisodeThatFailsToSaveReleasesTheSession(t *testing.T) {
 	db := openAt(t, filepath.Join(t.TempDir(), "forge.db"))
 	store := NewStore(db, 1000)

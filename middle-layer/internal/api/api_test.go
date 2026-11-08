@@ -60,7 +60,7 @@ func (r *fakeRunner) Run(ctx context.Context, id, policy string, history []agent
 		emit = func(agent.Event) {}
 	}
 	r.history = history
-	emit(agent.Event{Type: agent.EventStarted, Episode: id})
+	emit(agent.Event{Type: agent.EventStarted, Episode: id, Prompt: prompt})
 	episode := agent.Episode{
 		ID:           id,
 		Policy:       policy,
@@ -73,7 +73,9 @@ func (r *fakeRunner) Run(ctx context.Context, id, policy string, history []agent
 		case <-r.hold:
 		case <-ctx.Done():
 			episode.FinishReason = agent.FinishCancelled
-			r.left <- ctx.Err()
+			if r.left != nil {
+				r.left <- ctx.Err()
+			}
 		}
 	}
 	emit(agent.Event{Type: agent.EventTurn, Episode: id, Text: "line one\nline two"})
@@ -86,12 +88,14 @@ func (r *fakeRunner) Run(ctx context.Context, id, policy string, history []agent
 
 type fixture struct {
 	*httptest.Server
-	backend *fakeBackend
-	worker  *fakeWorker
-	runner  *fakeRunner
-	store   *session.Store
-	metrics *metrics.Store
-	db      *sql.DB
+	server   *Server
+	shutdown context.CancelFunc
+	backend  *fakeBackend
+	worker   *fakeWorker
+	runner   *fakeRunner
+	store    *session.Store
+	metrics  *metrics.Store
+	db       *sql.DB
 }
 
 func newFixture(t *testing.T) *fixture {
@@ -109,10 +113,83 @@ func newFixture(t *testing.T) *fixture {
 		metrics: metrics.NewStore(db),
 		db:      db,
 	}
-	server := &Server{Backend: f.backend, Worker: f.worker, Runner: f.runner, Store: f.store, Metrics: f.metrics}
-	f.Server = httptest.NewServer(server.Handler())
+	ctx, shutdown := context.WithCancel(context.Background())
+	f.shutdown = shutdown
+	f.server = &Server{
+		Backend: f.backend, Worker: f.worker, Runner: f.runner, Store: f.store, Metrics: f.metrics, Context: ctx,
+	}
+	f.Server = httptest.NewServer(f.server.Handler())
 	t.Cleanup(f.Close)
+	// Before Close, which waits for streams that follow a held episode.
+	t.Cleanup(func() {
+		shutdown()
+		f.server.Wait()
+	})
 	return f
+}
+
+// stream opens an event stream that the returned function closes.
+func (f *fixture) stream(t *testing.T, method, path, body string) (*bufio.Reader, func()) {
+	t.Helper()
+	ctx, cancel := context.WithCancel(context.Background())
+	request, _ := http.NewRequestWithContext(ctx, method, f.URL+path, strings.NewReader(body))
+	if method == http.MethodPost {
+		request.Header.Set("Content-Type", "application/json")
+	}
+	request.Header.Set("Accept", "text/event-stream")
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		cancel()
+		t.Fatal(err)
+	}
+	if response.StatusCode != http.StatusOK {
+		cancel()
+		t.Fatalf("status = %d", response.StatusCode)
+	}
+	return bufio.NewReader(response.Body), func() {
+		cancel()
+		response.Body.Close()
+	}
+}
+
+// nextEvent reads one event, failing if none arrives in time.
+func nextEvent(t *testing.T, reader *bufio.Reader) agent.Event {
+	t.Helper()
+	got := make(chan agent.Event, 1)
+	failed := make(chan error, 1)
+	go func() {
+		for {
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				failed <- err
+				return
+			}
+			if data, ok := strings.CutPrefix(line, "data: "); ok {
+				var event agent.Event
+				if err := json.Unmarshal([]byte(data), &event); err != nil {
+					failed <- err
+					return
+				}
+				got <- event
+				return
+			}
+		}
+	}()
+	select {
+	case event := <-got:
+		return event
+	case err := <-failed:
+		t.Fatalf("reading the stream: %v", err)
+	case <-time.After(5 * time.Second):
+		t.Fatal("no event arrived")
+	}
+	return agent.Event{}
+}
+
+func (f *fixture) hold() {
+	f.runner.hold = make(chan struct{})
+	f.runner.entered = make(chan struct{})
+	f.runner.left = make(chan error, 1)
 }
 
 func (f *fixture) post(t *testing.T, path, body string, headers ...string) *http.Response {
@@ -490,49 +567,199 @@ func TestEventsArriveBeforeTheEpisodeEnds(t *testing.T) {
 	close(f.runner.hold)
 }
 
-func TestDisconnectingCancelsTheEpisodeAndReleasesTheSession(t *testing.T) {
-	f := newFixture(t)
-	f.runner.hold = make(chan struct{})
-	f.runner.entered = make(chan struct{})
-	f.runner.left = make(chan error, 1)
-	id := f.session(t)
+// The refresh case: the page that started an episode goes away mid-way, and a new
+// one has to find it still running and see everything it missed.
+func TestDisconnectingLeavesTheEpisodeRunningAndAReconnectSeesItAll(t *testing.T) {
+	for _, mode := range []string{"stream", "json"} {
+		t.Run(mode, func(t *testing.T) {
+			f := newFixture(t)
+			f.hold()
+			id := f.session(t)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	request, _ := http.NewRequestWithContext(ctx, http.MethodPost, f.URL+"/sessions/"+id+"/messages", bytes.NewReader([]byte(`{"content":"x"}`)))
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Accept", "text/event-stream")
-	response, err := http.DefaultClient.Do(request)
+			ctx, leave := context.WithCancel(context.Background())
+			request, _ := http.NewRequestWithContext(ctx, http.MethodPost, f.URL+"/sessions/"+id+"/messages", bytes.NewReader([]byte(`{"content":"x"}`)))
+			request.Header.Set("Content-Type", "application/json")
+			if mode == "stream" {
+				request.Header.Set("Accept", "text/event-stream")
+			}
+			go func() {
+				if response, err := http.DefaultClient.Do(request); err == nil {
+					response.Body.Close()
+				}
+			}()
+			<-f.runner.entered
+			leave()
+
+			select {
+			case err := <-f.runner.left:
+				t.Fatalf("the episode stopped when the client left: %v", err)
+			case <-time.After(200 * time.Millisecond):
+			}
+			if found, _ := f.store.Get(id); !found.Running {
+				t.Fatal("the session no longer reads as running")
+			}
+
+			reader, closeStream := f.stream(t, http.MethodGet, "/sessions/"+id+"/live", "")
+			defer closeStream()
+			// Everything so far is replayed first.
+			if first := nextEvent(t, reader); first.Type != agent.EventStarted || first.Prompt != "x" {
+				t.Fatalf("first event = %+v", first)
+			}
+			close(f.runner.hold)
+			if turn := nextEvent(t, reader); turn.Type != agent.EventTurn {
+				t.Fatalf("event = %+v", turn)
+			}
+			last := nextEvent(t, reader)
+			if last.Type != agent.EventFinished || last.Finished == nil || last.Finished.FinishReason != agent.FinishAnswer {
+				t.Fatalf("last event = %+v", last)
+			}
+			found, _ := f.store.Get(id)
+			if found.Running || len(found.Episodes) != 1 || found.Episodes[0].FinishReason != agent.FinishAnswer {
+				t.Fatalf("session = %+v", found)
+			}
+		})
+	}
+}
+
+func TestTwoPagesFollowingOneEpisodeSeeTheSameEvents(t *testing.T) {
+	f := newFixture(t)
+	f.hold()
+	id := f.session(t)
+	first, closeFirst := f.stream(t, http.MethodPost, "/sessions/"+id+"/messages", `{"content":"x"}`)
+	defer closeFirst()
+	<-f.runner.entered
+	second, closeSecond := f.stream(t, http.MethodGet, "/sessions/"+id+"/live", "")
+	defer closeSecond()
+	close(f.runner.hold)
+
+	for range 3 {
+		a, b := nextEvent(t, first), nextEvent(t, second)
+		if a.Type != b.Type || a.Text != b.Text {
+			t.Fatalf("%+v != %+v", a, b)
+		}
+	}
+}
+
+func TestLiveWithNothingRunning(t *testing.T) {
+	f := newFixture(t)
+	id := f.session(t)
+	expect(t, f.get(t, "/sessions/"+id+"/live"), http.StatusNoContent)
+	expect(t, f.get(t, "/sessions/missing/live"), http.StatusNotFound)
+}
+
+func TestCancelStopsTheEpisodeAndReleasesTheSession(t *testing.T) {
+	f := newFixture(t)
+	f.hold()
+	id := f.session(t)
+	reader, closeStream := f.stream(t, http.MethodPost, "/sessions/"+id+"/messages", `{"content":"x"}`)
+	defer closeStream()
+	<-f.runner.entered
+
+	// A cross-site form must not be able to cancel either.
+	request, _ := http.NewRequest(http.MethodPost, f.URL+"/sessions/"+id+"/cancel", strings.NewReader(""))
+	request.Header.Set("Content-Type", "text/plain")
+	refused, err := http.DefaultClient.Do(request)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer response.Body.Close()
-	<-f.runner.entered
-	cancel()
+	refused.Body.Close()
+	expect(t, refused, http.StatusUnsupportedMediaType)
 
+	expect(t, f.post(t, "/sessions/"+id+"/cancel", `{}`), http.StatusAccepted)
 	select {
 	case err := <-f.runner.left:
 		if !errors.Is(err, context.Canceled) {
 			t.Fatalf("err = %v", err)
 		}
 	case <-time.After(5 * time.Second):
-		t.Fatal("the episode kept running after the client left")
+		t.Fatal("the episode was not cancelled")
 	}
 
-	deadline := time.Now().Add(5 * time.Second)
-	for {
-		found, _ := f.store.Get(id)
-		if !found.Running && len(found.Episodes) == 1 {
-			if found.Episodes[0].FinishReason != agent.FinishCancelled {
-				t.Fatalf("episode = %+v", found.Episodes[0])
-			}
-			return
-		}
-		if time.Now().After(deadline) {
-			t.Fatalf("session never released: %+v", found)
-		}
-		time.Sleep(10 * time.Millisecond)
+	var last agent.Event
+	for last.Type != agent.EventFinished {
+		last = nextEvent(t, reader)
 	}
+	if last.Finished.FinishReason != agent.FinishCancelled {
+		t.Fatalf("last = %+v", last)
+	}
+	found, _ := f.store.Get(id)
+	if found.Running || found.Episodes[0].FinishReason != agent.FinishCancelled {
+		t.Fatalf("session = %+v", found)
+	}
+	expect(t, f.post(t, "/sessions/"+id+"/cancel", `{}`), http.StatusConflict)
+	expect(t, f.post(t, "/sessions/missing/cancel", `{}`), http.StatusNotFound)
+}
+
+func TestTheFinalEventIsSentOnlyOnceTheEpisodeIsSaved(t *testing.T) {
+	// A client that reloads the session on seeing the end must find it there.
+	// The runner emits its final event, then dawdles before returning.
+	f := newFixture(t)
+	f.runner.afterRun = func() { time.Sleep(150 * time.Millisecond) }
+	id := f.session(t)
+	reader, closeStream := f.stream(t, http.MethodPost, "/sessions/"+id+"/messages", `{"content":"x"}`)
+	defer closeStream()
+
+	for event := nextEvent(t, reader); event.Type != agent.EventFinished; event = nextEvent(t, reader) {
+	}
+	found := decode[session.Session](t, f.get(t, "/sessions/"+id))
+	if found.Running || len(found.Episodes) != 1 {
+		t.Fatalf("session = %+v", found)
+	}
+}
+
+func TestEachEventIsCheckpointedAsItHappens(t *testing.T) {
+	f := newFixture(t)
+	f.hold()
+	id := f.session(t)
+	_, closeStream := f.stream(t, http.MethodPost, "/sessions/"+id+"/messages", `{"content":"x"}`)
+	defer closeStream()
+	<-f.runner.entered
+
+	var events sql.NullString
+	if err := f.db.QueryRow("SELECT events FROM episodes").Scan(&events); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(events.String, agent.EventStarted) {
+		t.Fatalf("checkpoint = %v", events)
+	}
+	close(f.runner.hold)
+}
+
+func TestShutdownCancelsRunningEpisodesAndRecordsThem(t *testing.T) {
+	f := newFixture(t)
+	f.hold()
+	id := f.session(t)
+	go func() {
+		if response, err := http.DefaultClient.Do(mustRequest(f.URL+"/sessions/"+id+"/messages", `{"content":"x"}`)); err == nil {
+			response.Body.Close()
+		}
+	}()
+	<-f.runner.entered
+
+	f.shutdown()
+	waited := make(chan struct{})
+	go func() {
+		f.server.Wait()
+		close(waited)
+	}()
+	select {
+	case <-waited:
+	case <-time.After(5 * time.Second):
+		t.Fatal("Wait did not return after shutdown")
+	}
+	found, _ := f.store.Get(id)
+	if found.Running || len(found.Episodes) != 1 || found.Episodes[0].FinishReason != agent.FinishCancelled {
+		t.Fatalf("session = %+v", found)
+	}
+}
+
+func mustRequest(url, body string) *http.Request {
+	request, err := http.NewRequest(http.MethodPost, url, strings.NewReader(body))
+	if err != nil {
+		panic(err)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	return request
 }
 
 func TestHealth(t *testing.T) {

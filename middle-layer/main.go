@@ -126,6 +126,7 @@ func run() error {
 	}
 
 	server := &api.Server{
+		Context: ctx,
 		Backend: client,
 		Worker:  worker,
 		Store:   session.NewStore(db, maxConversationChars),
@@ -140,6 +141,12 @@ func run() error {
 			},
 		},
 	}
+	// Runs before the worker stops and the database closes (defers run last
+	// first): cancel what is running, then let each episode record how it ended.
+	defer func() {
+		stop()
+		server.Wait()
+	}()
 
 	listener, err := net.Listen("tcp", *addr)
 	if err != nil {

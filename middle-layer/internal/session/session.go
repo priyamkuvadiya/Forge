@@ -124,11 +124,11 @@ func (s *Store) Get(id string) (Session, error) {
 //
 // A row with no finish reason and no live owner was interrupted, whether by a
 // crash, a hard kill or a final write that failed. It is reported as a system
-// failure holding the message that caused it, since whatever else the episode did
-// went with the process.
+// failure holding whatever its last checkpoint (Progress) recorded: the message
+// that caused it at least, and every turn and tool call up to the cut.
 func (s *Store) episodes(id, policy string) ([]agent.Episode, error) {
 	rows, err := s.db.Query(
-		"SELECT id, prompt, body FROM episodes WHERE session_id = ? ORDER BY seq", id,
+		"SELECT id, prompt, body, events FROM episodes WHERE session_id = ? ORDER BY seq", id,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("reading session %s: %w", id, err)
@@ -138,8 +138,8 @@ func (s *Store) episodes(id, policy string) ([]agent.Episode, error) {
 	episodes := []agent.Episode{}
 	for rows.Next() {
 		var episodeID, prompt string
-		var body sql.NullString
-		if err := rows.Scan(&episodeID, &prompt, &body); err != nil {
+		var body, progress sql.NullString
+		if err := rows.Scan(&episodeID, &prompt, &body, &progress); err != nil {
 			return nil, fmt.Errorf("reading session %s: %w", id, err)
 		}
 		if body.Valid {
@@ -153,14 +153,16 @@ func (s *Store) episodes(id, policy string) ([]agent.Episode, error) {
 		if s.running[id] == episodeID {
 			continue
 		}
-		episodes = append(episodes, agent.Episode{
-			ID:           episodeID,
-			Policy:       policy,
-			Messages:     []agent.Message{{Role: "user", Content: prompt}},
-			FinishReason: agent.FinishInterrupted,
-			Trace:        []agent.TraceEntry{},
-			Error:        "the middle layer stopped before this episode finished",
-		})
+		var events []agent.Event
+		if progress.Valid {
+			if err := json.Unmarshal([]byte(progress.String), &events); err != nil {
+				return nil, fmt.Errorf("episode %s: its progress: %w", episodeID, err)
+			}
+		}
+		cut := agent.Replay(episodeID, policy, prompt, events)
+		cut.FinishReason = agent.FinishInterrupted
+		cut.Error = "the middle layer stopped before this episode finished"
+		episodes = append(episodes, cut)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("reading session %s: %w", id, err)
@@ -257,6 +259,31 @@ func (s *Store) Begin(id, prompt string) (Begun, error) {
 	return Begun{EpisodeID: episodeID, Policy: policy, History: history}, nil
 }
 
+// Progress checkpoints a running episode: its events so far, which is what it
+// reads back as if the process stops before End. It writes only to the episode
+// this session is running now, and only while that episode is unfinished, so a
+// late call cannot overwrite a finished record.
+func (s *Store) Progress(id string, events []agent.Event) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	episodeID, ok := s.running[id]
+	if !ok {
+		return nil
+	}
+	body, err := json.Marshal(events)
+	if err != nil {
+		return fmt.Errorf("episode %s: %w", episodeID, err)
+	}
+	_, err = s.db.Exec(
+		"UPDATE episodes SET events = ? WHERE id = ? AND finish_reason IS NULL", string(body), episodeID,
+	)
+	if err != nil {
+		return fmt.Errorf("checkpointing episode %s: %w", episodeID, err)
+	}
+	return nil
+}
+
 // End records a finished episode and releases the session. The session is released
 // even if the write fails: the episode then reads back as interrupted, and the
 // conversation can carry on without it.
@@ -276,7 +303,8 @@ func (s *Store) End(id string, episode agent.Episode) error {
 		return fmt.Errorf("episode %s: %w", episodeID, err)
 	}
 	_, err = s.db.Exec(
-		"UPDATE episodes SET finished_at = ?, finish_reason = ?, body = ? WHERE id = ?",
+		// The checkpoint goes: body is the record now.
+		"UPDATE episodes SET finished_at = ?, finish_reason = ?, body = ?, events = NULL WHERE id = ?",
 		stamp(time.Now()), episode.FinishReason, string(body), episodeID,
 	)
 	if err != nil {

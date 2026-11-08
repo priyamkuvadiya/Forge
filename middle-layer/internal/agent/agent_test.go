@@ -295,6 +295,9 @@ func TestEventsFollowTheEpisodeInOrder(t *testing.T) {
 	if !reflect.DeepEqual(types, want) {
 		t.Fatalf("events = %v", types)
 	}
+	if events[0].Prompt != "task" {
+		t.Fatalf("started event = %#v", events[0])
+	}
 	if call := events[3].ToolCall; call == nil || call.Name != "search" {
 		t.Fatalf("turn event = %#v", events[3])
 	}
@@ -303,6 +306,62 @@ func TestEventsFollowTheEpisodeInOrder(t *testing.T) {
 	}
 	if last := events[6]; last.Finished == nil || last.Finished.FinishReason != FinishAnswer {
 		t.Fatalf("last event = %#v", last)
+	}
+}
+
+// Replay must hold exactly what Run held, at every point an episode could be cut
+// off. Each turn's input is the conversation so far, so comparing Replay over the
+// events before turn i against what the policy saw on turn i checks every prefix;
+// a backend failure at the end keeps Run's own messages and trace for the last.
+func TestReplayRebuildsWhatRunHeldAtEveryPoint(t *testing.T) {
+	scripts := map[string][]Turn{
+		"calls then answer":   {call("search", "q"), call("calculator", "1+1"), answer("2")},
+		"nudge then call":     {prose("hm"), call("search", "q"), prose("again")},
+		"refused calls":       {call("a", "1"), call("b", "2"), call("c", "3"), call("d", "4")},
+		"immediate answer":    {answer("4")},
+		"prose only":          {prose("one"), prose("two")},
+		"empty after a call":  {call("search", "q"), {Kind: KindEmpty}},
+		"multiline tool text": {call("python", "def f():\n    return 1\n"), prose("done\n")},
+	}
+	for name, turns := range scripts {
+		for failAt := 0; failAt <= len(turns); failAt++ {
+			t.Run(name, func(t *testing.T) {
+				policy := &scriptedPolicy{turns: turns, err: map[int]error{failAt: errors.New("cut")}}
+				var events []Event
+				episode := Runner{Policy: policy, Tools: &fakeTools{refuseAfter: 2}, Limits: limits}.Run(
+					context.Background(), "e", "p", nil, "task",
+					func(event Event) { events = append(events, event) },
+				)
+
+				turn := 0
+				for k := range events {
+					if events[k].Type != EventTurn {
+						continue
+					}
+					replayed := Replay("e", "p", "task", events[:k])
+					if !reflect.DeepEqual(replayed.Messages, policy.seen[turn]) {
+						t.Fatalf("before turn %d: replayed %#v, policy saw %#v", turn, replayed.Messages, policy.seen[turn])
+					}
+					turn++
+				}
+
+				replayed := Replay("e", "p", "task", events)
+				if episode.Failed() {
+					// Run kept its own state, so it is directly comparable.
+					if !reflect.DeepEqual(replayed.Messages, episode.Messages) ||
+						replayed.Nudges != episode.Nudges ||
+						!reflect.DeepEqual(replayed.Trace, episode.Trace) {
+						t.Fatalf("replayed %+v\nran %+v", replayed, episode)
+					}
+				} else if !reflect.DeepEqual(replayed.Messages, episode.Messages) || replayed.Nudges != episode.Nudges {
+					// The trace of a finished episode is the worker's, not Run's.
+					t.Fatalf("replayed %+v\nran %+v", replayed, episode)
+				}
+				if replayed.FinishReason != "" || replayed.Answer != nil {
+					t.Fatalf("Replay guessed an ending: %+v", replayed)
+				}
+			})
+		}
 	}
 }
 
